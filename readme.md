@@ -13,7 +13,7 @@ If you want to contribute, you can start by looking at
 the [internal documentation], which includes a small guide to 
 contributing and a description of the parser.
 
-[internal documentation]: contributing/index.md
+[internal documentation]: internal/readme.md
 
 ## Usage
 
@@ -86,7 +86,7 @@ The documentation needs some work right now, but it should be 100% documented ve
   features, Apodimark should behave exactly like Commonmark. You can see the 
   complete list of differences [here][commonmark-delta].
 
-[commonmark-delta]: differences-commonmark.md
+[commonmark-delta]: internal/differences-commonmark.md
 
 - **HTML generation**  
   Apodimark only provides an abstract syntax tree containing 

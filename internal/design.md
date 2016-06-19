@@ -26,9 +26,9 @@ Inline Nodes are created and added to the AST during the **Inline Parsing** phas
 This is an example of a *string that will be ___parsed___ to a `Markdown` AST*.
 - > It contains some nested blocks
   > # Like this header inside a quote inside a list
-- ``` swift
+- ~~~ swift
   // Hello
-  ```
+  ~~~
 ````
 
 ```
