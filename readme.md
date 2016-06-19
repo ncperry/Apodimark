@@ -88,7 +88,7 @@ Finally, it should not have any dependencies.
   features, Apodimark should behave exactly like Commonmark. You can see the 
   complete list of differences [here][commonmark-delta].
 
-[commonmark-delta]: internal/differences-commonmark.md
+[commonmark-delta]: internal/differences-with-commonmark.md
 
 - **HTML generation**  
   Apodimark only provides an abstract syntax tree containing 
