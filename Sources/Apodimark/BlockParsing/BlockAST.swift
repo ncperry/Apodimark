@@ -91,11 +91,14 @@ extension BlockNode {
     /// - returns: `true` if `self` added the line, `false` otherwise
     mutating func add(line: Line<View>) -> Bool {
 
+        // Note: this function is awful
+        // To make it more palatable, consider each `case` as a separate function, ignore the rest
+        // TODO: find a better way to add a line to the AST
+
         switch self {
 
         // MARK: Adding a line to a paragraph
         case let .paragraph(text: text, closed: closed):
-
             guard !closed else {
                 return false
             }
@@ -124,7 +127,7 @@ extension BlockNode {
         // MARK: Adding a line to a quote
         case let .quote(content: content, closed: closed):
 
-            let addLineToQuote: (line: Line<View>) -> Void = { line in
+            func addLineToQuote(line: Line<View>) {
                 if content[content.endIndex - 1].add(line: line) == false && !line.kind.isEmpty() {
                     content.append(line.node())
                 }
@@ -166,7 +169,6 @@ extension BlockNode {
         // MARK: adding a line to a list
         case let .list(kind: kind, minIndent: minIndent, state: state, items: items):
 
-
             func lastChild(of items: ArrayRef<ArrayRef<BlockNode>>) -> BlockNode? {
                 return items.last?.last
             }
@@ -206,7 +208,7 @@ extension BlockNode {
                 }
             }
 
-            func addLineToList(preparedLine: Line<View>) {
+            func addPreparedLineToList(preparedLine: Line<View>) {
                 switch preparedLine.kind {
 
                 case .empty:
@@ -246,7 +248,7 @@ extension BlockNode {
             guard let line = preparedLine(from: line) else {
                 return false
             }
-            addLineToList(preparedLine: line)
+            addPreparedLineToList(preparedLine: line)
             return true
 
 
