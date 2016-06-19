@@ -39,6 +39,7 @@ This is an example of a *string that will be ___parsed___ to a `Markdown` AST*.
     - Emphasis(3)
       - Text
     - Monospaced Text
+    - Text
   - Text
 - List
   - Item
@@ -54,6 +55,7 @@ This is an example of a *string that will be ___parsed___ to a `Markdown` AST*.
 ## Block Parsing
 
 This phase is done in two steps:
+
 1. Parse a line into a `Line` structure
 2. Add the Line to the AST
 
@@ -151,6 +153,7 @@ will create this list of Inline Nodes:
 ### Building the Inline AST
 
 From the nodes in the previous example (now with their indices):
+
 ```
 This is a **strong emphasis containing a *nested emphasis* and some text**. \
    And here is a second line with a [fake reference].
