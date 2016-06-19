@@ -22,14 +22,14 @@ Inline Nodes are created and added to the AST during the **Inline Parsing** phas
 
 ### Example AST
 
-````
+```
 This is an example of a *string that will be ___parsed___ to a `Markdown` AST*.
 - > It contains some nested blocks
   > # Like this header inside a quote inside a list
-- ~~~ swift
+- ``` swift
   // Hello
-  ~~~
-````
+  ``` 
+```
 
 ```
 - Paragraph
@@ -159,6 +159,7 @@ This is a **strong emphasis containing a *nested emphasis* and some text**. \
 ```
 
 We create a tree in two steps:
+
 1. Create a tree with the non-text nodes using the node indices
    ```
    - emphasis(2, 10...77)
@@ -167,14 +168,14 @@ We create a tree in two steps:
    ```
 
 2. Add the text nodes
-  ```
-  - text(0...9)
-  - emphasis(2, 10...77)
-    - text(12...45)
-    - emphasis(1, 46...65)
-      - text(47...64)
-    - text(66...75)
-  - text(78...79)
-  - hardbreak(80...80)
-  - text(84...138)
-  ```
+   ```
+   - text(0...9)
+   - emphasis(2, 10...77)
+     - text(12...45)
+     - emphasis(1, 46...65)
+       - text(47...64)
+     - text(66...75)
+   - text(78...79)
+   - hardbreak(80...80)
+   - text(84...138)
+   ```
