@@ -79,6 +79,8 @@ It should also be very well tested and well documented. There are currently
 over 400 tests ensuring that Apodimark behaves like Commonmark where it matters.
 The documentation needs some work right now, but it should be 100% documented very soon.  
 
+Finally, it should not have any dependencies.
+
 ## Non-Goals
 
 - **100% Commonmark compliance**  
