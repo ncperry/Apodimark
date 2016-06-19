@@ -18,9 +18,9 @@ extension MarkdownParser {
 
         let sortedNodes = (codeNodes + refNodes + emphNodes + textNodes).sorted { $0.span.lowerBound < $1.span.lowerBound }
 
-        let res = makeAST(with: sortedNodes, inView: data)
+        let ast = makeAST(with: sortedNodes, inView: data)
 
-        return res
+        return ast
     }
 
     func findFirst <C: Collection, T where C.Iterator.Element == Delimiter?> (in delimiters: C, whereNotNil predicate: @noescape (DelimiterKind) -> T?) -> (C.Index, Delimiter, T)? {
