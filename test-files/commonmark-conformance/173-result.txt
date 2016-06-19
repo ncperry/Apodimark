@@ -1,0 +1,1 @@
+Document { Header(1, [ref: Foo(/url)]), Quote { Paragraph(bar), }, }

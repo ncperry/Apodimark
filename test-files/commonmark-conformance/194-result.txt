@@ -1,0 +1,1 @@
+Document { Quote { Fence[][], }, Paragraph(foo), Fence[][], }

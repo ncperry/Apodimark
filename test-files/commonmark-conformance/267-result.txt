@@ -1,0 +1,1 @@
+Document { List[Number(1)] { Item { Paragraph(a), }, Item { Paragraph(b), }, Item { Paragraph(c), }, }, }

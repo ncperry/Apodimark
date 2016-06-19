@@ -1,0 +1,1 @@
+Document { Paragraph(__ foo bar__), }

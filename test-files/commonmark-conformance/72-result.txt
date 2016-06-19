@@ -1,0 +1,2 @@
+Document { Code[a simple
+  indented code block], }

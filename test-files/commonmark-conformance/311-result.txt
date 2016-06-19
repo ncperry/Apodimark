@@ -1,0 +1,2 @@
+Document { Paragraph(code(foo   bar
+  baz)), }

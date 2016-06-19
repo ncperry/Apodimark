@@ -1,0 +1,1 @@
+Document { Paragraph(Foo[softbreak][bar]: /baz), Paragraph([bar]), }

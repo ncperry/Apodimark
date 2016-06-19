@@ -1,0 +1,1 @@
+Document { Quote { Paragraph(aaa), }, ThematicBreak, Quote { Paragraph(bbb), }, }

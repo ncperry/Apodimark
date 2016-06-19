@@ -1,0 +1,1 @@
+Document { ThematicBreak, Header(2, foo), ThematicBreak, }

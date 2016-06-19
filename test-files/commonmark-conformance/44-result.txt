@@ -1,0 +1,1 @@
+Document { Paragraph(Foo bar), Header(1, baz), Paragraph(Bar foo), }

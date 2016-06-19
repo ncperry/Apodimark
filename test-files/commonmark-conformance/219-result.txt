@@ -1,0 +1,7 @@
+Document { List[Bullet] { Item { Paragraph(foo), Paragraph(bar), }, Item { Paragraph(foo), }, }, Paragraph(bar), List[Bullet] { Item { Fence[][foo
+
+
+bar], }, Item { Paragraph(baz), List[Bullet] { Item { Fence[][foo
+
+
+bar], }, }, }, }, }

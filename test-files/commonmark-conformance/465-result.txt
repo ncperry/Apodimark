@@ -1,0 +1,1 @@
+Document { Paragraph([ref: link(#fragment)]), Paragraph([ref: link(http://example.com#fragment)]), Paragraph([ref: link(http://example.com?foo=3#frag)]), }

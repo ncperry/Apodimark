@@ -1,0 +1,1 @@
+Document { Paragraph(e1(foo e2(bar) baz)), }

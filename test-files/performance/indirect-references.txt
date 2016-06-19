@@ -1,0 +1,32 @@
+[Lorem] [ipsum dolor] [sit amet, consectetur] [adipiscing] elit, 
+[sed [do] eiusmod]] [tempor [incididunt [ut [labore] et]]]] dolore 
+[magna] aliqua. 
+[Ut] [enim] [ad] [minim] [veniam], [quis] [nostrud] [exercitation] 
+[ullamco] [laboris] [nisi][ut][aliquip][ex][ea][commodo][consequat]. 
+[Duis][aute] [irure][dolor] [in \[reprehenderit\]\[in\] voluptate]
+
+[Lorem]: ipsum dolor
+[ipsum dolor]:         sit amet
+[sit amet, consectetur]:adipiscing
+[adipiscing]: elit
+[do]: sed do eiusmod
+[labore]: tempor incididunt ut labore et
+[magna]: aliqua
+[ut]: enim
+[enim]: ad
+[ad]: minim
+[veniam]: quis
+[nostrud]: exercitation
+[exercitation]: ullamco
+[laboris]: nisi
+[nisi]: ut
+[ut]: nisi
+[aliquip]: ex
+[ex]: aliqiuip
+[ea]:  ex
+[commodo]:ea
+[consequat]: commodo
+[aute]: Duis
+[dolor]: irure
+[in \[reprehenderit\]\[in\] voluptate]: velit
+

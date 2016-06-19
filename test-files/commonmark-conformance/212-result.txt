@@ -1,0 +1,1 @@
+Document { List[Bullet] { Item { Paragraph(one), }, }, Paragraph(two), }

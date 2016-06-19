@@ -1,0 +1,1 @@
+Document { Paragraph(___e1(foo)), }

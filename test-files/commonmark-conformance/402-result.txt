@@ -1,0 +1,1 @@
+Document { Paragraph(__ is not an empty emphasis), }

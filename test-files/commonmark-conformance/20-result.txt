@@ -1,0 +1,1 @@
+Document { Paragraph(_ _ _ _ a), Paragraph(a------), Paragraph(---a---), }

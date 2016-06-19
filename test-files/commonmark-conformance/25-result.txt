@@ -1,0 +1,1 @@
+Document { List[Bullet] { Item { Paragraph(Foo), }, }, ThematicBreak, List[Bullet] { Item { Paragraph(Bar), }, }, }

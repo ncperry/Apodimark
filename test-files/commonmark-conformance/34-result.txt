@@ -1,0 +1,1 @@
+Document { Header(3, foo), Header(2, foo), Header(1, foo), }

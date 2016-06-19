@@ -1,0 +1,1 @@
+Document { Paragraph([[bar [ref: foo(/url)]), }
