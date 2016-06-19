@@ -136,30 +136,30 @@ extension MarkdownParser {
     }
 }
 
-public func parseMarkdown <View: BidirectionalCollection where
+public func parsedMarkdown <View: BidirectionalCollection where
     View.Iterator.Element: MarkdownParserToken,
     View.SubSequence: Collection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
-> (in view: View) -> [MarkdownBlock<View>] {
+> (source: View) -> [MarkdownBlock<View>] {
 
-    return MarkdownParser(view: view).finalAST()
+    return MarkdownParser(view: source).finalAST()
 }
 
-public func parseMarkdown(in view: String.UTF16View) -> [MarkdownBlock<String.UTF16View>] {
-    return MarkdownParser(view: view).finalAST()
+public func parsedMarkdown(source: String.UTF16View) -> [MarkdownBlock<String.UTF16View>] {
+    return MarkdownParser(view: source).finalAST()
 }
 
 /*
-public func parseMarkdown(in view: UnsafeBufferPointer<UTF16.CodeUnit>) -> [MarkdownBlock<UnsafeBufferPointer<UTF16.CodeUnit>>] {
-    return MarkdownParser(view: view).finalAST()
+public func parsedMarkdown(source: UnsafeBufferPointer<UTF16.CodeUnit>) -> [MarkdownBlock<UnsafeBufferPointer<UTF16.CodeUnit>>] {
+    return MarkdownParser(view: source).finalAST()
 }
 
 
-public func parseMarkdown(in view: [UTF16.CodeUnit]) -> [MarkdownBlock<[UTF16.CodeUnit]>] {
-    return MarkdownParser(view: view).finalAST()
+public func parsedMarkdown(source: [UTF16.CodeUnit]) -> [MarkdownBlock<[UTF16.CodeUnit]>] {
+    return MarkdownParser(view: source).finalAST()
 }
 
-public func parseMarkdown(in view: Data) -> [MarkdownBlock<Data>] {
-    return MarkdownParser(view: view).finalAST()
+public func parsedMarkdown(source: Data) -> [MarkdownBlock<Data>] {
+    return MarkdownParser(view: source).finalAST()
 }
 */
