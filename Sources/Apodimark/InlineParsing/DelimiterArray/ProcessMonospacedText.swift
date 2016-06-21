@@ -19,6 +19,12 @@ extension MarkdownParser {
         }) else {
             return nil
         }
+        if firstDelIdx > delimiters.startIndex,
+            let del = delimiters[firstDelIdx - 1],
+            case .ignored = del.kind
+            where del.idx == view.index(before: firstDel.idx) {
+            return processMonospacedText(delimiters: &delimiters[firstDelIdx+1 ..< delimiters.endIndex])
+        }
 
         guard let (matchingDelIdx, matchingDel, _) = findFirst(in: delimiters.suffix(from: firstDelIdx + 1), whereNotNil: { (kind) -> Void? in
             if case .code(level) = kind { return () } else { return nil }
@@ -28,7 +34,13 @@ extension MarkdownParser {
         }
 
         let range = firstDelIdx ... matchingDelIdx
-        delimiters.replaceSubrange(range, with: repeatElement(nil, count: range.count))
+        for i in range {
+            switch delimiters[i]?.kind {
+            case .softbreak?, .hardbreak?, .start?, .end?: continue
+            default: delimiters[i] = nil
+            }
+        }
+        //delimiters.replaceSubrange(range, with: repeatElement(nil, count: range.count))
 
         return InlineNode(
             kind: .code(level),

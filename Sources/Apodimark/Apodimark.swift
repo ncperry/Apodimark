@@ -44,7 +44,7 @@ public enum MarkdownInline <View: BidirectionalCollection where
     case text(View.SubSequence)
     case reference(kind: ReferenceKind, title: [MarkdownInline], definition: ReferenceDefinition)
     case emphasis(level: Int, content: [MarkdownInline])
-    case monospacedText([View.SubSequence])
+    case monospacedText([MarkdownInline])
     case softbreak
     case hardbreak
 }
@@ -64,7 +64,8 @@ extension MarkdownParser {
             return .text(view[node.contentRange(inView: view)])
 
         case .code(_):
-            return .monospacedText([view[node.contentRange(inView: view)]])
+            let children = node.children.map(createFinalInlineNode)
+            return .monospacedText(children)
 
         case .emphasis(let level):
             return .emphasis(level: level, content: node.children.map(createFinalInlineNode))

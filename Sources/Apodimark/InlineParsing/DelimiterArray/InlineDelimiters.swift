@@ -83,7 +83,7 @@ extension MarkdownParser {
                     }
                     if isPunctuation(el) {
                         delimiters.append((.ignored, scanner.startIndex))
-                        _ = scanner.pop()
+                        if el != backtick { _ = scanner.pop() }
                     }
 
                 case _:
@@ -98,10 +98,10 @@ extension MarkdownParser {
 
             if optScanner != nil { // linefeed
                 if potentialBackslashHardbreak || numberOfPreviousSpaces >= 2 {
-                    delimiters.append((.hardbreak, lastIndex))
+                    delimiters.append((.hardbreak, scanner.startIndex))
                 }
                 else {
-                    delimiters.append((.softbreak, lastIndex))
+                    delimiters.append((.softbreak, scanner.startIndex))
                 }
             }
         }

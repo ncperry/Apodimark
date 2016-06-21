@@ -35,12 +35,16 @@ extension MarkdownBlock {
         case .emphasis(level: let level, content: let content):
             return "e\(level)(" + content.reduce("", combine: combineNodeOutput) + ")"
 
-        case .monospacedText(let views):
-            var viewsDesc = ""
-            for view in views {
-                viewsDesc += Token.string(fromTokens: view)
-            }
-            return "code(" + viewsDesc + ")"
+        case .monospacedText(let children):
+            return "code(" + children.reduce("") { (acc, cur) in
+                let next: String
+                switch cur {
+                case .softbreak, .hardbreak: next = " "
+                case .text(let v): next = Token.string(fromTokens: v)
+                default: fatalError()
+                }
+                return acc + next
+            } + ")"
 
         case .reference(kind: let kind, title: let title, definition: let definition):
             let kindDesc = kind == .unwrapped ? "uref" : "ref"
