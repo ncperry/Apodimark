@@ -78,8 +78,9 @@ class CommonMarkConformanceTests : XCTestCase {
 
     func testSpec() {
         for no in tests {
-            let doc = parsedMarkdown(source: stringForTest(number: no).utf16)
-            let desc = MarkdownBlock.output(nodes: doc)
+            let source = stringForTest(number: no).utf16
+            let doc = parsedMarkdown(source: source)
+            let desc = MarkdownBlock.output(nodes: doc, source: source)
             let result = stringForTest(number: no, result: true)
             XCTAssertEqual(desc, result, "\(no)")
         }

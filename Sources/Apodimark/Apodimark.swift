@@ -39,7 +39,7 @@ public enum MarkdownInline <View: BidirectionalCollection where
     View.SubSequence: Collection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 > {
-    case text(View.SubSequence)
+    case text(Range<View.Index>)
     case reference(kind: ReferenceKind, title: [MarkdownInline], definition: ReferenceDefinition)
     case emphasis(level: Int, content: [MarkdownInline])
     case monospacedText([MarkdownInline])
@@ -59,7 +59,7 @@ extension MarkdownParser {
             return .softbreak
 
         case .text:
-            return .text(view[node.contentRange(inView: view)])
+            return .text(node.contentRange(inView: view))
 
         case .code(_):
             let children = node.children.map(createFinalInlineNode)
@@ -83,8 +83,8 @@ public enum MarkdownBlock <View: BidirectionalCollection where
     case header(level: Int, text: [MarkdownInline<View>])
     case quote(content: [MarkdownBlock<View>])
     case list(kind: MarkdownListKind, items: [[MarkdownBlock<View>]])
-    case fence(name: String, text: [View.SubSequence])
-    case code(text: [View.SubSequence])
+    case fence(name: String, text: [Range<View.Index>])
+    case code(text: [Range<View.Index>])
     case thematicBreak
 }
 
@@ -112,7 +112,7 @@ extension MarkdownParser {
 
 
         case .code(text: let text, _):
-            return .code(text: text.map { view[$0] })
+            return .code(text: Array(text))
 
 
         case .fence(_, name: let name, text: let text, _, _, _):
@@ -122,7 +122,7 @@ extension MarkdownParser {
             } else {
                 finalName = ""
             }
-            return .fence(name: finalName, text: text.map { view[$0] })
+            return .fence(name: finalName, text: Array(text))
 
 
         case .thematicBreak:
