@@ -3,8 +3,6 @@
 //  Apodimark
 //
 
-import Foundation
-
 public protocol ReferenceDefinition { }
 extension String: ReferenceDefinition { }
 

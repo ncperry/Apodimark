@@ -40,7 +40,6 @@ extension MarkdownParser {
             default: delimiters[i] = nil
             }
         }
-        //delimiters.replaceSubrange(range, with: repeatElement(nil, count: range.count))
 
         return InlineNode(
             kind: .code(level),

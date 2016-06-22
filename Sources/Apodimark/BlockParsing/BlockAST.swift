@@ -220,11 +220,11 @@ extension BlockNode {
                     guard state == .normal || (shallowestNonListChild?.isFence() ?? false) else {
                         return self = .list(kind: kind, minIndent: minIndent, state: .closed, items: items)
                     }
-
-                    let state = ListState.followedByEmptyLine
                     guard !items.isEmpty && !(items.last!.isEmpty) else {
                         return
                     }
+
+                    let state = ListState.followedByEmptyLine
 
                     _ = items[items.endIndex - 1][items.last!.endIndex - 1].add(line: preparedLine)
                     self = .list(kind: kind, minIndent: minIndent, state: state, items: items)

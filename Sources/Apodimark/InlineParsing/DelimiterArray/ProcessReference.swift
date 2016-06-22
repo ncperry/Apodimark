@@ -147,7 +147,6 @@ extension MarkdownParser {
             for i in delimiterRangeForTitle.upperBound ..< delimiterRangeForSpan.upperBound {
                 delimiters[i] = nil
             }
-            //delimiters.replaceSubrange(delimiterRangeForSpan, with: repeatElement(nil, count: delimiterRangeForSpan.count))
 
             inlineNodes.append(refNode)
             return inlineNodes

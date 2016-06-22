@@ -3,6 +3,8 @@
 //  Apodimark
 //
 
+
+/// An array slice with reference semantics
 public final class ArrayRefSlice <T>: MutableCollection, RandomAccessCollection, RangeReplaceableCollection {
 
     public typealias SubSequence = ArrayRefSlice<T>
@@ -112,7 +114,7 @@ public final class ArrayRefSlice <T>: MutableCollection, RandomAccessCollection,
     }
     public subscript(idcs: Range<Index>) -> SubSequence {
         get { return ArrayRefSlice<T>(base: _base, bounds: idcs) }
-        set { self[idcs].replaceSubrange(idcs, with: newValue) }
+        set { self[idcs].replaceSubrange(idcs, with: newValue) } // this might be wrong
     }
 
     public func makeIterator() -> IndexingIterator<MutableRangeReplaceableRandomAccessSlice<ArrayRef<T>>> {
@@ -125,7 +127,7 @@ extension ArrayRefSlice: CustomStringConvertible {
     }
 }
 
-
+/// An array with reference semantics
 public final class ArrayRef <T>: MutableCollection, RandomAccessCollection, RangeReplaceableCollection, ArrayLiteralConvertible {
 
     public typealias Index = Int
@@ -231,7 +233,7 @@ public final class ArrayRef <T>: MutableCollection, RandomAccessCollection, Rang
     }
     public subscript(idcs: Range<Index>) -> SubSequence {
         get { return SubSequence(base: self, bounds: idcs) }
-        set { _array.replaceSubrange(idcs, with: newValue) }
+        set { _array.replaceSubrange(idcs, with: newValue) } // this might be wrong
     }
 
 
