@@ -8,19 +8,18 @@ extension MarkdownParser {
 
     func processInlines(scanners: [Scanner<View>]) -> LinkedList<InlineNode<View>> {
         guard let data = scanners.first?.view else { return [] }
+
         var dels = delimiters(inScanners: scanners)
+        var nodes: [InlineNode<View>] = []
 
-        let codeNodes = processAllMonospacedText(delimiters: &dels[dels.indices])
-        let refNodes = processAllReferences(delimiters: &dels[dels.indices])
-        let emphNodes = processAllEmphases(delimiters: &dels[dels.indices])
+        nodes += processAllMonospacedText(delimiters: &dels[dels.indices])
+        nodes += processAllReferences(delimiters: &dels[dels.indices])
+        nodes += processAllEmphases(delimiters: &dels[dels.indices])
+        nodes += processText(delimiters: &dels[dels.indices])
 
-        let textNodes = processText(delimiters: &dels[dels.indices])
+        nodes.sort { $0.span.lowerBound < $1.span.lowerBound }
 
-        let sortedNodes = (codeNodes + refNodes + emphNodes + textNodes).sorted { $0.span.lowerBound < $1.span.lowerBound }
-
-        let ast = makeAST(with: sortedNodes, inView: data)
-
-        return ast
+        return makeAST(with: nodes, inView: data)
     }
 
     func findFirst <C: Collection, T where C.Iterator.Element == Delimiter?> (in delimiters: C, whereNotNil predicate: @noescape (DelimiterKind) -> T?) -> (C.Index, Delimiter, T)? {
