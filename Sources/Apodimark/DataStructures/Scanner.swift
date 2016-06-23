@@ -3,21 +3,58 @@
 //  Apodimark
 //
 
-public struct Scanner <Data: BidirectionalCollection> {
+/**
+ A `Scanner` provides a convenient way to read data from a sub-collection.
+ 
+ It stores the original collection, as well as an arbitrary `startIndex` and `endIndex`.
 
-    public let view: Data
+ For example, this is a scanner that can read the elements in the array from 2 to 8 (included):
+ ```
+ [9, 2, 4, 3, 0, 8, 9, 7, 2, 1]
+    |_____________|
+       SCANNER
+ ```
+ It contains the array, as well as a `startIndex` pointing to 2, and an `endIndex` pointing to 9.
 
-    public private(set) var startIndex: Data.Index
-    public private(set) var endIndex: Data.Index
+ As elements are read from the scanner, its `startIndex` advances.
+ ```
+ scanner.popWhile { $0 != 3 }
+ 
+ [1, 2, 4, 3, 0, 8, 9, 7, 2, 1]
+          |_______|
+ ```
+ 
+ `Scanner`s are value types (if they are reading from a collection with value semantics), 
+ and they don’t mutate the elements in the original collection.
+ */
+struct Scanner <Data: BidirectionalCollection> {
 
-    public init(view: Data, startIndex: Data.Index? = nil, endIndex: Data.Index? = nil) {
-        let startIndex = startIndex ?? view.startIndex
-        let endIndex = endIndex ?? view.endIndex
+    /// The collection from which to read the elements
+    let data: Data
 
-        precondition(view.startIndex <= startIndex && startIndex <= view.endIndex)
-        precondition(view.startIndex <= endIndex && endIndex <= view.endIndex)
+    /// Index of the first element accessible to the scanner
+    private(set) var startIndex: Data.Index
+    /// Successor of the index of the last element accessible to the scanner
+    private(set) var endIndex: Data.Index
 
-        self.view = view
+    /// Initialize a scanner reading from `data`, from `startIndex` to `endIndex`.
+    /// - parameter startIndex: index of first element accessible to the new scanner
+    /// or `nil` to use `data.startIndex`
+    /// - parameter endIndex: successor of the index of last element accessible to the new scanner
+    /// or `nil` to use `data.endIndex`
+    ///
+    /// - precondition:
+    ///   * `startIndex` and `endIndex` are between `data.startIndex` and `data.endIndex` (included)
+    ///   * `startIndex <= endIndex`
+    init(data: Data, startIndex: Data.Index? = nil, endIndex: Data.Index? = nil) {
+        let startIndex = startIndex ?? data.startIndex
+        let endIndex = endIndex ?? data.endIndex
+
+        precondition(data.startIndex <= startIndex && startIndex <= data.endIndex)
+        precondition(data.startIndex <= endIndex && endIndex <= data.endIndex)
+        precondition(startIndex <= endIndex)
+
+        self.data = data
         self.startIndex = startIndex
         self.endIndex = endIndex
     }
@@ -25,18 +62,23 @@ public struct Scanner <Data: BidirectionalCollection> {
 
 extension Scanner {
 
-    public var indices: Range<Data.Index> { return startIndex ..< endIndex }
+    /// Convenience property for `startIndex ..< endIndex`
+    var indices: Range<Data.Index> { return startIndex ..< endIndex }
 
-    public mutating func pushBackStartIndexBy(n: Data.IndexDistance) throws {
-        precondition(n >= 0)
-        startIndex = view.index(self.startIndex, offsetBy: -n)
-    }
-
-    public mutating func readWhile(predicate: @noescape (Data.Iterator.Element?) throws -> Bool) rethrows {
+    /**
+     Read elements from the scanner while `predicate(element) == true`.
+     Does not pop the element for which `predicate` is `false`.
+     
+     If `predicate` throws an error, then the scanner is not modified.
+     
+     If every element of the scanner is read, then `predicate(nil)` is
+     called, giving the opportunity to throw an error to cancel the operation.
+     */
+    mutating func popWhile(_ predicate: @noescape (Data.Iterator.Element?) throws -> Bool) rethrows {
 
         var curIndex = startIndex
-        while try curIndex != endIndex && predicate(view[curIndex]) {
-            curIndex = view.index(after: curIndex)
+        while try curIndex != endIndex && predicate(data[curIndex]) {
+            curIndex = data.index(after: curIndex)
         }
 
         if curIndex == endIndex {
@@ -46,79 +88,88 @@ extension Scanner {
         startIndex = curIndex
     }
 
-    public func peek() -> Data.Iterator.Element? {
+    /// Look at the first element of the scanner, without advancing `startIndex`.
+    func peek() -> Data.Iterator.Element? {
         guard startIndex != endIndex else {
             return nil
         }
-        return view[startIndex]
+        return data[startIndex]
     }
 
-    public mutating func pop() -> Data.Iterator.Element? {
+    /// Take the first element of the scanner and return it.
+    mutating func pop() -> Data.Iterator.Element? {
         guard startIndex != endIndex else {
             return nil
         }
         defer {
-            startIndex = view.index(after: startIndex)
+            startIndex = data.index(after: startIndex)
         }
-        return view[startIndex]
+        return data[startIndex]
     }
 }
 
 extension Scanner {
 
-    public func prefixUpTo(end: Data.Index) -> Scanner {
+    /// Returns a new scanner equal to `self` except `endIndex` is equal to `end`.
+    /// - precondition: `startIndex <= end && end <= endIndex`
+    /// - parameter end: the `endIndex` of the new `Scanner`
+    func prefix(upTo end: Data.Index) -> Scanner {
         precondition(startIndex <= end && end <= endIndex)
-        return Scanner(view: view, startIndex: startIndex, endIndex: end)
+        return Scanner(data: data, startIndex: startIndex, endIndex: end)
     }
 
-    public func suffixFrom(start: Data.Index) -> Scanner {
+    /*
+    func suffixFrom(start: Data.Index) -> Scanner {
         precondition(startIndex <= start && start <= endIndex)
         return Scanner(view: view, startIndex: start, endIndex: endIndex)
     }
+    */
 }
 extension Scanner where Data.Iterator.Element: Equatable {
 
-    public mutating func readUntil(_ x: Data.Iterator.Element) {
+    /// Pop elements from the scanner until reaching an element equal to `x`.
+    /// The element equal to `x` won’t be popped.
+    mutating func popUntil(_ x: Data.Iterator.Element) {
         var curIndex = startIndex
-        while curIndex != endIndex && view[curIndex] != x {
-            curIndex = view.index(after: curIndex)
+        while curIndex != endIndex && data[curIndex] != x {
+            curIndex = data.index(after: curIndex)
         }
         startIndex = curIndex
     }
 
-    public mutating func readWhile(_ element: Data.Iterator.Element) {
+    /// Pop elements from the scanner while they are equal to `x`.
+    /// The element not equal to `x` won’t be popped.
+    mutating func popWhile(_ x: Data.Iterator.Element) {
         var curIndex = startIndex
-        while curIndex != endIndex && view[curIndex] == element {
-            curIndex = view.index(after: curIndex)
+        while curIndex != endIndex && data[curIndex] == x {
+            curIndex = data.index(after: curIndex)
         }
         startIndex = curIndex
     }
 
-    public mutating func pop(_ element: Data.Iterator.Element) -> Bool {
-        guard startIndex != endIndex && view[startIndex] == element else {
+    /// Pop an element from the scanner if it is equal to `x`.
+    /// - returns: `true` if an element was popped, `false` otherwise
+    mutating func pop(_ x: Data.Iterator.Element) -> Bool {
+        guard startIndex != endIndex && data[startIndex] == x else {
             return false
         }
         defer {
-            startIndex = view.index(after: startIndex)
+            startIndex = data.index(after: startIndex)
         }
         return true
     }
 
-    public mutating func pop(ifNot element: Data.Iterator.Element) -> Data.Iterator.Element? {
-        guard startIndex != endIndex && view[startIndex] != element else {
+    /// Pop an element from the scanner if it is not equal to `x`.
+    /// - returns: the element that was popped, `nil` otherwise
+    mutating func pop(ifNot x: Data.Iterator.Element) -> Data.Iterator.Element? {
+        guard startIndex != endIndex && data[startIndex] != x else {
             return nil
         }
 
         defer {
-            startIndex = view.index(after: startIndex)
+            startIndex = data.index(after: startIndex)
         }
-        return view[startIndex]
-    }
-}
-
-extension Scanner: CustomStringConvertible {
-    public var description: String {
-        return "\(view[startIndex ..< endIndex])"
+        return data[startIndex]
     }
 }
 

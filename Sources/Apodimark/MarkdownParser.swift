@@ -20,7 +20,7 @@ final class MarkdownParser <View: BidirectionalCollection where
     }
 
     private func parseBlocks() {
-        var scanner = Scanner<View>(view: view)
+        var scanner = Scanner<View>(data: view)
 
         while let _ = scanner.peek() {
             let line = parseLine(scanner: &scanner)

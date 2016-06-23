@@ -10,7 +10,7 @@ extension MarkdownParser {
 
         guard !text.isEmpty else { return [] }
 
-        let scanners = text.map { Scanner(view: view, startIndex: $0.lowerBound, endIndex: $0.upperBound) }
+        let scanners = text.map { Scanner(data: view, startIndex: $0.lowerBound, endIndex: $0.upperBound) }
 
         var dels = delimiters(inScanners: scanners)
         var nodes: [InlineNode<View>] = []

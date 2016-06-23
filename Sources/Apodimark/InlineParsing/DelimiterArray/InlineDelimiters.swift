@@ -1,5 +1,5 @@
 //
-//  Tokenizer.swift
+//  InlineDelimiters.swift
 //  Apodimark
 //
 
@@ -37,8 +37,8 @@ extension MarkdownParser {
                 switch token {
 
                 case underscore, asterisk:
-                    let idxBeforeRun = scanner.view.index(before: scanner.startIndex)
-                    scanner.readWhile(token)
+                    let idxBeforeRun = scanner.data.index(before: scanner.startIndex)
+                    scanner.popWhile(token)
                     let nextTokenKind: TokenKind
                     if let nextToken = scanner.peek() {
                         nextTokenKind = tokenKind(nextToken)
@@ -46,14 +46,14 @@ extension MarkdownParser {
                         nextTokenKind = .whitespace
                     }
                     let delimiterState = DelimiterState(token: token, prev: prevTokenKind, next: nextTokenKind)
-                    let lvl = scanner.view.distance(from: idxBeforeRun, to: scanner.startIndex)
+                    let lvl = scanner.data.distance(from: idxBeforeRun, to: scanner.startIndex)
                     let kind: EmphasisKind = token == underscore ? .underscore : .asterisk
                     delimiters.append((.emph(kind, delimiterState, Int(lvl.toIntMax())), scanner.startIndex))
 
                 case backtick:
-                    let idxBeforeRun = scanner.view.index(before: scanner.startIndex)
-                    scanner.readWhile(backtick)
-                    let lvl = Int(scanner.view.distance(from: idxBeforeRun, to: scanner.startIndex).toIntMax())
+                    let idxBeforeRun = scanner.data.index(before: scanner.startIndex)
+                    scanner.popWhile(backtick)
+                    let lvl = Int(scanner.data.distance(from: idxBeforeRun, to: scanner.startIndex).toIntMax())
                     delimiters.append((.code(lvl), scanner.startIndex))
 
                 case exclammark:
@@ -93,7 +93,7 @@ extension MarkdownParser {
 
             optScanner = scannersIterator.next()
             let offset =  IntMax(-(numberOfPreviousSpaces + ((potentialBackslashHardbreak && optScanner != nil) ? 1 : 0)))
-            let lastIndex = scanner.view.index(scanner.startIndex, offsetBy: View.IndexDistance(offset))
+            let lastIndex = scanner.data.index(scanner.startIndex, offsetBy: View.IndexDistance(offset))
             delimiters.append((.end, lastIndex))
 
             if optScanner != nil { // linefeed

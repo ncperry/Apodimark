@@ -165,13 +165,18 @@ struct Line <View: BidirectionalCollection where
         return Line(kind, newindent, scanner)
     }
 
-    // - returns: a new line equal to `self`, except that its scanner contains the indent
-    // - precondition: `self.scanner` doesn't contain the indent (precondition not checked at runtime)
+    // - returns: a new line equal to `self`, except that its scanner contains the tokens making up the indent
+    // - precondition: `self.scanner` doesn't contain the tokens making up the indent (precondition not checked at runtime)
     func restoringIndentInSubview() -> Line {
-        var newSubview = scanner
-        try! newSubview.pushBackStartIndexBy(n: View.IndexDistance(IntMax(indent.composition.count)))
 
-        return Line(kind, indent, newSubview)
+        let newScanner = Scanner(
+            data: scanner.data,
+            startIndex: scanner.data.index(
+                scanner.startIndex,
+                offsetBy: -View.IndexDistance(IntMax(indent.composition.count))),
+            endIndex: scanner.endIndex)
+
+        return Line(kind, indent, newScanner)
     }
 }
 
