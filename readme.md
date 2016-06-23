@@ -51,8 +51,8 @@ A markdown block can be:
 - block of code
 - etc.
 
-Some markdown blocks (paragraph, header) contain other markdown blocks, 
-and some contain `MarkdownInline` elements.
+Some markdown blocks (lists, quotes) contain other markdown blocks, 
+and some (headers, paragraphs) contain `MarkdownInline` elements.
 A markdown inline can be:
 - emphasis
 - monospaced text
@@ -61,7 +61,6 @@ A markdown inline can be:
 - etc.
 
 The leaves of the abstract syntax tree contain the indices of their contents (**not a String**). 
-However, this will change soon so that every node provides this functionality.
 This should make it easy to provide fast syntax highlighting.
 
 ## Getting Started
