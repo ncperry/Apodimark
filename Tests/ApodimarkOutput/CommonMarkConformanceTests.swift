@@ -74,9 +74,24 @@ private func stringForTest(number: Int, result: Bool = false) -> String {
     return try! String(contentsOf: URL(fileURLWithPath: path))
 }
 
+extension Character: MarkdownParserToken {
+
+    public static func fromUTF8CodePoint(_ char: UInt8) -> Character {
+        return Character(UnicodeScalar(char))
+    }
+
+    public static func digit(representedByToken token: Character) -> Int {
+        return Int(String(token))!
+    }
+
+    public static func string<C : Collection where C.Iterator.Element == Character>(fromTokens tokens: C) -> String {
+        return String(tokens)
+    }
+}
+
 class CommonMarkConformanceTests : XCTestCase {
 
-    func testSpec() {
+    func testSpecStringUTF16View() {
         for no in tests {
             let source = stringForTest(number: no).utf16
             let doc = parsedMarkdown(source: source)
@@ -85,6 +100,28 @@ class CommonMarkConformanceTests : XCTestCase {
             XCTAssertEqual(desc, result, "\(no)")
         }
     }
+
+    func testSpecStringCharacterView() {
+        for no in tests {
+            let source = stringForTest(number: no).characters
+            let doc = parsedMarkdown(source: source)
+            let desc = MarkdownBlock.output(nodes: doc, source: source)
+            let result = stringForTest(number: no, result: true)
+            XCTAssertEqual(desc, result, "\(no)")
+        }
+    }
+
+    func testSpecUnsafeBufferPointerUInt8() {
+        for no in tests {
+            let arr = Array(stringForTest(number: no).utf8)
+            let source = arr.withUnsafeBufferPointer { $0 }
+            let doc = parsedMarkdown(source: source)
+            let desc = MarkdownBlock.output(nodes: doc, source: source)
+            let result = stringForTest(number: no, result: true)
+            XCTAssertEqual(desc, result, "\(no)")
+        }
+    }
+
 
     static var allTests : [(String, (CommonMarkConformanceTests) -> () throws -> Void)] {
         return [
