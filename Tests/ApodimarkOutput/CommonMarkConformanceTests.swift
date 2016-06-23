@@ -121,11 +121,4 @@ class CommonMarkConformanceTests : XCTestCase {
             XCTAssertEqual(desc, result, "\(no)")
         }
     }
-
-
-    static var allTests : [(String, (CommonMarkConformanceTests) -> () throws -> Void)] {
-        return [
-            ("testSpec", testSpec),
-        ]
-    }
 }
