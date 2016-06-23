@@ -94,13 +94,11 @@ extension MarkdownParser {
         switch node {
 
         case .paragraph(text: let text, _):
-            let scanners = text.map { Scanner<View>(view: view, startIndex: $0.lowerBound, endIndex: $0.upperBound) }
-            return .paragraph(text: processInlines(scanners: scanners).map(createFinalInlineNode))
+            return .paragraph(text: processInlines(text: text).map(createFinalInlineNode))
 
 
         case .header(text: let text, level: let level):
-            let scanner = Scanner<View>(view: view, startIndex: text.lowerBound, endIndex: text.upperBound)
-            return .header(level: level, text: processInlines(scanners: [scanner]).map(createFinalInlineNode))
+            return .header(level: level, text: processInlines(text: [text]).map(createFinalInlineNode))
 
 
         case .quote(content: let content, _):
