@@ -3,6 +3,10 @@
 //  Apodimark
 //
 
+/**
+ A MarkdownParser holds the necessary data and type information to parse
+ a collection of MarkdownParserToken.
+*/
 final class MarkdownParser <View: BidirectionalCollection where
     View.Iterator.Element: MarkdownParserToken,
     View.SubSequence: Collection,
@@ -11,60 +15,11 @@ final class MarkdownParser <View: BidirectionalCollection where
     typealias Token = View.Iterator.Element
 
     let view: View
-    var children: [BlockNode<View>] = []
     var referenceDefinitions: [String: ReferenceDefinition]
 
     init(view: View) {
         self.referenceDefinitions = [:]
         self.view = view
-    }
-
-    private func parseBlocks() {
-        var scanner = Scanner<View>(data: view)
-
-        while let _ = scanner.peek() {
-            let line = parseLine(scanner: &scanner)
-            self.add(line: line)
-            _ = scanner.pop(linefeed)
-        }
-
-        for child in children {
-            addReferenceDefinitions(fromNode: child)
-        }
-    }
-
-    func finalAST() -> [MarkdownBlock<View>] {
-        parseBlocks()
-        return children.flatMap(createFinalBlock)
-    }
-
-    private func add(line: Line<View>) {
-        if children.isEmpty || !children[children.endIndex - 1].add(line: line) {
-            guard !line.kind.isEmpty() else { return }
-            children.append(line.node())
-        }
-    }
-
-    private func addReferenceDefinitions(fromNode node: BlockNode<View>) {
-        switch node {
-        case let .referenceDefinition(title: title, definition: definition) where referenceDefinitions[title] == nil:
-            referenceDefinitions[title] = definition
-
-        case let .list(_, _, _, items):
-            for item in items {
-                for block in item {
-                    addReferenceDefinitions(fromNode: block)
-                }
-            }
-
-        case let .quote(content, _):
-            for block in content {
-                addReferenceDefinitions(fromNode: block)
-            }
-
-        default:
-            break
-        }
     }
 
     let linefeed  : Token = .fromUTF8CodePoint(.linefeed)
@@ -109,14 +64,5 @@ final class MarkdownParser <View: BidirectionalCollection where
     func isPunctuation(_ char: Token) -> Bool {
         return asciiPunctuationTokens.contains(char)
     }
-    
 }
-
-
-
-
-
-
-
-
 

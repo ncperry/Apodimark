@@ -3,6 +3,11 @@
 //  Apodimark
 //
 
+final class Box<T> {
+    var data: T
+    init(_ data: T) { self.data = data }
+}
+
 enum ListState {
     case normal, followedByEmptyLine, closed
 }
@@ -18,69 +23,21 @@ indirect enum BlockNode <View: BidirectionalCollection where
 > {
     typealias Indices = Range<View.Index>
 
-    case paragraph(text: ArrayRef<Indices>, closed: Bool)
+    case paragraph(text: Box<[Indices]>, closed: Bool)
 
     case header(text: Indices, level: Int)
 
-    case quote(content: ArrayRef<BlockNode>, closed: Bool)
+    case quote(content: Box<[BlockNode]>, closed: Bool)
 
-    case list(kind: ListKind, minIndent: Int, state: ListState, items: ArrayRef<ArrayRef<BlockNode>>)
+    case list(kind: ListKind, minIndent: Int, state: ListState, items: Box<[[BlockNode]]>)
 
-    case fence(kind: FenceKind, name: Indices?, text: ArrayRef<Indices>, indentLevel: Int, fenceLevel: Int, closed: Bool)
+    case fence(kind: FenceKind, name: Indices?, text: Box<[Indices]>, indentLevel: Int, fenceLevel: Int, closed: Bool)
 
-    case code(text: ArrayRef<Indices>, trailingEmptyLines: ArrayRef<Indices>)
+    case code(text: Box<[Indices]>, trailingEmptyLines: Box<[Indices]>)
 
     case thematicBreak
 
     case referenceDefinition(title: String, definition: ReferenceDefinition)
-}
-
-extension Line {
-
-    /// - returns: the node that corresponds to `self`
-    func node() -> BlockNode<View> {
-
-        guard indent.level < 4 else {
-            let newline = self.removingFirstIndents(n: 4).restoringIndentInSubview()
-            return .code(text: [newline.scanner.indices], trailingEmptyLines: [])
-        }
-
-        switch kind {
-
-        case .text:
-            return .paragraph(text: [scanner.indices], closed: false)
-
-        case let .list(kind, rest):
-            let state: ListState = rest.kind.isEmpty() ? .followedByEmptyLine : .normal
-            let items = [rest.kind.isEmpty() ? [] : [rest.node()] as ArrayRef] as ArrayRef
-            let minIndent: Int
-
-            if case .code? = items.last?.last {
-                minIndent = indent.level + kind.width
-            } else {
-                minIndent = indent.level + kind.width + rest.indent.level
-            }
-            return .list(kind: kind, minIndent: minIndent, state: state, items: items)
-
-        case .header(let text, let level):
-            return .header(text: text, level: level)
-
-        case .quote(let rest):
-            return .quote(content: [rest.node()], closed: false)
-
-        case let .fence(kind, name, level):
-            return .fence(kind: kind, name: name, text: [], indentLevel: indent.level, fenceLevel: level, closed: false)
-
-        case .thematicBreak:
-            return .thematicBreak
-
-        case .empty:
-            return .paragraph(text: [], closed: false)
-
-        case let .reference(title, definition):
-            return .referenceDefinition(title: title, definition: definition)
-        }
-    }
 }
 
 extension BlockNode {
@@ -105,14 +62,14 @@ extension BlockNode {
 
             switch line.kind {
             case .text, .reference:
-                text.append(line.scanner.indices)
+                text.data.append(line.scanner.indices)
 
             case .empty:
                 self = .paragraph(text: text, closed: true)
 
             default:
                 guard line.indent.level >= 4 else { return false }
-                text.append(line.removingFirstIndents(n: 4).scanner.indices)
+                text.data.append(line.removingFirstIndents(n: 4).scanner.indices)
             }
             return true
 
@@ -128,8 +85,8 @@ extension BlockNode {
         case let .quote(content: content, closed: closed):
 
             func addLineToQuote(line: Line<View>) {
-                if content[content.endIndex - 1].add(line: line) == false && !line.kind.isEmpty() {
-                    content.append(line.node())
+                if content.data[content.data.endIndex - 1].add(line: line) == false && !line.kind.isEmpty() {
+                    content.data.append(line.node())
                 }
             }
 
@@ -169,8 +126,12 @@ extension BlockNode {
         // MARK: adding a line to a list
         case let .list(kind: kind, minIndent: minIndent, state: state, items: items):
 
-            func lastChild(of items: ArrayRef<ArrayRef<BlockNode>>) -> BlockNode? {
-                return items.last?.last
+            func lastChild(of items: Box<[[BlockNode]]>) -> BlockNode? {
+                return items.data.last?.last
+            }
+            func withLastChild <T> (of items: Box<[[BlockNode]]>, apply: @noescape (inout BlockNode) -> T) -> T {
+                guard let lastArr = items.data.last else { fatalError() }
+                return apply(&items.data[items.data.endIndex - 1][lastArr.endIndex - 1])
             }
 
             func preparedLine(from initialLine: Line<View>) -> Line<View>? {
@@ -220,26 +181,25 @@ extension BlockNode {
                     guard state == .normal || (shallowestNonListChild?.isFence() ?? false) else {
                         return self = .list(kind: kind, minIndent: minIndent, state: .closed, items: items)
                     }
-                    guard !items.isEmpty && !(items.last!.isEmpty) else {
+                    guard !items.data.isEmpty && !(items.data.last!.isEmpty) else {
                         return
                     }
 
                     let state = ListState.followedByEmptyLine
-
-                    _ = items[items.endIndex - 1][items.last!.endIndex - 1].add(line: preparedLine)
+                    _ = withLastChild(of: items) { $0.add(line: preparedLine) }
                     self = .list(kind: kind, minIndent: minIndent, state: state, items: items)
 
                 case .list(_, let rest) where preparedLine.indent.level < 0:
                     let state = ListState.normal
                     let minIndent = minIndent + preparedLine.indent.level + kind.width + rest.indent.level
-                    items.append(rest.kind.isEmpty() ? [] : [rest.node()])
+                    items.data.append(rest.kind.isEmpty() ? [] : [rest.node()])
                     self = .list(kind: kind, minIndent: minIndent, state: state, items: items)
 
                 default:
                     let state = ListState.normal
-                    let lastItem = items.last!
-                    if lastItem.isEmpty || !lastItem[lastItem.endIndex - 1].add(line: preparedLine) {
-                        lastItem.append(preparedLine.node())
+                    let lastItem = items.data.last!
+                    if lastItem.isEmpty || !withLastChild(of: items, apply: {$0.add(line: preparedLine)}) {
+                        items.data[items.data.endIndex-1].append(preparedLine.node())
                     }
                     self = .list(kind: kind, minIndent: minIndent, state: state, items: items)
                 }
@@ -272,7 +232,7 @@ extension BlockNode {
                 self = .fence(kind: kind, name: name, text: text, indentLevel: indentLevel, fenceLevel: fenceLevel, closed: true)
 
             default:
-                text.append(line.scanner.indices)
+                text.data.append(line.scanner.indices)
             }
             return true
 
@@ -284,13 +244,13 @@ extension BlockNode {
 
             case .empty:
                 let line = line.removingFirstIndents(n: 4).restoringIndentInSubview()
-                trailingEmptyLines.append(line.scanner.indices)
+                trailingEmptyLines.data.append(line.scanner.indices)
 
             case _ where line.indent.level >= 4:
                 let line = line.removingFirstIndents(n: 4).restoringIndentInSubview()
-                text.append(contentsOf: trailingEmptyLines)
-                text.append(line.scanner.indices)
-                trailingEmptyLines.removeAll()
+                text.data.append(contentsOf: trailingEmptyLines.data)
+                text.data.append(line.scanner.indices)
+                trailingEmptyLines.data.removeAll()
 
             default:
                 return false
@@ -324,10 +284,10 @@ extension BlockNode {
             return !closed
 
         case .quote(content: let content, closed: let closed):
-            return !closed && (content.last?.allowsLazyContinuations() ?? true)
+            return !closed && (content.data.last?.allowsLazyContinuations() ?? true)
 
         case .list(_, _, _, let items):
-            return items.last?.last?.allowsLazyContinuations() ?? false
+            return items.data.last?.last?.allowsLazyContinuations() ?? false
         }
     }
 
@@ -337,3 +297,55 @@ extension BlockNode {
         else { return false }
     }
 }
+
+
+extension Line {
+
+    /// - returns: the node that corresponds to `self`
+    func node() -> BlockNode<View> {
+
+        guard indent.level < 4 else {
+            let newline = self.removingFirstIndents(n: 4).restoringIndentInSubview()
+            return .code(text: Box([newline.scanner.indices]), trailingEmptyLines: Box([]))
+        }
+
+        switch kind {
+
+        case .text:
+            return .paragraph(text: Box([scanner.indices]), closed: false)
+
+        case let .list(kind, rest):
+            let state: ListState = rest.kind.isEmpty() ? .followedByEmptyLine : .normal
+            let items = [rest.kind.isEmpty() ? [] : [rest.node()]]
+            let minIndent: Int
+
+            if case .code? = items.last?.last {
+                minIndent = indent.level + kind.width
+            } else {
+                minIndent = indent.level + kind.width + rest.indent.level
+            }
+            return .list(kind: kind, minIndent: minIndent, state: state, items: Box(items))
+
+        case .header(let text, let level):
+            return .header(text: text, level: level)
+
+        case .quote(let rest):
+            return .quote(content: Box([rest.node()]), closed: false)
+
+        case let .fence(kind, name, level):
+            return .fence(kind: kind, name: name, text: Box([]), indentLevel: indent.level, fenceLevel: level, closed: false)
+
+        case .thematicBreak:
+            return .thematicBreak
+
+        case .empty:
+            return .paragraph(text: Box([]), closed: false)
+
+        case let .reference(title, definition):
+            return .referenceDefinition(title: title, definition: definition)
+        }
+    }
+}
+
+
+

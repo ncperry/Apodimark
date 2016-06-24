@@ -6,7 +6,7 @@
 extension MarkdownParser {
     typealias DelimiterSlice = ArraySlice<Delimiter?>
 
-    func processInlines <C: BidirectionalCollection where C.Iterator.Element == Range<View.Index>> (text: C) -> LinkedList<InlineNode<View>> {
+    func parseInlines(text: [Range<View.Index>]) -> LinkedList<InlineNode<View>> {
 
         guard !text.isEmpty else { return [] }
 
@@ -22,7 +22,7 @@ extension MarkdownParser {
 
         nodes.sort { $0.span.lowerBound < $1.span.lowerBound }
 
-        return makeAST(with: nodes, inView: view)
+        return makeAST(with: nodes)
     }
 
     func findFirst <C: Collection, T where C.Iterator.Element == Delimiter?> (in delimiters: C, whereNotNil predicate: @noescape (DelimiterKind) -> T?) -> (C.Index, Delimiter, T)? {

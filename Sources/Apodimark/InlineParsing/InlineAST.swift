@@ -70,7 +70,7 @@ extension MarkdownParser {
         return SubInlineAST(list: list, index: prevI, parent: subAST.parent)
     }
 
-    func makeAST(with nodes: [InlineNode<View>], inView view: View) -> LinkedList<InlineNode<View>> {
+    func makeAST(with nodes: [InlineNode<View>]) -> LinkedList<InlineNode<View>> {
 
         var subAST = SubInlineAST<View>(list: [], index: nil, parent: nil)
         let topList = subAST.list
