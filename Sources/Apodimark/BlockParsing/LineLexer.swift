@@ -40,11 +40,11 @@ extension MarkdownParser {
         var value: Int
 
         switch firstToken {
-        case hyphen    : return .bullet(.hyphen)
-        case asterisk  : return .bullet(.star)
-        case plus      : return .bullet(.plus)
-        case one...nine: value = Token.digit(representedByToken: firstToken)
-        case _         : preconditionFailure()
+        case hyphen     : return .bullet(.hyphen)
+        case asterisk   : return .bullet(.star)
+        case plus       : return .bullet(.plus)
+        case zero...nine: value = Token.digit(representedByToken: firstToken)
+        case _          : preconditionFailure()
         }
 
         // 1234)
@@ -62,7 +62,7 @@ extension MarkdownParser {
             case fullstop, rightparen:
                 return false // e.g. 1234|)| -> hurray! confirm and stop now
 
-            case one...nine:
+            case zero...nine:
                 guard length < 9 else {
                     throw ListParsingError.notAListMarker // e.g. 123456789|0| -> too long
                 }
@@ -546,7 +546,7 @@ extension MarkdownParser {
             return Line(.thematicBreak, indent, viewAfterIndent.prefix(upTo: scanner.startIndex))
 
 
-        case plus, one...nine:
+        case plus, zero...nine:
             return parseList(scanner: &scanner, indent: indent)
 
 

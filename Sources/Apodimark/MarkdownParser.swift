@@ -22,28 +22,28 @@ final class MarkdownParser <View: BidirectionalCollection where
         self.view = view
     }
 
-    let linefeed  : Token = .fromUTF8CodePoint(.linefeed)
-    let carriage  : Token = .fromUTF8CodePoint(.carriage)
-    let tab       : Token = .fromUTF8CodePoint(.tab)
-    let space     : Token = .fromUTF8CodePoint(.space)
-    let exclammark: Token = .fromUTF8CodePoint(.exclammark)
-    let hash      : Token = .fromUTF8CodePoint(.hash)
-    let leftparen : Token = .fromUTF8CodePoint(.leftparen)
-    let rightparen: Token = .fromUTF8CodePoint(.rightparen)
-    let asterisk  : Token = .fromUTF8CodePoint(.asterisk)
-    let plus      : Token = .fromUTF8CodePoint(.plus)
-    let hyphen    : Token = .fromUTF8CodePoint(.hyphen)
-    let fullstop  : Token = .fromUTF8CodePoint(.fullstop)
-    let one       : Token = .fromUTF8CodePoint(.one)
-    let nine      : Token = .fromUTF8CodePoint(.nine)
-    let colon     : Token = .fromUTF8CodePoint(.colon)
-    let quote     : Token = .fromUTF8CodePoint(.quote)
-    let leftsqbck : Token = .fromUTF8CodePoint(.leftsqbck)
-    let backslash : Token = .fromUTF8CodePoint(.backslash)
-    let rightsqbck: Token = .fromUTF8CodePoint(.rightsqbck)
-    let underscore: Token = .fromUTF8CodePoint(.underscore)
-    let backtick  : Token = .fromUTF8CodePoint(.backtick)
-    let tilde     : Token = .fromUTF8CodePoint(.tilde)
+    let linefeed  : Token = .fromASCII(.linefeed)
+    let carriage  : Token = .fromASCII(.carriage)
+    let tab       : Token = .fromASCII(.tab)
+    let space     : Token = .fromASCII(.space)
+    let exclammark: Token = .fromASCII(.exclammark)
+    let hash      : Token = .fromASCII(.hash)
+    let leftparen : Token = .fromASCII(.leftparen)
+    let rightparen: Token = .fromASCII(.rightparen)
+    let asterisk  : Token = .fromASCII(.asterisk)
+    let plus      : Token = .fromASCII(.plus)
+    let hyphen    : Token = .fromASCII(.hyphen)
+    let fullstop  : Token = .fromASCII(.fullstop)
+    let zero      : Token = .fromASCII(.zero)
+    let nine      : Token = .fromASCII(.nine)
+    let colon     : Token = .fromASCII(.colon)
+    let quote     : Token = .fromASCII(.quote)
+    let leftsqbck : Token = .fromASCII(.leftsqbck)
+    let backslash : Token = .fromASCII(.backslash)
+    let rightsqbck: Token = .fromASCII(.rightsqbck)
+    let underscore: Token = .fromASCII(.underscore)
+    let backtick  : Token = .fromASCII(.backtick)
+    let tilde     : Token = .fromASCII(.tilde)
 
 
 
@@ -56,7 +56,7 @@ final class MarkdownParser <View: BidirectionalCollection where
          0x3B, 0x3C, 0x3D, 0x3E,
          0x3F, 0x40, 0x5B, 0x5C,
          0x5D, 0x5E, 0x5F, 0x60,
-         0x7B, 0x7C, 0x7D, 0x7E,].map(Token.fromUTF8CodePoint)
+         0x7B, 0x7C, 0x7D, 0x7E,].map(Token.fromASCII)
     )
 
 

@@ -3,11 +3,37 @@
 //  Apodimark
 //
 
-
+/**
+ A `MarkdownParserToken` is an element of a Collection representing a `String`.
+ 
+ For example, these types could be `MarkdownParserToken`s:
+ `UTF8.CodeUnit`, `UTF16.CodeUnit`, `UnicodeScalar`, `Character`, `Int8` (for ASCII strings), etc.
+ */
 public protocol MarkdownParserToken: Comparable, Hashable {
-    static func fromUTF8CodePoint(_ char: UInt8) -> Self
-    static func digit(representedByToken _: Self) -> Int
-    static func string <C: Collection where C.Iterator.Element == Self> (fromTokens _: C) -> String
+    /**
+     Return the MarkdownParserToken corresponding to the ASCII character `char`.
+     - precondition: 0 <= `char` < 128
+     */
+    static func fromASCII(_ char: UInt8) -> Self
+
+    /**
+     Return the digit represented by `token`
+     - precondition: `token` corresponds to a digit.
+     ```
+     (fromASCII(zero) ... fromASCII(nine)).contains(token)
+     ```
+     - postcondition: return value is contained in 0 ... 9
+     */
+    static func digit(representedByToken token: Self) -> Int
+
+    /**
+     Return the string corresponding to `tokens`
+     
+     - Note: 
+     The collection “`tokens`” might not represent a valid String. 
+     If that happens, this function should not crash.
+     */
+    static func string <C: Collection where C.Iterator.Element == Self> (fromTokens tokens: C) -> String
 }
 
 extension UTF8.CodeUnit: MarkdownParserToken {
@@ -24,7 +50,8 @@ extension UTF8.CodeUnit: MarkdownParserToken {
         }
         return result
     }
-    public static func fromUTF8CodePoint(_ char: UInt8) -> UTF8.CodeUnit {
+
+    public static func fromASCII(_ char: UInt8) -> UTF8.CodeUnit {
         return char
     }
 
@@ -40,7 +67,7 @@ extension UTF8.CodeUnit: MarkdownParserToken {
     static let plus       : UTF8.CodeUnit = 0x2B
     static let hyphen     : UTF8.CodeUnit = 0x2D
     static let fullstop   : UTF8.CodeUnit = 0x2E
-    static let one        : UTF8.CodeUnit = 0x30
+    static let zero       : UTF8.CodeUnit = 0x30
     static let nine       : UTF8.CodeUnit = 0x39
     static let colon      : UTF8.CodeUnit = 0x3A
     static let quote      : UTF8.CodeUnit = 0x3E
@@ -55,7 +82,7 @@ extension UTF8.CodeUnit: MarkdownParserToken {
 
 extension UTF16.CodeUnit: MarkdownParserToken {
 
-    public static func fromUTF8CodePoint(_ char: UInt8) -> UTF16.CodeUnit {
+    public static func fromASCII(_ char: UInt8) -> UTF16.CodeUnit {
         return UTF16.CodeUnit(char)
     }
 
@@ -67,7 +94,6 @@ extension UTF16.CodeUnit: MarkdownParserToken {
         var codec = UTF16()
         var iterator = tokens.makeIterator()
         var result = ""
-
         while case let .scalarValue(scalar) = codec.decode(&iterator) {
             result.append(scalar)
         }

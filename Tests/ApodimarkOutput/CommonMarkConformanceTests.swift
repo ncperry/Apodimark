@@ -76,7 +76,7 @@ private func stringForTest(number: Int, result: Bool = false) -> String {
 
 extension Character: MarkdownParserToken {
 
-    public static func fromUTF8CodePoint(_ char: UInt8) -> Character {
+    public static func fromASCII(_ char: UInt8) -> Character {
         return Character(UnicodeScalar(char))
     }
 

@@ -61,11 +61,11 @@ struct DelimiterState: OptionSet {
 
         switch token {
 
-        case T.fromUTF8CodePoint(.asterisk):
+        case T.fromASCII(.asterisk):
             if rightFlanking { state.formUnion(.closing) }
             if leftFlanking  { state.formUnion(.opening) }
 
-        case T.fromUTF8CodePoint(.underscore):
+        case T.fromASCII(.underscore):
             if rightFlanking && (!leftFlanking  || prev == .punctuation) { state.formUnion(.closing) }
             if leftFlanking  && (!rightFlanking || next == .punctuation) { state.formUnion(.opening) }
 

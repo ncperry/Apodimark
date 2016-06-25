@@ -87,10 +87,10 @@ enum IndentKind: Int {
     init? <Token: MarkdownParserToken> (_ token: Token) {
         switch token {
 
-        case Token.fromUTF8CodePoint(.space):
+        case Token.fromASCII(.space):
             self = .space
 
-        case Token.fromUTF8CodePoint(.tab):
+        case Token.fromASCII(.tab):
             self = .tab
 
         default:
