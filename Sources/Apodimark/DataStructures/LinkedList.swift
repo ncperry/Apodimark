@@ -17,19 +17,11 @@ public struct LinkedListIndex<T>: Comparable, CustomStringConvertible {
     /// Position of the index relative to the head of the list
     private let position: Int
 
-    /// Unmanaged reference to the node at `list[self]`
-    private let _node: Unmanaged<LinkedListNode<T>>!
-
     /// The node at `list[self]`
-    private var node: LinkedListNode<T> { return _node.takeUnretainedValue() }
+    private weak var node: LinkedListNode<T>!
 
     private init(position: Int, node: LinkedListNode<T>?) {
-        self.position = position
-        guard let node = node else {
-            self._node = nil
-            return
-        }
-        self._node = .passUnretained(node)
+        (self.position, self.node) = (position, node)
     }
 
     public var description: String {
