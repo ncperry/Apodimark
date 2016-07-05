@@ -52,9 +52,11 @@ extension MarkdownParser {
         case let (l1, l2) where l1 == l2:
             delimiters[firstDelIdx] = nil
             delimiters[sndDelIdx] = nil
-            let span: Range = view.index(fstDel.idx, offsetBy: View.IndexDistance(IntMax(-l1))) ..< sndDel.idx
 
-            return InlineNode(kind: .emphasis(l1), span: span)
+            return InlineNode(
+                kind: .emphasis(l1),
+                start: view.index(fstDel.idx, offsetBy: View.IndexDistance(IntMax(-l1))),
+                end: sndDel.idx)
 
 
         case let (l1, l2) where l1 < l2:
@@ -63,18 +65,22 @@ extension MarkdownParser {
             let startOffset = View.IndexDistance(IntMax(-l1))
             let endOffset1 = IntMax(-(l2 - l1))
             let endOffset = View.IndexDistance(endOffset1)
-            let span: Range = view.index(fstDel.idx, offsetBy: startOffset) ..< view.index(sndDel.idx, offsetBy: endOffset)
 
-            return InlineNode(kind: .emphasis(l1), span: span)
+            return InlineNode(
+                kind: .emphasis(l1),
+                start: view.index(fstDel.idx, offsetBy: startOffset),
+                end: view.index(sndDel.idx, offsetBy: endOffset))
 
 
         case let (l1, l2) where l1 > l2:
             delimiters[sndDelIdx] = nil
             view.formIndex(&delimiters[firstDelIdx]!.idx, offsetBy: View.IndexDistance(IntMax(-l2)))
             delimiters[firstDelIdx]!.kind = .emph(sndDelInfo.kind, fstDelInfo.state, l1 - l2)
-            let span: Range = view.index(fstDel.idx, offsetBy: View.IndexDistance(IntMax(-l2))) ..< sndDel.idx
 
-            return InlineNode(kind: .emphasis(l2), span: span)
+            return InlineNode(
+                kind: .emphasis(l2),
+                start: view.index(fstDel.idx, offsetBy: View.IndexDistance(IntMax(-l2))),
+                end: sndDel.idx)
 
 
         default:

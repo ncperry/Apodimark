@@ -20,7 +20,7 @@ extension MarkdownParser {
         nodes += processAllEmphases(delimiters: &dels[dels.indices])
         nodes += processText(delimiters: &dels[dels.indices])
 
-        nodes.sort { $0.span.lowerBound < $1.span.lowerBound }
+        nodes.sort { $0.start < $1.start }
 
         return makeAST(with: nodes)
     }

@@ -33,11 +33,11 @@ final class SubInlineAST <View: BidirectionalCollection where
 extension InlineNode {
 
     private func contains(range: Range<View.Index>) -> Bool {
-        return span.lowerBound < range.lowerBound && span.upperBound > range.upperBound
+        return start < range.lowerBound && end > range.upperBound
     }
 
     private func contains(node: InlineNode) -> Bool {
-        return span.lowerBound < node.span.lowerBound && span.upperBound > node.span.upperBound
+        return start < node.start && end > node.end
     }
 }
 
@@ -114,18 +114,18 @@ extension MarkdownParser {
                 list.formIndex(after: &i)
             }
 
-            let (start, end) = (list[i].span.lowerBound, list[i].span.upperBound)
+            let (start, end) = (list[i].start, list[i].end)
             let curContentRange = list[i].contentRange(inView: view)
             let (startC, endC) = (curContentRange.lowerBound, curContentRange.upperBound)
 
             if idx < start && start <= text.upperBound {
-                prevI = list.add(InlineNode(kind: .text, span: idx ..< start), after: prevI)
+                prevI = list.add(InlineNode(kind: .text, start: idx, end: start), after: prevI)
 
                 i = list.index(after: prevI!)
             }
 
             else if idx < start && start > text.upperBound {
-                prevI = list.add(InlineNode(kind: .text, span: idx ..< text.upperBound), after: prevI)
+                prevI = list.add(InlineNode(kind: .text, start: idx, end: text.upperBound), after: prevI)
 
                 return SubInlineAST(list: list, index: prevI, parent: subAST.parent)
             }
@@ -146,7 +146,7 @@ extension MarkdownParser {
             idx = max(end, idx)
         }
         if idx < text.upperBound {
-            _ = list.add(InlineNode(kind: .text, span: idx ..< text.upperBound), after: prevI)
+            _ = list.add(InlineNode(kind: .text, start: idx, end: text.upperBound), after: prevI)
         }
 
         return SubInlineAST(list: list, index: prevI, parent: subAST.parent)

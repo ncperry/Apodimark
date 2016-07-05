@@ -18,7 +18,7 @@ public struct LinkedListIndex<T>: Comparable, CustomStringConvertible {
     private let position: Int
 
     /// The node at `list[self]`
-    private weak var node: LinkedListNode<T>!
+    private weak var node: LinkedListNode<T>! // should be unowned but can’t because of compiler bug
 
     private init(position: Int, node: LinkedListNode<T>?) {
         (self.position, self.node) = (position, node)
@@ -132,11 +132,13 @@ public final class LinkedList<T> {
      ```
 
      - Important: Invalidates every index after `start`
+     - precondition: `start` < `end`
      - Complexity: `Θ(n)` where `n` is the number of deleted elements
      - parameter start: predecessor of the first element to be deleted
      - parameter end: successor of the last element to be deleted
      */
     public func removeAll(fromAfter start: Index, toBefore end: Index) {
+        precondition(start.position < end.position)
         start.node.next = end.node
         count -= (end.position - start.position) - 1
     }

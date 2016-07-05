@@ -70,7 +70,7 @@ private let tests = [
 
 
 private func stringForTest(number: Int, result: Bool = false) -> String {
-    let path = "put-your-own-path-here/test-files/commonmark-conformance/\(number)" + (result ? "-result" : "") + ".txt"
+    let path = "/Users/loiclecrenier/Code/Apodimark/test-files/commonmark-conformance/\(number)" + (result ? "-result" : "") + ".txt"
     return try! String(contentsOf: URL(fileURLWithPath: path))
 }
 

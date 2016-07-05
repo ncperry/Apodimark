@@ -131,7 +131,10 @@ extension MarkdownParser {
             }
 
             let title = openingTitleDel.idx ..< view.index(before: closingTitleDel.idx)
-            let refNode = InlineNode<View>(kind: .reference(refKind, title: title, definition: definition), span: span)
+            let refNode = InlineNode<View>(
+                kind: .reference(refKind, title: title, definition: definition),
+                start: span.lowerBound,
+                end: span.upperBound)
 
             let delimiterRangeForTitle = (openingTitleDelIdx + 1) ..< closingTitleDelIdx
             var inlineNodes: [InlineNode<View>] = processAllEmphases(delimiters: &delimiters[delimiterRangeForTitle])

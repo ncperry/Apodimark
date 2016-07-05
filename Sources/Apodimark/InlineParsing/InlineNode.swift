@@ -27,7 +27,7 @@ struct InlineNode <View: BidirectionalCollection where
 > {
 
     let kind: InlineNodeKind<View>
-    let span: Range<View.Index>
+    let (start, end): (View.Index, View.Index)
 
     func contentRange(inView view: View) -> Range<View.Index> {
         switch kind {
@@ -36,17 +36,17 @@ struct InlineNode <View: BidirectionalCollection where
             return title
 
         case .code(let l), .emphasis(let l):
-            return view.index(span.lowerBound, offsetBy: View.IndexDistance(IntMax(l))) ..< view.index(span.upperBound, offsetBy: View.IndexDistance(IntMax(-l)))
+            return view.index(start, offsetBy: View.IndexDistance(IntMax(l))) ..< view.index(end, offsetBy: View.IndexDistance(IntMax(-l)))
 
         default:
-            return span
+            return start ..< end
         }
     }
 
     var children: LinkedList<InlineNode> = []
 
-    init(kind: InlineNodeKind<View>, span: Range<View.Index>) {
-        (self.kind, self.span) = (kind, span)
+    init(kind: InlineNodeKind<View>, start: View.Index, end: View.Index) {
+        (self.kind, self.start, self.end) = (kind, start, end)
     }
 }
 

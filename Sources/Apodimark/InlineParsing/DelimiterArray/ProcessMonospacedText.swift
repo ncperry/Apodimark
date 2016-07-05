@@ -43,7 +43,8 @@ extension MarkdownParser {
 
         return InlineNode(
             kind: .code(level),
-            span: (view.index(firstDel.idx, offsetBy: View.IndexDistance(IntMax(-level)))) ..< matchingDel.idx
+            start: view.index(firstDel.idx, offsetBy: View.IndexDistance(IntMax(-level))),
+            end: matchingDel.idx
         )
     }
 }

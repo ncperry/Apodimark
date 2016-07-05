@@ -32,18 +32,18 @@ extension MarkdownParser {
 
     private func addReferenceDefinitions(fromNode node: BlockNode<View>) {
         switch node {
-        case let .referenceDefinition(title: title, definition: definition) where referenceDefinitions[title] == nil:
-            referenceDefinitions[title] = definition
+        case let node as ReferenceDefinitionBlockNode<View> where referenceDefinitions[node.title] == nil:
+            referenceDefinitions[node.title] = node.definition
 
-        case let .list(_, _, _, items):
-            for item in items.data {
+        case let node as ListBlockNode<View>:
+            for item in node.items {
                 for block in item {
                     addReferenceDefinitions(fromNode: block)
                 }
             }
 
-        case let .quote(content, _):
-            for block in content.data {
+        case let node as QuoteBlockNode<View>:
+            for block in node.content {
                 addReferenceDefinitions(fromNode: block)
             }
 

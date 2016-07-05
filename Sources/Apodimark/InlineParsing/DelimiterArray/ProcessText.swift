@@ -7,7 +7,7 @@ extension MarkdownParser {
 
     func processText (delimiters: inout DelimiterSlice) -> [InlineNode<View>] {
 
-        let findFirstNonNilDelimiter: () -> Delimiter? = {
+        let findFirstNonNilDelimiter: @noescape () -> Delimiter? = {
             var f: Delimiter?
             for case let del? in delimiters {
                 f = del
@@ -24,26 +24,24 @@ extension MarkdownParser {
         var startViewIndex = first.idx
 
         for case let del? in delimiters {
-            let span: Range = startViewIndex ..< del.idx
             switch del.kind {
             case .start:
                 startViewIndex = del.idx
 
             case .end:
-                textNodes.append(InlineNode(kind: .text, span: span))
+                textNodes.append(InlineNode(kind: .text, start: startViewIndex, end: del.idx))
                 startViewIndex = del.idx
 
             case .softbreak:
-                textNodes.append(InlineNode(kind: .softbreak, span: span))
+                textNodes.append(InlineNode(kind: .softbreak, start: startViewIndex, end: del.idx))
                 startViewIndex = del.idx
 
             case .hardbreak:
-                textNodes.append(InlineNode(kind: .hardbreak, span: span))
+                textNodes.append(InlineNode(kind: .hardbreak, start: startViewIndex, end: del.idx))
                 startViewIndex = del.idx
 
             case .ignored:
-                let span: Range = startViewIndex ..< view.index(before: del.idx)
-                textNodes.append(InlineNode(kind: .text, span: span))
+                textNodes.append(InlineNode(kind: .text, start: startViewIndex, end: view.index(before: del.idx)))
                 startViewIndex = del.idx
 
             default:

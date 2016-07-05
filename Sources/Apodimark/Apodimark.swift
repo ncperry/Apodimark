@@ -124,42 +124,45 @@ extension MarkdownParser {
     private func makeFinalBlock(from node: BlockNode<View>) -> MarkdownBlock<View>? {
         switch node {
 
-        case .paragraph(text: let text, _):
-            return .paragraph(text: parseInlines(text: text.data).map(makeFinalInlineNode))
+        case let node as ParagraphBlockNode<View>:
+            return .paragraph(text: parseInlines(text: node.text).map(makeFinalInlineNode))
 
 
-        case .header(text: let text, level: let level):
-            return .header(level: level, text: parseInlines(text: [text]).map(makeFinalInlineNode))
+        case let node as HeaderBlockNode<View>:
+            return .header(level: node.level, text: parseInlines(text: [node.text]).map(makeFinalInlineNode))
 
 
-        case .quote(content: let content, _):
-            return .quote(content: content.data.flatMap(makeFinalBlock))
+        case let node as QuoteBlockNode<View>:
+            return .quote(content: node.content.flatMap(makeFinalBlock))
 
 
-        case .list(kind: let kind, _, _, items: let items):
-            return .list(kind: MarkdownListKind(kind: kind), items: items.data.map { $0.flatMap(makeFinalBlock) })
+        case let node as ListBlockNode<View>:
+            return .list(kind: MarkdownListKind(kind: node.kind), items: node.items.map { $0.flatMap(makeFinalBlock) })
 
 
-        case .code(text: let text, _):
-            return .code(text: text.data)
+        case let node as CodeBlockNode<View>:
+            return .code(text: node.text)
 
 
-        case .fence(_, name: let name, text: let text, _, _, _):
+        case let node as FenceBlockNode<View>:
             let finalName: String
-            if let nameIndices = name {
+            if let nameIndices = node.name {
                 finalName = Token.string(fromTokens: view[nameIndices])
             } else {
                 finalName = ""
             }
-            return .fence(name: finalName, text: text.data)
+            return .fence(name: finalName, text: node.text)
             
             
-        case .thematicBreak:
+        case is ThematicBreakBlockNode<View>:
             return .thematicBreak
             
             
-        case .referenceDefinition:
+        case is ReferenceDefinitionBlockNode<View>:
             return nil
+        
+        default:
+            fatalError()
         }
     }
 }
