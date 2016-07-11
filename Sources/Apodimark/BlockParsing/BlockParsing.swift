@@ -37,7 +37,7 @@ extension MarkdownParser {
 
         case let node as ListBlockNode<View>:
             for item in node.items {
-                for block in item {
+                for block in item.content {
                     addReferenceDefinitions(fromNode: block)
                 }
             }

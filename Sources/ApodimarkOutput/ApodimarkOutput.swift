@@ -69,7 +69,7 @@ extension MarkdownBlock {
         case .paragraph(text: let idcs):
             return "Paragraph(\(idcs.reduce("", combine: combineNodeOutput(source: source))))"
 
-        case .header(level: let level, text: let text):
+        case .header(level: let level, text: let text, markers: _):
             return "Header(\(level), \(text.reduce("", combine: combineNodeOutput(source: source))))"
 
         case .code(text: let text):
@@ -81,7 +81,8 @@ extension MarkdownBlock {
                 return "Code[]"
             }
 
-        case .fence(name: let name, text: let text):
+        case .fence(name: let name, text: let text, _):
+            let name = Token.string(fromTokens: source[name])
             if let first = text.first {
                 return "Fence[" + name + "][" + text.dropFirst().reduce(Token.string(fromTokens: source[first])) { acc, cur in
                     return acc + "\n" + Token.string(fromTokens: source[cur])
@@ -90,13 +91,13 @@ extension MarkdownBlock {
                 return "Fence[" + name + "][]"
             }
 
-        case .quote(content: let content):
+        case .quote(content: let content, _):
             return "Quote { " + content.reduce("", combine: combineNodeOutput(source: source)) + "}"
 
         case .list(kind: let kind, items: let items):
             var itemsDesc = ""
             for item in items {
-                itemsDesc += "Item { " + item.reduce("", combine: combineNodeOutput(source: source)) + "}, "
+                itemsDesc += "Item { " + item.content.reduce("", combine: combineNodeOutput(source: source)) + "}, "
             }
             return "List[\(kind)] { " + itemsDesc + "}"
             

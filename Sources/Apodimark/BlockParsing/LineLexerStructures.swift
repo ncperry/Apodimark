@@ -19,16 +19,16 @@ enum ListKind {
 
     /// Gives the textual width of `self`.
     /// Examples:
-    /// - A Bullet list has a width of 2 (the bullet + space after it)
-    /// - A Number list with the number 23 has a width of 4 (two digits of 23 + dot or parenthesis + space)
+    /// - A Bullet list has a width of 1 (the bullet + space after it)
+    /// - A Number list with the number 23 has a width of 3 (two digits of 23 + dot or parenthesis + space)
     var width: Int {
         switch self {
 
         case .bullet(_):
-            return 2
+            return 1
 
         case .number(_, var value):
-            var width = 3
+            var width = 2
             while value > 9 {
                 (value, width) = (value / 10, width + 1)
             }

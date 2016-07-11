@@ -50,10 +50,11 @@ final class ParagraphBlockNode
 final class HeaderBlockNode
 <View: BidirectionalCollection where View.Iterator.Element: MarkdownParserToken, View.SubSequence: Collection, View.SubSequence.Iterator.Element == View.Iterator.Element> : BlockNode<View> {
     
+    let markers: (Indices, Indices?)
     let text: Indices
     let level: Int
-    init(text: Indices, level: Int) {
-        (self.text, self.level) = (text, level)
+    init(markers: (Indices, Indices?), text: Indices, level: Int) {
+        (self.markers, self.text, self.level) = (markers, text, level)
     }
     override func add(line: Line<View>) -> Bool {
         return false
@@ -66,11 +67,12 @@ final class HeaderBlockNode
 final class QuoteBlockNode
 <View: BidirectionalCollection where View.Iterator.Element: MarkdownParserToken, View.SubSequence: Collection, View.SubSequence.Iterator.Element == View.Iterator.Element> : BlockNode<View> {
     
+    var markers: [View.Index]
     var content: [BlockNode<View>]
     var closed: Bool
     
-    init(firstNode: BlockNode<View>) {
-        (self.content, self.closed) = ([firstNode], false)
+    init(firstMarker: View.Index, firstNode: BlockNode<View>) {
+        (self.markers, self.content, self.closed) = ([firstMarker], [firstNode], false)
     }
     
     private func directlyAddLine(line: Line<View>) {
@@ -94,6 +96,7 @@ final class QuoteBlockNode
             closed = true
             
         case .quote(let rest):
+            markers.append(line.scanner.startIndex)
             directlyAddLine(line: rest)
             
         case .text:
@@ -112,15 +115,27 @@ final class QuoteBlockNode
     }
 }
 
+final class ListItemBlockNode <View: BidirectionalCollection where View.Iterator.Element: MarkdownParserToken, View.SubSequence: Collection, View.SubSequence.Iterator.Element == View.Iterator.Element> : BlockNode<View> {
+
+    let markerSpan: Range<View.Index>
+    var content: [BlockNode<View>]
+
+    init(markerSpan: Range<View.Index>, content: [BlockNode<View>]) {
+        (self.markerSpan, self.content) = (markerSpan, content)
+    }
+    
+    
+}
+
 final class ListBlockNode
 <View: BidirectionalCollection where View.Iterator.Element: MarkdownParserToken, View.SubSequence: Collection, View.SubSequence.Iterator.Element == View.Iterator.Element> : BlockNode<View> {
     
     let kind: ListKind
-    var items: [[BlockNode<View>]]
+    var items: [ListItemBlockNode<View>]
     private var state: ListState
     private var minimumIndent: Int
     
-    init(kind: ListKind, items: [[BlockNode<View>]], state: ListState, minimumIndent: Int) {
+    init(kind: ListKind, items: [ListItemBlockNode<View>], state: ListState, minimumIndent: Int) {
         (self.kind, self.items, self.state, self.minimumIndent) = (kind, items, state, minimumIndent)
     }
     
@@ -163,32 +178,40 @@ final class ListBlockNode
         switch preparedLine.kind {
             
         case .empty:
-            var shallowestNonListChild: BlockNode? = items.last?.last
+            var shallowestNonListChild: BlockNode? = items.last?.content.last
             while case let nextList as ListBlockNode = shallowestNonListChild {
-                shallowestNonListChild = nextList.items.last?.last
+                shallowestNonListChild = nextList.items.last?.content.last
             }
             
             guard self.state == .normal || (shallowestNonListChild is FenceBlockNode) else {
                 self.state = .closed
                 return
             }
-            guard !items.isEmpty && !(items.last!.isEmpty) else {
+            guard !items.isEmpty && !(items.last!.content.isEmpty) else {
                 return
             }
             state = .followedByEmptyLine
             
-            _ = items.last?.last?.add(line: preparedLine)
-            
-        case .list(_, let rest) where preparedLine.indent.level < 0:
+            _ = items.last?.content.last?.add(line: preparedLine)
+
+        case .list(let marker, let rest) where preparedLine.indent.level < 0:
             state = .normal
-            minimumIndent += preparedLine.indent.level + kind.width + rest.indent.level
-            items.append(rest.kind.isEmpty() ? [] : [rest.node()])
+            minimumIndent += preparedLine.indent.level + marker.width + 1 + rest.indent.level
+            
+            let item: ListItemBlockNode<View>
+            let markerSpan = preparedLine.scanner.startIndex ..< preparedLine.scanner.data.index(preparedLine.scanner.startIndex, offsetBy: View.IndexDistance(marker.width.toIntMax()))
+            if rest.kind.isEmpty() {
+                item = ListItemBlockNode(markerSpan: markerSpan, content: [])
+            } else {
+                item = ListItemBlockNode(markerSpan: markerSpan, content: [rest.node()])
+            }
+            items.append(item)
             
         default:
             state = .normal
             let lastItem = items.last!
-            if lastItem.isEmpty || !items.last!.last!.add(line: preparedLine) {
-                items[items.endIndex-1].append(preparedLine.node())
+            if lastItem.content.isEmpty || !items.last!.content.last!.add(line: preparedLine) {
+                lastItem.content.append(preparedLine.node())
             }
         }
     }
@@ -200,7 +223,7 @@ final class ListBlockNode
     }
     
     override func allowsLazyContinuation() -> Bool {
-        return items.last?.last?.allowsLazyContinuation() ?? true
+        return items.last?.content.last?.allowsLazyContinuation() ?? true
     }
 }
 
@@ -208,14 +231,15 @@ final class FenceBlockNode
 <View: BidirectionalCollection where View.Iterator.Element: MarkdownParserToken, View.SubSequence: Collection, View.SubSequence.Iterator.Element == View.Iterator.Element> : BlockNode<View> {
     
     let kind: FenceKind
-    let name: Indices?
+    var markers: (Indices, Indices?)
+    let name: Indices
     var text: [Indices]
     let level: Int
     let indent: Int
     var closed: Bool
     
-    init(kind: FenceKind, name: Indices?, text: [Indices], level: Int, indent: Int) {
-        (self.kind, self.name, self.text, self.level, self.indent, self.closed) = (kind, name, text, level, indent, false)
+    init (kind: FenceKind, startMarker: Indices, name: Indices, text: [Indices], level: Int, indent: Int) {
+        (self.kind, self.markers, self.name, self.text, self.level, self.indent, self.closed) = (kind, (startMarker, nil), name, text, level, indent, false)
     }
     
     override func add(line: Line<View>) -> Bool {
@@ -229,6 +253,7 @@ final class FenceBlockNode
         switch line.kind {
             
         case .fence(kind, let lineFenceName, let lineFenceLevel) where line.indent.level < 4 && lineFenceName.isEmpty && lineFenceLevel >= level:
+            markers.1 = line.scanner.indices
             closed = true
             
         default:
@@ -276,6 +301,10 @@ final class CodeBlockNode
 
 final class ThematicBreakBlockNode
 <View: BidirectionalCollection where View.Iterator.Element: MarkdownParserToken, View.SubSequence: Collection, View.SubSequence.Iterator.Element == View.Iterator.Element> : BlockNode<View> {
+    let span: Indices
+    init(span: Indices) {
+        self.span = span
+    }
     override func add(line: Line<View>) -> Bool {
         return false
     }
@@ -315,28 +344,41 @@ extension Line {
             
         case let .list(kind, rest):
             let state: ListState = rest.kind.isEmpty() ? .followedByEmptyLine : .normal
-            let items = [rest.kind.isEmpty() ? [] : [rest.node()]]
+            
+            let item: ListItemBlockNode<View>
+            let markerSpan = scanner.startIndex ..< scanner.data.index(scanner.startIndex, offsetBy: View.IndexDistance(kind.width.toIntMax()))
+            if rest.kind.isEmpty() {
+                item = ListItemBlockNode(markerSpan: markerSpan, content: [])
+            } else {
+                item = ListItemBlockNode(markerSpan: markerSpan, content: [rest.node()])
+            }
             
             let minimumIndent: Int
-            if items.last?.last is CodeBlockNode {
-                minimumIndent = indent.level + kind.width
+            if item.content.last is CodeBlockNode {
+                minimumIndent = indent.level + kind.width + 1
             } else {
-                minimumIndent = indent.level + kind.width + rest.indent.level
+                minimumIndent = indent.level + kind.width + rest.indent.level + 1
             }
-            return ListBlockNode(kind: kind, items: items, state: state, minimumIndent: minimumIndent)
+            return ListBlockNode(kind: kind, items: [item], state: state, minimumIndent: minimumIndent)
             
             
         case .header(let text, let level):
-            return HeaderBlockNode(text: text, level: level)
+            let startHashes = scanner.startIndex ..< scanner.data.index(scanner.startIndex, offsetBy: View.IndexDistance(level.toIntMax()))
+            let endHashes: Range<View.Index>? = {
+                let tmp = text.upperBound ..< scanner.endIndex
+                return tmp.isEmpty ? nil : tmp
+            }()
+            return HeaderBlockNode(markers: (startHashes, endHashes), text: text, level: level)
             
         case .quote(let rest):
-            return QuoteBlockNode(firstNode: rest.node())
+            return QuoteBlockNode(firstMarker: scanner.startIndex, firstNode: rest.node())
             
         case let .fence(kind, name, level):
-            return FenceBlockNode(kind: kind, name: name, text: [], level: level, indent: indent.level)
+            let startMarker = scanner.startIndex ..< scanner.data.index(scanner.startIndex, offsetBy: View.IndexDistance(level.toIntMax()))
+            return FenceBlockNode(kind: kind, startMarker: startMarker, name: name, text: [], level: level, indent: indent.level)
             
         case .thematicBreak:
-            return ThematicBreakBlockNode()
+            return ThematicBreakBlockNode(span: scanner.indices)
             
         case .empty:
             return ParagraphBlockNode(text: [])
