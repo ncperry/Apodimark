@@ -50,7 +50,7 @@ extension MarkdownBlock {
                 return acc + next
             } + ")"
 
-        case .reference(kind: let kind, title: let title, definition: let definition):
+        case .reference(kind: let kind, title: let title, definition: let definition, markers: _):
             let kindDesc = kind == .unwrapped ? "uref" : "ref"
             let titleDesc = output(nodes: title, source: source)
             return "[\(kindDesc): \(titleDesc)(\(definition))]"

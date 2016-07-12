@@ -13,7 +13,7 @@ public indirect enum MarkdownInline <View: BidirectionalCollection where
     View.SubSequence.Iterator.Element == View.Iterator.Element
 > {
     case text(Range<View.Index>)
-    case reference(kind: ReferenceKind, title: [MarkdownInline], definition: ReferenceDefinition)
+    case reference(kind: ReferenceKind, title: [MarkdownInline], definition: ReferenceDefinition, markers: [Range<View.Index>])
     case emphasis(level: Int, content: [MarkdownInline], markers: (Range<View.Index>, Range<View.Index>))
     case monospacedText([MarkdownInline], markers: (Range<View.Index>, Range<View.Index>))
     case softbreak(span: Range<View.Index>)
@@ -124,8 +124,9 @@ extension MarkdownParser {
             let endMarkers = view.index(node.end, offsetBy: View.IndexDistance(-level.toIntMax())) ..< node.end
             return .emphasis(level: level, content: node.children.map(makeFinalInlineNode), markers: (startMarkers, endMarkers))
 
-        case .reference(let kind, title: _, definition: let definition):
-            return .reference(kind: kind, title: node.children.map(makeFinalInlineNode), definition: definition)
+        case .reference(let kind, title: let title, definition: let definition):
+            let markers = [node.start ..< title.lowerBound, title.upperBound ..< node.end]
+            return .reference(kind: kind, title: node.children.map(makeFinalInlineNode), definition: definition, markers: markers)
         }
     }
 
