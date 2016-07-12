@@ -36,10 +36,10 @@ extension MarkdownBlock {
         case .text(let indices):
             return Token.string(fromTokens: source[indices])
 
-        case .emphasis(level: let level, content: let content):
+        case .emphasis(level: let level, content: let content, _):
             return "e\(level)(" + content.reduce("", combine: combineNodeOutput(source: source)) + ")"
 
-        case .monospacedText(let children):
+        case .monospacedText(let children, _):
             return "code(" + children.reduce("") { (acc, cur) in
                 let next: String
                 switch cur {

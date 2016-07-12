@@ -6,11 +6,6 @@
 public protocol ReferenceDefinition { }
 extension String: ReferenceDefinition { }
 
-/*
- TODO: make MarkdownInline and MarkdownBlock structs that
-        hold (1) range of indices (2) "Kind" enum similar to these
-*/
-
 public enum MarkdownInline <View: BidirectionalCollection where
     View.Iterator.Element: MarkdownParserToken,
     View.SubSequence: Collection,
@@ -18,10 +13,10 @@ public enum MarkdownInline <View: BidirectionalCollection where
 > {
     case text(Range<View.Index>)
     case reference(kind: ReferenceKind, title: [MarkdownInline], definition: ReferenceDefinition)
-    case emphasis(level: Int, content: [MarkdownInline])
-    case monospacedText([MarkdownInline])
-    case softbreak
-    case hardbreak
+    case emphasis(level: Int, content: [MarkdownInline], markers: (Range<View.Index>, Range<View.Index>))
+    case monospacedText([MarkdownInline], markers: (Range<View.Index>, Range<View.Index>))
+    case softbreak(span: Range<View.Index>)
+    case hardbreak(span: Range<View.Index>)
 }
 
 public struct MarkdownListItemBlock <View: BidirectionalCollection where
@@ -109,20 +104,24 @@ extension MarkdownParser {
         switch node.kind {
 
         case .hardbreak:
-            return .hardbreak
+            return .hardbreak(span: node.start ..< node.end)
 
         case .softbreak:
-            return .softbreak
+            return .softbreak(span: node.start ..< node.end)
 
         case .text:
             return .text(node.contentRange(inView: view))
 
-        case .code(_):
+        case .code(let level):
+            let startMarkers = node.start ..< view.index(node.start, offsetBy: View.IndexDistance(level.toIntMax()))
+            let endMarkers = view.index(node.end, offsetBy: View.IndexDistance(-level.toIntMax())) ..< node.end
             let children = node.children.map(makeFinalInlineNode)
-            return .monospacedText(children)
+            return .monospacedText(children, markers: (startMarkers, endMarkers))
 
         case .emphasis(let level):
-            return .emphasis(level: level, content: node.children.map(makeFinalInlineNode))
+            let startMarkers = node.start ..< view.index(node.start, offsetBy: View.IndexDistance(level.toIntMax()))
+            let endMarkers = view.index(node.end, offsetBy: View.IndexDistance(-level.toIntMax())) ..< node.end
+            return .emphasis(level: level, content: node.children.map(makeFinalInlineNode), markers: (startMarkers, endMarkers))
 
         case .reference(let kind, title: _, definition: let definition):
             return .reference(kind: kind, title: node.children.map(makeFinalInlineNode), definition: definition)
