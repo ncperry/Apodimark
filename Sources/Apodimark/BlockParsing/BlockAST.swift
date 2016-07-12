@@ -196,7 +196,7 @@ final class ListBlockNode
 
         case .list(let marker, let rest) where preparedLine.indent.level < 0:
             state = .normal
-            minimumIndent += preparedLine.indent.level + marker.width + 1 + rest.indent.level
+            minimumIndent += preparedLine.indent.level + marker.width + 1
             
             let item: ListItemBlockNode<View>
             let markerSpan = preparedLine.scanner.startIndex ..< preparedLine.scanner.data.index(preparedLine.scanner.startIndex, offsetBy: View.IndexDistance(marker.width.toIntMax()))
