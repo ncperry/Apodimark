@@ -446,7 +446,7 @@ extension MarkdownParser {
         var escapeNext = false
         try scanner.popWhile { (token: Token?) throws -> Bool in
 
-            guard let token = token else {
+            guard let token = token where token != linefeed else {
                 throw NotAReferenceDefinitionError()
             }
 
