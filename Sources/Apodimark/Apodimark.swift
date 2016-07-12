@@ -6,7 +6,8 @@
 public protocol ReferenceDefinition { }
 extension String: ReferenceDefinition { }
 
-public enum MarkdownInline <View: BidirectionalCollection where
+// indirect to work around "cyclic metadata dependency" bug
+public indirect enum MarkdownInline <View: BidirectionalCollection where
     View.Iterator.Element: MarkdownParserToken,
     View.SubSequence: Collection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
