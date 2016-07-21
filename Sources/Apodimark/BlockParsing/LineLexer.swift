@@ -53,7 +53,7 @@ extension MarkdownParser {
         var length = 1
         try scanner.popWhile { token in
 
-            guard let token = token where token != linefeed else {
+            guard let token = token, token != linefeed else {
                 throw ListParsingError.notAListMarker // e.g. 1234 followed by end of line / end of string
             }
 
@@ -396,7 +396,7 @@ extension MarkdownParser {
         var level = 0
         try scanner.popWhile { token in
 
-            guard let token = token where token != linefeed else {
+            guard let token = token, token != linefeed else {
                 guard level >= 3 else {
                     throw NotAThematicBreakError() // e.g. * * -> not enough stars -> not a thematic break
                 }
@@ -446,7 +446,7 @@ extension MarkdownParser {
         var escapeNext = false
         try scanner.popWhile { (token: Token?) throws -> Bool in
 
-            guard let token = token where token != linefeed else {
+            guard let token = token, token != linefeed else {
                 throw NotAReferenceDefinitionError()
             }
 

@@ -45,7 +45,7 @@ extension MarkdownParser {
 
     func insertNode(_ node: InlineNode<View>, in subAST: SubInlineAST<View>) -> SubInlineAST<View> {
 
-        if let parentNode = subAST.parentNode where !parentNode.contains(node: node) {
+        if let parentNode = subAST.parentNode, !parentNode.contains(node: node) {
             return insertNode(node, in: subAST.parent!)
         }
 
@@ -103,7 +103,7 @@ extension MarkdownParser {
         var prevI = subAST.index
         var i = prevI == nil ? list.startIndex : list.index(after: prevI!)
 
-        if let parentNode = subAST.parentNode where !parentNode.contains(range: text) {
+        if let parentNode = subAST.parentNode, !parentNode.contains(range: text) {
             return insertText(text, view: view, in: subAST.parent!)
         }
 

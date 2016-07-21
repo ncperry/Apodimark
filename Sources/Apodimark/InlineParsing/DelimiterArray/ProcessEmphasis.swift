@@ -16,11 +16,11 @@ extension MarkdownParser {
     private func processEmphasis(delimiters: inout DelimiterSlice) -> InlineNode<View>? {
         var sawOneOpeningEmph = (underscore: false, asterisk: false)
         guard let (sndDelIdx, sndDel, sndDelInfo) = findFirst(in: delimiters, whereNotNil: { (kind) -> (kind: EmphasisKind, state: DelimiterState, lvl: Int)? in
-            if case let .emph(kind, state, lvl) = kind where state.contains(.closing) {
+            if case let .emph(kind, state, lvl) = kind, state.contains(.closing) {
                 let ok = kind == .underscore ? sawOneOpeningEmph.underscore : sawOneOpeningEmph.asterisk
                 if ok { return (kind, state, lvl) }
             }
-            if case let .emph(kind, state, _) = kind where state.contains(.opening) {
+            if case let .emph(kind, state, _) = kind, state.contains(.opening) {
                 if kind == .underscore { sawOneOpeningEmph.underscore = true }
                 else { sawOneOpeningEmph.asterisk = true }
             }
@@ -32,7 +32,7 @@ extension MarkdownParser {
         let prefix = delimiters.prefix(upTo: sndDelIdx)
 
         guard let (fstDelIdxReversed, fstDel, fstDelInfo) = findFirst(in: prefix.reversed(), whereNotNil: { (kind: DelimiterKind) -> (lvl: Int, state: DelimiterState)? in
-            if case .emph(sndDelInfo.kind, let state, let lvl) = kind where state.contains(.opening) { return (lvl, state) }
+            if case .emph(sndDelInfo.kind, let state, let lvl) = kind, state.contains(.opening) { return (lvl, state) }
             else { return nil }
         }) else {
             fatalError()

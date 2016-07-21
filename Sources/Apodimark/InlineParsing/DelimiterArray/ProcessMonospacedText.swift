@@ -21,8 +21,7 @@ extension MarkdownParser {
         }
         if firstDelIdx > delimiters.startIndex,
             let del = delimiters[firstDelIdx - 1],
-            case .ignored = del.kind
-            where del.idx == view.index(before: firstDel.idx) {
+            case .ignored = del.kind, del.idx == view.index(before: firstDel.idx) {
             return processMonospacedText(delimiters: &delimiters[firstDelIdx+1 ..< delimiters.endIndex])
         }
 

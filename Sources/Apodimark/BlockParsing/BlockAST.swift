@@ -76,7 +76,7 @@ final class QuoteBlockNode
     }
     
     private func directlyAddLine(line: Line<View>) {
-        if let last = content.last where last.add(line: line) == false && !line.kind.isEmpty() {
+        if let last = content.last, last.add(line: line) == false && !line.kind.isEmpty() {
             content.append(line.node())
         }
     }
