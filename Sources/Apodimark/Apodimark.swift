@@ -65,6 +65,7 @@ public enum MarkdownListKind: CustomStringConvertible {
     }
 }
 
+@_specialize(String.UTF16View) 
 public func parsedMarkdown <View: BidirectionalCollection where
     View.Iterator.Element: MarkdownParserToken,
     View.SubSequence: Collection,
@@ -73,24 +74,6 @@ public func parsedMarkdown <View: BidirectionalCollection where
 
     return MarkdownParser(view: source).finalAST()
 }
-
-public func parsedMarkdown(source: String.UTF16View) -> [MarkdownBlock<String.UTF16View>] {
-    return MarkdownParser(view: source).finalAST()
-}
-
-/*
-public func parsedMarkdown(source: UnsafeBufferPointer<UTF16.CodeUnit>) -> [MarkdownBlock<UnsafeBufferPointer<UTF16.CodeUnit>>] {
-    return MarkdownParser(view: source).finalAST()
-}
-
-public func parsedMarkdown(source: [UTF16.CodeUnit]) -> [MarkdownBlock<[UTF16.CodeUnit]>] {
-    return MarkdownParser(view: source).finalAST()
-}
-
-public func parsedMarkdown(source: Data) -> [MarkdownBlock<Data>] {
-    return MarkdownParser(view: source).finalAST()
-}
-*/
 
 extension MarkdownParser {
 
@@ -156,7 +139,6 @@ extension MarkdownParser {
 
 
         case let node as FenceBlockNode<View>:
-            //let name = Token.string(fromTokens: view[node.name])
             return .fence(name: node.name, text: node.text, markers: node.markers)
             
             
