@@ -7,11 +7,11 @@ public enum ReferenceKind {
     case normal, unwrapped
 }
 
-enum InlineNodeKind <View: BidirectionalCollection where
+enum InlineNodeKind <View: BidirectionalCollection> where
     View.Iterator.Element: MarkdownParserToken,
     View.SubSequence: Collection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
-> {
+{
     indirect case reference(ReferenceKind, title: Range<View.Index>, definition: ReferenceDefinition)
     case code(Int)
     case emphasis(Int)
@@ -20,11 +20,11 @@ enum InlineNodeKind <View: BidirectionalCollection where
     case hardbreak
 }
 
-struct InlineNode <View: BidirectionalCollection where
+struct InlineNode <View: BidirectionalCollection> where
     View.Iterator.Element: MarkdownParserToken,
     View.SubSequence: Collection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
-> {
+{
 
     let kind: InlineNodeKind<View>
     let (start, end): (View.Index, View.Index)

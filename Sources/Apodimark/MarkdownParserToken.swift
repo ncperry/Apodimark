@@ -33,14 +33,17 @@ public protocol MarkdownParserToken: Comparable, Hashable {
      The collection “`tokens`” might not represent a valid String. 
      If that happens, this function should not crash.
      */
-    static func string <C: Collection where C.Iterator.Element == Self> (fromTokens tokens: C) -> String
+    static func string <C: Collection> (fromTokens tokens: C) -> String
+        where C.Iterator.Element == Self
 }
 
 extension UTF8.CodeUnit: MarkdownParserToken {
     public static func digit(representedByToken token: UTF8.CodeUnit) -> Int {
         return Int(token) - 0x30
     }
-    public static func string<C : Collection where C.Iterator.Element == UTF8.CodeUnit> (fromTokens tokens: C) -> String {
+    public static func string<C : Collection> (fromTokens tokens: C) -> String
+        where C.Iterator.Element == UTF8.CodeUnit
+    {
         var codec = UTF8()
         var iterator = tokens.makeIterator()
         var result = ""
@@ -90,7 +93,9 @@ extension UTF16.CodeUnit: MarkdownParserToken {
         return Int(token) - 0x30
     }
 
-    public static func string <C : Collection where C.Iterator.Element == UTF16.CodeUnit> (fromTokens tokens: C) -> String {
+    public static func string <C : Collection> (fromTokens tokens: C) -> String
+        where C.Iterator.Element == UTF16.CodeUnit
+    {
         var codec = UTF16()
         var iterator = tokens.makeIterator()
         var result = ""

@@ -231,7 +231,7 @@ extension LinkedList: MutableCollection {
     }
 }
 
-extension LinkedList: ArrayLiteralConvertible {
+extension LinkedList: ExpressibleByArrayLiteral {
     public convenience init(arrayLiteral array: T...) {
         self.init()
         array.reversed().forEach(self.prepend)

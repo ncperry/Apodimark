@@ -4,11 +4,11 @@
 //
 
 
-final class SubInlineAST <View: BidirectionalCollection where
+final class SubInlineAST <View: BidirectionalCollection> where
     View.Iterator.Element: MarkdownParserToken,
     View.SubSequence: Collection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
-> {
+{
     typealias NodeList = LinkedList<InlineNode<View>>
 
     let list: NodeList

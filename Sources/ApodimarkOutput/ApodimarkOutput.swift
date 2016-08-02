@@ -24,10 +24,10 @@ extension MarkdownBlock {
     }
 
     public static func output(nodes: [MarkdownBlock], source: View) -> String {
-        return nodes.reduce("Document { ", combine: combineNodeOutput(source: source)) + "}"
+        return nodes.reduce("Document { ", combineNodeOutput(source: source)) + "}"
     }
     static func output(nodes: [MarkdownInline<View>], source: View) -> String {
-        return nodes.reduce("", combine: combineNodeOutput(source: source))
+        return nodes.reduce("", combineNodeOutput(source: source))
     }
 
     static func output(node: MarkdownInline<View>, source: View) -> String {
@@ -37,7 +37,7 @@ extension MarkdownBlock {
             return Token.string(fromTokens: source[indices])
 
         case .emphasis(level: let level, content: let content, _):
-            return "e\(level)(" + content.reduce("", combine: combineNodeOutput(source: source)) + ")"
+            return "e\(level)(" + content.reduce("", combineNodeOutput(source: source)) + ")"
 
         case .monospacedText(let children, _):
             return "code(" + children.reduce("") { (acc, cur) in
@@ -67,10 +67,10 @@ extension MarkdownBlock {
         switch node {
 
         case .paragraph(text: let idcs):
-            return "Paragraph(\(idcs.reduce("", combine: combineNodeOutput(source: source))))"
+            return "Paragraph(\(idcs.reduce("", combineNodeOutput(source: source))))"
 
         case .header(level: let level, text: let text, markers: _):
-            return "Header(\(level), \(text.reduce("", combine: combineNodeOutput(source: source))))"
+            return "Header(\(level), \(text.reduce("", combineNodeOutput(source: source))))"
 
         case .code(text: let text):
             if let first = text.first {
@@ -92,12 +92,12 @@ extension MarkdownBlock {
             }
 
         case .quote(content: let content, _):
-            return "Quote { " + content.reduce("", combine: combineNodeOutput(source: source)) + "}"
+            return "Quote { " + content.reduce("", combineNodeOutput(source: source)) + "}"
 
         case .list(kind: let kind, items: let items):
             var itemsDesc = ""
             for item in items {
-                itemsDesc += "Item { " + item.content.reduce("", combine: combineNodeOutput(source: source)) + "}, "
+                itemsDesc += "Item { " + item.content.reduce("", combineNodeOutput(source: source)) + "}, "
             }
             return "List[\(kind)] { " + itemsDesc + "}"
             

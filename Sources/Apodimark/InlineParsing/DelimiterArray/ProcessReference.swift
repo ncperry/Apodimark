@@ -3,8 +3,8 @@
 //  Apodimark
 //
 
-private struct NoReferenceDelimiterError: ErrorProtocol {}
-private struct ReferenceNotDefinedError: ErrorProtocol {}
+private struct NoReferenceDelimiterError: Error {}
+private struct ReferenceNotDefinedError: Error {}
 
 extension MarkdownParser {
 

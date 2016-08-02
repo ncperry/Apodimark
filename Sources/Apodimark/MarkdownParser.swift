@@ -7,11 +7,11 @@
  A MarkdownParser holds the necessary data and type information to parse
  a collection of MarkdownParserToken.
 */
-final class MarkdownParser <View: BidirectionalCollection where
+final class MarkdownParser <View: BidirectionalCollection> where
     View.Iterator.Element: MarkdownParserToken,
     View.SubSequence: Collection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
-> {
+{
     typealias Token = View.Iterator.Element
 
     let view: View

@@ -7,20 +7,22 @@ enum ListState {
     case normal, followedByEmptyLine, closed
 }
 
-class BlockNode <View: BidirectionalCollection where
+class BlockNode <View: BidirectionalCollection> where
     View.Iterator.Element: MarkdownParserToken,
     View.SubSequence: Collection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
-> {
+{
     typealias Indices = Range<View.Index>
     
     func add(line: Line<View>) -> Bool { fatalError() }
     func allowsLazyContinuation() -> Bool { fatalError() }
 }
 
-final class ParagraphBlockNode
-<View: BidirectionalCollection where View.Iterator.Element: MarkdownParserToken, View.SubSequence: Collection, View.SubSequence.Iterator.Element == View.Iterator.Element> : BlockNode<View> {
-    
+final class ParagraphBlockNode <View: BidirectionalCollection>: BlockNode<View> where
+    View.Iterator.Element: MarkdownParserToken,
+    View.SubSequence: Collection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
     var text: [Indices]
     var closed: Bool
     init(text: [Indices]) {
@@ -47,9 +49,11 @@ final class ParagraphBlockNode
     }
 }
 
-final class HeaderBlockNode
-<View: BidirectionalCollection where View.Iterator.Element: MarkdownParserToken, View.SubSequence: Collection, View.SubSequence.Iterator.Element == View.Iterator.Element> : BlockNode<View> {
-    
+final class HeaderBlockNode <View: BidirectionalCollection>: BlockNode<View> where
+    View.Iterator.Element: MarkdownParserToken,
+    View.SubSequence: Collection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
     let markers: (Indices, Indices?)
     let text: Indices
     let level: Int
@@ -64,9 +68,11 @@ final class HeaderBlockNode
     }
 }
 
-final class QuoteBlockNode
-<View: BidirectionalCollection where View.Iterator.Element: MarkdownParserToken, View.SubSequence: Collection, View.SubSequence.Iterator.Element == View.Iterator.Element> : BlockNode<View> {
-    
+final class QuoteBlockNode <View: BidirectionalCollection>: BlockNode<View> where
+    View.Iterator.Element: MarkdownParserToken,
+    View.SubSequence: Collection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
     var markers: [View.Index]
     var content: [BlockNode<View>]
     var closed: Bool
@@ -115,8 +121,11 @@ final class QuoteBlockNode
     }
 }
 
-final class ListItemBlockNode <View: BidirectionalCollection where View.Iterator.Element: MarkdownParserToken, View.SubSequence: Collection, View.SubSequence.Iterator.Element == View.Iterator.Element> : BlockNode<View> {
-
+final class ListItemBlockNode <View: BidirectionalCollection>: BlockNode<View> where
+    View.Iterator.Element: MarkdownParserToken,
+    View.SubSequence: Collection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
     let markerSpan: Range<View.Index>
     var content: [BlockNode<View>]
 
@@ -127,9 +136,11 @@ final class ListItemBlockNode <View: BidirectionalCollection where View.Iterator
     
 }
 
-final class ListBlockNode
-<View: BidirectionalCollection where View.Iterator.Element: MarkdownParserToken, View.SubSequence: Collection, View.SubSequence.Iterator.Element == View.Iterator.Element> : BlockNode<View> {
-    
+final class ListBlockNode <View: BidirectionalCollection>: BlockNode<View> where
+    View.Iterator.Element: MarkdownParserToken,
+    View.SubSequence: Collection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
     let kind: ListKind
     var items: [ListItemBlockNode<View>]
     private var state: ListState
@@ -227,9 +238,11 @@ final class ListBlockNode
     }
 }
 
-final class FenceBlockNode
-<View: BidirectionalCollection where View.Iterator.Element: MarkdownParserToken, View.SubSequence: Collection, View.SubSequence.Iterator.Element == View.Iterator.Element> : BlockNode<View> {
-    
+final class FenceBlockNode <View: BidirectionalCollection>: BlockNode<View> where
+    View.Iterator.Element: MarkdownParserToken,
+    View.SubSequence: Collection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
     let kind: FenceKind
     var markers: (Indices, Indices?)
     let name: Indices
@@ -266,9 +279,11 @@ final class FenceBlockNode
     }
 }
 
-final class CodeBlockNode
-<View: BidirectionalCollection where View.Iterator.Element: MarkdownParserToken, View.SubSequence: Collection, View.SubSequence.Iterator.Element == View.Iterator.Element> : BlockNode<View> {
-    
+final class CodeBlockNode <View: BidirectionalCollection>: BlockNode<View> where
+    View.Iterator.Element: MarkdownParserToken,
+    View.SubSequence: Collection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
     var text: [Indices]
     var trailingEmptyLines: [Indices]
     
@@ -299,8 +314,11 @@ final class CodeBlockNode
     }
 }
 
-final class ThematicBreakBlockNode
-<View: BidirectionalCollection where View.Iterator.Element: MarkdownParserToken, View.SubSequence: Collection, View.SubSequence.Iterator.Element == View.Iterator.Element> : BlockNode<View> {
+final class ThematicBreakBlockNode <View: BidirectionalCollection>: BlockNode<View> where
+    View.Iterator.Element: MarkdownParserToken,
+    View.SubSequence: Collection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
     let span: Indices
     init(span: Indices) {
         self.span = span
@@ -313,9 +331,11 @@ final class ThematicBreakBlockNode
     }
 }
 
-final class ReferenceDefinitionBlockNode
-<View: BidirectionalCollection where View.Iterator.Element: MarkdownParserToken, View.SubSequence: Collection, View.SubSequence.Iterator.Element == View.Iterator.Element> : BlockNode<View> {
-    
+final class ReferenceDefinitionBlockNode <View: BidirectionalCollection>: BlockNode<View> where
+    View.Iterator.Element: MarkdownParserToken,
+    View.SubSequence: Collection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
     let title: String
     let definition: ReferenceDefinition
     init(title: String, definition: ReferenceDefinition) {

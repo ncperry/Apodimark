@@ -7,11 +7,11 @@ public protocol ReferenceDefinition { }
 extension String: ReferenceDefinition { }
 
 // indirect to work around "cyclic metadata dependency" bug
-public indirect enum MarkdownInline <View: BidirectionalCollection where
+public indirect enum MarkdownInline <View: BidirectionalCollection> where
     View.Iterator.Element: MarkdownParserToken,
     View.SubSequence: Collection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
-> {
+{
     case text(Range<View.Index>)
     case reference(kind: ReferenceKind, title: [MarkdownInline], definition: ReferenceDefinition, markers: [Range<View.Index>])
     case emphasis(level: Int, content: [MarkdownInline], markers: (Range<View.Index>, Range<View.Index>))
@@ -20,20 +20,20 @@ public indirect enum MarkdownInline <View: BidirectionalCollection where
     case hardbreak(span: Range<View.Index>)
 }
 
-public struct MarkdownListItemBlock <View: BidirectionalCollection where
+public struct MarkdownListItemBlock <View: BidirectionalCollection> where
     View.Iterator.Element: MarkdownParserToken,
     View.SubSequence: Collection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
-> {
+{
     public let markerSpan: Range<View.Index>
     public var content: [MarkdownBlock<View>]
 }
 
-public enum MarkdownBlock <View: BidirectionalCollection where
+public enum MarkdownBlock <View: BidirectionalCollection> where
     View.Iterator.Element: MarkdownParserToken,
     View.SubSequence: Collection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
->  {
+{
     case paragraph(text: [MarkdownInline<View>])
     case header(level: Int, text: [MarkdownInline<View>], markers: (Range<View.Index>, Range<View.Index>?))
     case quote(content: [MarkdownBlock<View>], markers: [View.Index])
@@ -66,12 +66,11 @@ public enum MarkdownListKind: CustomStringConvertible {
 }
 
 @_specialize(String.UTF16View) 
-public func parsedMarkdown <View: BidirectionalCollection where
+public func parsedMarkdown <View: BidirectionalCollection> (source: View) -> [MarkdownBlock<View>] where
     View.Iterator.Element: MarkdownParserToken,
     View.SubSequence: Collection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
-> (source: View) -> [MarkdownBlock<View>] {
-
+{        
     return MarkdownParser(view: source).finalAST()
 }
 

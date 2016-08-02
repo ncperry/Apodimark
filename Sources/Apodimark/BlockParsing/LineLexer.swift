@@ -18,7 +18,7 @@
  */
 
 /// Error type used for parsing a List line
-private enum ListParsingError: ErrorProtocol {
+private enum ListParsingError: Error {
     case notAListMarker
     case emptyListItem(ListKind)
 }
@@ -176,7 +176,7 @@ extension MarkdownParser {
 }
 
 /// Error type used for parsing a header line
-private enum HeaderParsingError: ErrorProtocol {
+private enum HeaderParsingError: Error {
     case notAHeader
     case emptyHeader(Int)
 }
@@ -252,7 +252,7 @@ extension MarkdownParser {
 }
 
 /// Error type used for a parsing a Fence
-private enum FenceParsingError: ErrorProtocol {
+private enum FenceParsingError: Error {
     case notAFence
     case emptyFence(FenceKind, Int)
 }
@@ -373,7 +373,7 @@ extension MarkdownParser {
 }
 
 /// Error type used for parsing a ThematicBreak line
-private struct NotAThematicBreakError: ErrorProtocol {}
+private struct NotAThematicBreakError: Error {}
 
 extension MarkdownParser {
 
@@ -420,7 +420,7 @@ extension MarkdownParser {
 }
 
 /// Error type used when parsing a ReferenceDefinition line
-private struct NotAReferenceDefinitionError: ErrorProtocol {}
+private struct NotAReferenceDefinitionError: Error {}
 
 extension MarkdownParser {
 
