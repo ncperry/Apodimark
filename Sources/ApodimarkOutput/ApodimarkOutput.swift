@@ -7,7 +7,7 @@ import Apodimark
 extension MarkdownBlock {
     typealias Token = View.Iterator.Element
 
-    static func combineNodeOutput(source: View) -> (acc: String, cur: MarkdownBlock) -> String {
+    static func combineNodeOutput(source: View) -> (String, MarkdownBlock) -> String {
         return { (acc: String, cur: MarkdownBlock) -> String in
             let appending = output(node: cur, source: source)
             guard !appending.isEmpty else { return acc }
@@ -15,7 +15,7 @@ extension MarkdownBlock {
         }
     }
 
-    static func combineNodeOutput(source: View) -> (acc: String, cur: MarkdownInline<View>) -> String {
+    static func combineNodeOutput(source: View) -> (String, MarkdownInline<View>) -> String {
         return { (acc: String, cur: MarkdownInline<View>) -> String in
             let appending = output(node: cur, source: source)
             guard !appending.isEmpty else { return acc }

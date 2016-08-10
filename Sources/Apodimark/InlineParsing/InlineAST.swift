@@ -32,11 +32,11 @@ final class SubInlineAST <View: BidirectionalCollection> where
 
 extension InlineNode {
 
-    private func contains(range: Range<View.Index>) -> Bool {
+    fileprivate func contains(range: Range<View.Index>) -> Bool {
         return start < range.lowerBound && end > range.upperBound
     }
 
-    private func contains(node: InlineNode) -> Bool {
+    fileprivate func contains(node: InlineNode) -> Bool {
         return start < node.start && end > node.end
     }
 }

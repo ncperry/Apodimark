@@ -49,7 +49,7 @@ extension UTF8.CodeUnit: MarkdownParserToken {
         var result = ""
 
         while case let .scalarValue(scalar) = codec.decode(&iterator) {
-            result.append(scalar)
+            result.unicodeScalars.append(scalar)
         }
         return result
     }
@@ -100,7 +100,7 @@ extension UTF16.CodeUnit: MarkdownParserToken {
         var iterator = tokens.makeIterator()
         var result = ""
         while case let .scalarValue(scalar) = codec.decode(&iterator) {
-            result.append(scalar)
+            result.unicodeScalars.append(scalar)
         }
         return result
     }

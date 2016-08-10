@@ -30,7 +30,7 @@ extension MarkdownParser {
         return children
     }
 
-    private func addReferenceDefinitions(fromNode node: BlockNode<View>) {
+    fileprivate func addReferenceDefinitions(fromNode node: BlockNode<View>) {
         switch node {
         case let node as ReferenceDefinitionBlockNode<View> where referenceDefinitions[node.title] == nil:
             referenceDefinitions[node.title] = node.definition

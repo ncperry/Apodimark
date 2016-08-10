@@ -33,9 +33,9 @@ struct Scanner <Data: BidirectionalCollection> {
     let data: Data
 
     /// Index of the first element accessible to the scanner
-    private(set) var startIndex: Data.Index
+    fileprivate(set) var startIndex: Data.Index
     /// Successor of the index of the last element accessible to the scanner
-    private(set) var endIndex: Data.Index
+    fileprivate(set) var endIndex: Data.Index
 
     /// Initialize a scanner reading from `data`, from `startIndex` to `endIndex`.
     /// - parameter startIndex: index of first element accessible to the new scanner

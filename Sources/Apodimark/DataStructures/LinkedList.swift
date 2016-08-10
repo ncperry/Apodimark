@@ -4,7 +4,7 @@
 //
 
 /// A node in a LinkedList
-private final class LinkedListNode<T> {
+fileprivate final class LinkedListNode<T> {
     var data: T
     var next: LinkedListNode?
 
@@ -15,12 +15,12 @@ private final class LinkedListNode<T> {
 public struct LinkedListIndex<T>: Comparable, CustomStringConvertible {
 
     /// Position of the index relative to the head of the list
-    private let position: Int
+    fileprivate let position: Int
 
     /// The node at `list[self]`
-    private weak var node: LinkedListNode<T>! // should be unowned but can’t because of compiler bug
+    fileprivate weak var node: LinkedListNode<T>! // should be unowned but can’t because of compiler bug
 
-    private init(position: Int, node: LinkedListNode<T>?) {
+    fileprivate init(position: Int, node: LinkedListNode<T>?) {
         (self.position, self.node) = (position, node)
     }
 
@@ -57,9 +57,9 @@ public final class LinkedList<T> {
     public typealias Index = LinkedListIndex<T>
 
     /// The head of the list.
-    private var head: LinkedListNode<T>!
+    fileprivate var head: LinkedListNode<T>!
 
-    public private(set) var count: Int
+    public fileprivate(set) var count: Int
 
     /// Creates an empty list
     public init() {
@@ -249,10 +249,10 @@ extension LinkedList: CustomStringConvertible {
 
 public struct LinkedListIterator<T>: IteratorProtocol {
 
-    private var cur: LinkedListIndex<T>
-    private let list: LinkedList<T>
+    fileprivate var cur: LinkedListIndex<T>
+    fileprivate let list: LinkedList<T>
 
-    private init(_ list: LinkedList<T>) {
+    fileprivate init(_ list: LinkedList<T>) {
         self.cur = list.startIndex
         self.list = list
     }
@@ -268,8 +268,8 @@ public struct LinkedListIndicesIterator<T>: IteratorProtocol {
 
     public typealias Element = LinkedListIndex<T>
 
-    private var cur: Element
-    private let indices: LinkedListIndices<T>
+    fileprivate var cur: Element
+    fileprivate let indices: LinkedListIndices<T>
 
     init(_ indices: LinkedListIndices<T>) {
         self.indices = indices

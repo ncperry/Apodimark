@@ -4,15 +4,16 @@
 //
 
 extension MarkdownParser {
-    typealias DelimiterSlice = ArraySlice<Delimiter?>
 
+    typealias DelimiterSlice = ArraySlice<Delimiter?>
+    
     func parseInlines(text: [Range<View.Index>]) -> LinkedList<InlineNode<View>> {
 
         guard !text.isEmpty else { return [] }
 
         let scanners = text.map { Scanner(data: view, startIndex: $0.lowerBound, endIndex: $0.upperBound) }
 
-        var dels = delimiters(inScanners: scanners)
+        var dels = delimiters(in: scanners)
         var nodes: [InlineNode<View>] = []
 
         nodes += processAllMonospacedText(delimiters: &dels[dels.indices])
@@ -43,5 +44,3 @@ extension MarkdownParser {
         return (delIdx, del, extracted)
     }
 }
-
-

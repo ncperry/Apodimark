@@ -7,7 +7,7 @@ extension MarkdownParser {
 
     typealias Delimiter = (kind: DelimiterKind, idx: View.Index)
 
-    func delimiters(inScanners scanners: [Scanner<View>]) -> [Delimiter?] {
+    func delimiters(in scanners: [Scanner<View>]) -> [Delimiter?] {
 
         var delimiters = [Delimiter?]()
 

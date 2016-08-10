@@ -13,7 +13,7 @@ extension MarkdownParser {
         return all
     }
 
-    private func processMonospacedText(delimiters: inout DelimiterSlice) -> InlineNode<View>? {
+    func processMonospacedText(delimiters: inout DelimiterSlice) -> InlineNode<View>? {
         guard let (firstDelIdx, firstDel, level) = findFirst(in: delimiters, whereNotNil: { (kind) -> Int? in
             if case let .code(l) = kind { return l } else { return nil }
         }) else {

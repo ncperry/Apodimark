@@ -4,7 +4,7 @@
 //
 
 extension MarkdownParser {
-
+    
     func processAllEmphases(delimiters: inout DelimiterSlice) -> [InlineNode<View>] {
         var all: [InlineNode<View>] = []
         while let r = processEmphasis(delimiters: &delimiters) {
@@ -13,7 +13,7 @@ extension MarkdownParser {
         return all
     }
 
-    private func processEmphasis(delimiters: inout DelimiterSlice) -> InlineNode<View>? {
+    fileprivate func processEmphasis(delimiters: inout DelimiterSlice) -> InlineNode<View>? {
         var sawOneOpeningEmph = (underscore: false, asterisk: false)
         guard let (sndDelIdx, sndDel, sndDelInfo) = findFirst(in: delimiters, whereNotNil: { (kind) -> (kind: EmphasisKind, state: DelimiterState, lvl: Int)? in
             if case let .emph(kind, state, lvl) = kind, state.contains(.closing) {

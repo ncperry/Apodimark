@@ -81,7 +81,7 @@ final class QuoteBlockNode <View: BidirectionalCollection>: BlockNode<View> wher
         (self.markers, self.content, self.closed) = ([firstMarker], [firstNode], false)
     }
     
-    private func directlyAddLine(line: Line<View>) {
+    fileprivate func directlyAddLine(line: Line<View>) {
         if let last = content.last, last.add(line: line) == false && !line.kind.isEmpty() {
             content.append(line.node())
         }
@@ -143,14 +143,14 @@ final class ListBlockNode <View: BidirectionalCollection>: BlockNode<View> where
 {
     let kind: ListKind
     var items: [ListItemBlockNode<View>]
-    private var state: ListState
-    private var minimumIndent: Int
+    fileprivate var state: ListState
+    fileprivate var minimumIndent: Int
     
     init(kind: ListKind, items: [ListItemBlockNode<View>], state: ListState, minimumIndent: Int) {
         (self.kind, self.items, self.state, self.minimumIndent) = (kind, items, state, minimumIndent)
     }
     
-    private func preparedLine(from initialLine: Line<View>) -> Line<View>? {
+    fileprivate func preparedLine(from initialLine: Line<View>) -> Line<View>? {
         guard state != .closed else {
             return nil
         }
@@ -185,7 +185,7 @@ final class ListBlockNode <View: BidirectionalCollection>: BlockNode<View> where
         }
     }
     
-    private func addPreparedLine(_ preparedLine: Line<View>) {
+    fileprivate func addPreparedLine(_ preparedLine: Line<View>) {
         switch preparedLine.kind {
             
         case .empty:

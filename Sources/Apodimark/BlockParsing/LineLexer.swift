@@ -18,7 +18,7 @@
  */
 
 /// Error type used for parsing a List line
-private enum ListParsingError: Error {
+fileprivate enum ListParsingError: Error {
     case notAListMarker
     case emptyListItem(ListKind)
 }
@@ -31,7 +31,7 @@ extension MarkdownParser {
     ///   (e.g. a hyphen, an asterisk, a digit)
     /// - throws: `ListParsingError.notAListMarker` if the list marker is invalid
     /// - returns: the kind of the list marker
-    private func readListMarker(scanner: inout Scanner<View>) throws -> ListKind {
+    fileprivate func readListMarker(scanner: inout Scanner<View>) throws -> ListKind {
 
         guard let firstToken = scanner.pop() else {
             preconditionFailure()
@@ -88,7 +88,7 @@ extension MarkdownParser {
     /// - parameter scanner: a scanner whose `startIndex` points to the start of potential List line
     /// - parameter indent: the indent of the line being parsed
     /// - return: the parsed Line
-    private func parseList(scanner: inout Scanner<View>, indent: Indent) -> Line<View> {
+    fileprivate func parseList(scanner: inout Scanner<View>, indent: Indent) -> Line<View> {
 
         let initialSubView = scanner
         //  1234)
@@ -131,7 +131,7 @@ extension MarkdownParser {
 }
 
 /// State used for read the content of a Header line
-private enum HeaderTextReadingState { // e.g. for # Hello  World ####    \n
+fileprivate enum HeaderTextReadingState { // e.g. for # Hello  World ####    \n
     case text         // # He|_
     case textSpaces   // # Hello |_
     case hashes       // # Hello   World #|_
@@ -142,7 +142,7 @@ extension MarkdownParser {
     /// Reads the content of a Header line
     /// - parameter scanner: a scanner whose `startIndex` points to to the start of the text in a Header line
     /// - returns: the index pointing to the end of the text in the header
-    private func readHeaderText(scanner: inout Scanner<View>) -> View.Index {
+    fileprivate func readHeaderText(scanner: inout Scanner<View>) -> View.Index {
 
         var state = HeaderTextReadingState.textSpaces
         var end = scanner.startIndex
@@ -176,7 +176,7 @@ extension MarkdownParser {
 }
 
 /// Error type used for parsing a header line
-private enum HeaderParsingError: Error {
+fileprivate enum HeaderParsingError: Error {
     case notAHeader
     case emptyHeader(Int)
 }
@@ -187,7 +187,7 @@ extension MarkdownParser {
     /// - parameter scanner: a scanner whose `startIndex` points the start of a potential Header line
     /// - parameter indent: the indent of the line being parsed
     /// - return: the parsed Line
-    private func parseHeader(scanner: inout Scanner<View>, indent: Indent) -> Line<View> {
+    fileprivate func parseHeader(scanner: inout Scanner<View>, indent: Indent) -> Line<View> {
 
         let initialSubview = scanner
         //  xxxxxx
@@ -252,7 +252,7 @@ extension MarkdownParser {
 }
 
 /// Error type used for a parsing a Fence
-private enum FenceParsingError: Error {
+fileprivate enum FenceParsingError: Error {
     case notAFence
     case emptyFence(FenceKind, Int)
 }
@@ -266,7 +266,7 @@ extension MarkdownParser {
     /// - parameter scanner: a scanner pointing to the first letter of a potential Fence’s name
     /// - throws: `FenceParsingError.notAFence` if the line is not a Fence line
     /// - returns: the index pointing to the end of the name
-    private func readFenceName(scanner: inout Scanner<View>) throws -> View.Index {
+    fileprivate func readFenceName(scanner: inout Scanner<View>) throws -> View.Index {
 
         // ```  name
         //     |_<---
@@ -301,7 +301,7 @@ extension MarkdownParser {
     /// - parameter scanner: a scanner whose pointing to the start of what might be a Fence line
     /// - parameter indent: the indent of the line being parsed
     /// - returns: the parsed line
-    private func parseFence(scanner: inout Scanner<View>, indent: Indent) -> Line<View> {
+    fileprivate func parseFence(scanner: inout Scanner<View>, indent: Indent) -> Line<View> {
 
         let initialSubview = scanner
 
@@ -373,7 +373,7 @@ extension MarkdownParser {
 }
 
 /// Error type used for parsing a ThematicBreak line
-private struct NotAThematicBreakError: Error {}
+fileprivate struct NotAThematicBreakError: Error {}
 
 extension MarkdownParser {
 
@@ -388,7 +388,7 @@ extension MarkdownParser {
     /// - parameter scanner: a scanner pointing to the start of what might be a ThematicBreak line
     /// - parameter firstToken: the first token of the potential ThematicBreak line
     /// - throws: `NotAThematicBreakError()` if the line is not a ThematicBreak line
-    private func readThematicBreak(scanner: inout Scanner<View>, firstToken: Token) throws {
+    fileprivate func readThematicBreak(scanner: inout Scanner<View>, firstToken: Token) throws {
 
         //  * * *
         // |_<--- (start of line)
@@ -420,7 +420,7 @@ extension MarkdownParser {
 }
 
 /// Error type used when parsing a ReferenceDefinition line
-private struct NotAReferenceDefinitionError: Error {}
+fileprivate struct NotAReferenceDefinitionError: Error {}
 
 extension MarkdownParser {
 
@@ -432,7 +432,7 @@ extension MarkdownParser {
     /// - parameter indent: the indent of the line being parsed
     /// - throws: `NotAReferenceDefinitionError()` if the line is not a ReferenceDefinition line
     /// - returns: the parsed line
-    private func parseReferenceDefinition(scanner: inout Scanner<View>, indent: Indent) throws -> Line<View> {
+    fileprivate func parseReferenceDefinition(scanner: inout Scanner<View>, indent: Indent) throws -> Line<View> {
 
         //  [hello]:  world
         // |_<---

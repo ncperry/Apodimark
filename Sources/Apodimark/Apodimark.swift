@@ -25,7 +25,7 @@ public struct MarkdownListItemBlock <View: BidirectionalCollection> where
     View.SubSequence: Collection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
-    public let markerSpan: Range<View.Index>
+    public let marker: Range<View.Index>
     public var content: [MarkdownBlock<View>]
 }
 
@@ -40,7 +40,7 @@ public enum MarkdownBlock <View: BidirectionalCollection> where
     case list(kind: MarkdownListKind, items: [MarkdownListItemBlock<View>])
     case fence(name: Range<View.Index>, text: [Range<View.Index>], markers: (Range<View.Index>, Range<View.Index>?))
     case code(text: [Range<View.Index>])
-    case thematicBreak
+    case thematicBreak(marker: Range<View.Index>)
 }
 
 public enum MarkdownListKind: CustomStringConvertible {
@@ -83,7 +83,7 @@ extension MarkdownParser {
     }
 
     /// Return a MarkdownInline node from an instance of the internal InlineNode type
-    private func makeFinalInlineNode(from node: InlineNode<View>) -> MarkdownInline<View> {
+    fileprivate func makeFinalInlineNode(from node: InlineNode<View>) -> MarkdownInline<View> {
         switch node.kind {
 
         case .hardbreak:
@@ -113,7 +113,7 @@ extension MarkdownParser {
     }
 
     /// Return a MarkdownBlock from an instance of the internal BlockNode type.
-    private func makeFinalBlock(from node: BlockNode<View>) -> MarkdownBlock<View>? {
+    fileprivate func makeFinalBlock(from node: BlockNode<View>) -> MarkdownBlock<View>? {
         switch node {
 
         case let node as ParagraphBlockNode<View>:
@@ -129,7 +129,7 @@ extension MarkdownParser {
 
 
         case let node as ListBlockNode<View>:
-            let items = node.items.map { MarkdownListItemBlock(markerSpan: $0.markerSpan, content: $0.content.flatMap(makeFinalBlock)) }
+            let items = node.items.map { MarkdownListItemBlock(marker: $0.markerSpan, content: $0.content.flatMap(makeFinalBlock)) }
             return .list(kind: MarkdownListKind(kind: node.kind), items: items)
 
 
@@ -141,8 +141,8 @@ extension MarkdownParser {
             return .fence(name: node.name, text: node.text, markers: node.markers)
             
             
-        case is ThematicBreakBlockNode<View>:
-            return .thematicBreak
+        case let node as ThematicBreakBlockNode<View>:
+            return .thematicBreak(marker: node.span)
             
             
         case is ReferenceDefinitionBlockNode<View>:

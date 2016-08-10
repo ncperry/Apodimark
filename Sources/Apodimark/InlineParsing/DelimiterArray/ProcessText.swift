@@ -5,7 +5,7 @@
 
 extension MarkdownParser {
 
-    func processText (delimiters: inout DelimiterSlice) -> [InlineNode<View>] {
+    func processText(delimiters: inout DelimiterSlice) -> [InlineNode<View>] {
 
         let findFirstNonNilDelimiter: @noescape () -> Delimiter? = {
             var f: Delimiter?

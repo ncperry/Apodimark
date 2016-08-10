@@ -3,8 +3,8 @@
 //  Apodimark
 //
 
-private struct NoReferenceDelimiterError: Error {}
-private struct ReferenceNotDefinedError: Error {}
+fileprivate struct NoReferenceDelimiterError: Error {}
+fileprivate struct ReferenceNotDefinedError: Error {}
 
 extension MarkdownParser {
 
@@ -16,7 +16,7 @@ extension MarkdownParser {
         return all
     }
 
-    private func processReference(delimiters: inout DelimiterSlice) throws -> [InlineNode<View>] {
+    fileprivate func processReference(delimiters: inout DelimiterSlice) throws -> [InlineNode<View>] {
 
         guard let (closingTitleDelIdx, closingTitleDel, _) = findFirst(in: delimiters, whereNotNil: { (kind) -> Void? in
             if case .refCloser = kind { return () } else { return nil }
