@@ -3,8 +3,10 @@ import XCTest
 import Apodimark
 
 private func stringForTest(_ name: String, result: Bool = false) -> String {
-    let path = "/Users/loiclecrenier/Code/Apodimark/test-files/performance/" + name + ".txt"
-    return try! String(contentsOf: URL(fileURLWithPath: path))
+    let dirUrl = URL(fileURLWithPath: #file).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+    let fileUrl = dirUrl.appendingPathComponent("test-files/performance/" + name + ".txt")
+
+    return try! String(contentsOf: fileUrl)
 }
 
 class PerformanceTests : XCTestCase {

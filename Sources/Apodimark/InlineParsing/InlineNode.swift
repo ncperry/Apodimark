@@ -5,6 +5,13 @@
 
 public enum ReferenceKind {
     case normal, unwrapped
+
+    var textWidth: Int {
+        switch self {
+        case .normal   : return 1
+        case .unwrapped: return 2
+        }
+    }
 }
 
 enum InlineNodeKind <View: BidirectionalCollection> where

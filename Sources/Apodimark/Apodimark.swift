@@ -6,7 +6,6 @@
 public protocol ReferenceDefinition { }
 extension String: ReferenceDefinition { }
 
-// indirect to work around "cyclic metadata dependency" bug
 public indirect enum MarkdownInline <View: BidirectionalCollection> where
     View.Iterator.Element: MarkdownParserToken,
     View.SubSequence: Collection,
@@ -29,7 +28,7 @@ public struct MarkdownListItemBlock <View: BidirectionalCollection> where
     public var content: [MarkdownBlock<View>]
 }
 
-public enum MarkdownBlock <View: BidirectionalCollection> where
+public indirect enum MarkdownBlock <View: BidirectionalCollection> where
     View.Iterator.Element: MarkdownParserToken,
     View.SubSequence: Collection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
@@ -98,8 +97,7 @@ extension MarkdownParser {
         case .code(let level):
             let startMarkers = node.start ..< view.index(node.start, offsetBy: View.IndexDistance(level.toIntMax()))
             let endMarkers = view.index(node.end, offsetBy: View.IndexDistance(-level.toIntMax())) ..< node.end
-            let children = node.children.map(makeFinalInlineNode)
-            return .monospacedText(children, markers: (startMarkers, endMarkers))
+            return .monospacedText(node.children.map(makeFinalInlineNode), markers: (startMarkers, endMarkers))
 
         case .emphasis(let level):
             let startMarkers = node.start ..< view.index(node.start, offsetBy: View.IndexDistance(level.toIntMax()))

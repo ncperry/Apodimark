@@ -70,8 +70,9 @@ private let tests = [
 
 
 private func stringForTest(number: Int, result: Bool = false) -> String {
-    let path = "/Users/loiclecrenier/Code/Apodimark/test-files/commonmark-conformance/\(number)" + (result ? "-result" : "") + ".txt"
-    return try! String(contentsOf: URL(fileURLWithPath: path))
+    let dirUrl = URL(fileURLWithPath: #file).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+    let fileUrl = dirUrl.appendingPathComponent("test-files/commonmark-conformance/\(number)" + (result ? "-result" : "") + ".txt")
+    return try! String(contentsOf: fileUrl)
 }
 
 extension Character: MarkdownParserToken {
@@ -84,13 +85,14 @@ extension Character: MarkdownParserToken {
         return Int(String(token))!
     }
 
-    public static func string<C : Collection where C.Iterator.Element == Character>(fromTokens tokens: C) -> String {
+    public static func string <C: Collection> (fromTokens tokens: C) -> String
+        where C.Iterator.Element == Character
+    {
         return String(tokens)
     }
 }
 
 class CommonMarkConformanceTests : XCTestCase {
-
     func testSpecStringUTF16View() {
         for no in tests {
             let source = stringForTest(number: no).utf16

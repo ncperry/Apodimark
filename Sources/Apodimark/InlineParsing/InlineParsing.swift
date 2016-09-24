@@ -25,22 +25,4 @@ extension MarkdownParser {
 
         return makeAST(with: nodes)
     }
-
-    func findFirst <C: Collection, T> (in delimiters: C, whereNotNil predicate: @noescape (DelimiterKind) -> T?) -> (C.Index, Delimiter, T)?
-        where C.Iterator.Element == Delimiter?
-    {
-        var (optDel, optExtracted): (Delimiter?, T?)
-        var delIdx = delimiters.startIndex
-        for del in delimiters {
-            guard let kind = del?.kind, let extracted = predicate(kind) else {
-                delimiters.formIndex(after: &delIdx)
-                continue
-            }
-            (optDel, optExtracted) = (del, extracted)
-            break
-        }
-        guard let del = optDel, let extracted = optExtracted else { return nil }
-
-        return (delIdx, del, extracted)
-    }
 }

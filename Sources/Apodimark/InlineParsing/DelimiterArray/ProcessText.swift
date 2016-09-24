@@ -7,16 +7,11 @@ extension MarkdownParser {
 
     func processText(delimiters: inout DelimiterSlice) -> [InlineNode<View>] {
 
-        let findFirstNonNilDelimiter: @noescape () -> Delimiter? = {
-            var f: Delimiter?
-            for case let del? in delimiters {
-                f = del
-                break
-            }
-            return f
-        }
-
-        guard let first = findFirstNonNilDelimiter() else {
+        guard let first: Delimiter = {
+            for case let del? in delimiters { return del }
+            return nil
+        }()
+        else {
             fatalError()
         }
 
@@ -48,6 +43,7 @@ extension MarkdownParser {
                 break
             }
         }
+
         return textNodes
     }
 }
