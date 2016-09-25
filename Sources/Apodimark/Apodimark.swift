@@ -6,40 +6,130 @@
 public protocol ReferenceDefinition { }
 extension String: ReferenceDefinition { }
 
-public indirect enum MarkdownInline <View: BidirectionalCollection> where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+public struct ParagraphBlock <View: BidirectionalCollection> where
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
-    case text(Range<View.Index>)
-    case reference(kind: ReferenceKind, title: [MarkdownInline], definition: ReferenceDefinition, markers: [Range<View.Index>])
-    case emphasis(level: Int, content: [MarkdownInline], markers: (Range<View.Index>, Range<View.Index>))
-    case monospacedText([MarkdownInline], markers: (Range<View.Index>, Range<View.Index>))
-    case softbreak(span: Range<View.Index>)
-    case hardbreak(span: Range<View.Index>)
+    public let text: [MarkdownInline<View>]
 }
-
+public struct HeaderBlock <View: BidirectionalCollection> where
+    View.SubSequence: BidirectionalCollection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
+    public let level: Int
+    public let text: [MarkdownInline<View>]
+    public let markers: (Range<View.Index>, Range<View.Index>?)
+}
+public struct QuoteBlock <View: BidirectionalCollection> where
+    View.SubSequence: BidirectionalCollection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
+    public let content: [MarkdownBlock<View>]
+    public let markers: [View.Index]
+}
 public struct MarkdownListItemBlock <View: BidirectionalCollection> where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     public let marker: Range<View.Index>
-    public var content: [MarkdownBlock<View>]
+    public let content: [MarkdownBlock<View>]
+}
+
+public struct ListBlock <View: BidirectionalCollection> where
+    View.SubSequence: BidirectionalCollection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
+    public let kind: MarkdownListKind
+    public let items: [MarkdownListItemBlock<View>]
+}
+
+public struct FenceBlock <View: BidirectionalCollection> where
+    View.SubSequence: BidirectionalCollection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
+    public let name: Range<View.Index>
+    public let text: [Range<View.Index>]
+    public let markers: (Range<View.Index>, Range<View.Index>?)
+}
+
+public struct CodeBlock <View: BidirectionalCollection> where
+    View.SubSequence: BidirectionalCollection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
+    public let text: [Range<View.Index>]
+}
+
+public struct ThematicBreakBlock <View: BidirectionalCollection> where
+    View.SubSequence: BidirectionalCollection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
+    public let marker: Range<View.Index>
+}
+
+public struct TextInline <View: BidirectionalCollection> where
+    View.SubSequence: BidirectionalCollection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
+    public let span: Range<View.Index>
+}
+
+public struct BreakInline <View: BidirectionalCollection> where
+    View.SubSequence: BidirectionalCollection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
+    public let span: Range<View.Index>
+}
+
+public struct ReferenceInline <View: BidirectionalCollection> where
+    View.SubSequence: BidirectionalCollection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
+    public let kind: ReferenceKind
+    public let title: [MarkdownInline<View>]
+    public let definition: ReferenceDefinition
+    public let markers: [Range<View.Index>]
+}
+
+public struct EmphasisInline <View: BidirectionalCollection> where
+    View.SubSequence: BidirectionalCollection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
+    public let level: Int
+    public let content: [MarkdownInline<View>]
+    public let markers: (Range<View.Index>, Range<View.Index>)
+}
+
+public struct MonospacedTextInline <View: BidirectionalCollection> where
+    View.SubSequence: BidirectionalCollection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
+    public let content: [MarkdownInline<View>]
+    public let markers: (Range<View.Index>, Range<View.Index>)
+}
+
+public indirect enum MarkdownInline <View: BidirectionalCollection> where
+    View.SubSequence: BidirectionalCollection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
+    case text(TextInline<View>)
+    case reference(ReferenceInline<View>)
+    case emphasis(EmphasisInline<View>)
+    case monospacedText(MonospacedTextInline<View>)
+    case softbreak(BreakInline<View>)
+    case hardbreak(BreakInline<View>)
 }
 
 public indirect enum MarkdownBlock <View: BidirectionalCollection> where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
-    case paragraph(text: [MarkdownInline<View>])
-    case header(level: Int, text: [MarkdownInline<View>], markers: (Range<View.Index>, Range<View.Index>?))
-    case quote(content: [MarkdownBlock<View>], markers: [View.Index])
-    case list(kind: MarkdownListKind, items: [MarkdownListItemBlock<View>])
-    case fence(name: Range<View.Index>, text: [Range<View.Index>], markers: (Range<View.Index>, Range<View.Index>?))
-    case code(text: [Range<View.Index>])
-    case thematicBreak(marker: Range<View.Index>)
+    case paragraph(ParagraphBlock<View>)
+    case header(HeaderBlock<View>)
+    case quote(QuoteBlock<View>)
+    case list(ListBlock<View>)
+    case fence(FenceBlock<View>)
+    case code(CodeBlock<View>)
+    case thematicBreak(ThematicBreakBlock<View>)
 }
 
 public enum MarkdownListKind: CustomStringConvertible {
@@ -64,20 +154,22 @@ public enum MarkdownListKind: CustomStringConvertible {
     }
 }
 
-@_specialize(String.UTF16View) 
-public func parsedMarkdown <View: BidirectionalCollection> (source: View) -> [MarkdownBlock<View>] where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+@_specialize(String.UTF16View, UTF16)
+public func parsedMarkdown <View: BidirectionalCollection, Codec: MarkdownParserCodec> (source: View, codec: Codec.Type) -> [MarkdownBlock<View>] where
+    View.Iterator.Element == Codec.CodeUnit,
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
-{        
-    return MarkdownParser(view: source).finalAST()
+{
+    var parser = MarkdownParser<View, Codec>(view: source)
+    let ast = parser.finalAST()
+    return ast
 }
 
 extension MarkdownParser {
 
     /// Parse the collection and return the Abstract Syntax Tree
     /// describing the resulting Markdown document.
-    func finalAST() -> [MarkdownBlock<View>] {
+    mutating func finalAST() -> [MarkdownBlock<View>] {
         return parseBlocks().flatMap(makeFinalBlock)
     }
 
@@ -86,27 +178,47 @@ extension MarkdownParser {
         switch node.kind {
 
         case .hardbreak:
-            return .hardbreak(span: node.start ..< node.end)
+            return .hardbreak(BreakInline(span: node.start ..< node.end))
 
         case .softbreak:
-            return .softbreak(span: node.start ..< node.end)
+            return .softbreak(BreakInline(span: node.start ..< node.end))
 
         case .text:
-            return .text(node.contentRange(inView: view))
+            return .text(TextInline(span: node.contentRange(inView: view)))
 
         case .code(let level):
             let startMarkers = node.start ..< view.index(node.start, offsetBy: View.IndexDistance(level.toIntMax()))
             let endMarkers = view.index(node.end, offsetBy: View.IndexDistance(-level.toIntMax())) ..< node.end
-            return .monospacedText(node.children.map(makeFinalInlineNode), markers: (startMarkers, endMarkers))
+            
+            let inline = MonospacedTextInline(
+                content: node.children.map(makeFinalInlineNode),
+                markers: (startMarkers, endMarkers)
+            )
+            return .monospacedText(inline)
 
         case .emphasis(let level):
             let startMarkers = node.start ..< view.index(node.start, offsetBy: View.IndexDistance(level.toIntMax()))
             let endMarkers = view.index(node.end, offsetBy: View.IndexDistance(-level.toIntMax())) ..< node.end
-            return .emphasis(level: level, content: node.children.map(makeFinalInlineNode), markers: (startMarkers, endMarkers))
+            
+            let inline = EmphasisInline(
+                level: level,
+                content: node.children.map(makeFinalInlineNode),
+                markers: (startMarkers, endMarkers)
+            )
+
+            return .emphasis(inline)
 
         case .reference(let kind, title: let title, definition: let definition):
             let markers = [node.start ..< title.lowerBound, title.upperBound ..< node.end]
-            return .reference(kind: kind, title: node.children.map(makeFinalInlineNode), definition: definition, markers: markers)
+            
+            let inline = ReferenceInline(
+                kind: kind,
+                title: node.children.map(makeFinalInlineNode),
+                definition: definition,
+                markers: markers
+            )
+            
+            return .reference(inline)
         }
     }
 
@@ -115,32 +227,57 @@ extension MarkdownParser {
         switch node {
 
         case let node as ParagraphBlockNode<View>:
-            return .paragraph(text: parseInlines(text: node.text).map(makeFinalInlineNode))
+            let block = ParagraphBlock(text: parseInlines(text: node.text).map(makeFinalInlineNode))
+            return .paragraph(block)
 
 
         case let node as HeaderBlockNode<View>:
-            return .header(level: node.level, text: parseInlines(text: [node.text]).map(makeFinalInlineNode), markers: node.markers)
+            let block = HeaderBlock(
+                level: node.level,
+                text: parseInlines(text: [node.text]).map(makeFinalInlineNode),
+                markers: node.markers
+            )
+            return .header(block)
 
 
         case let node as QuoteBlockNode<View>:
-            return .quote(content: node.content.flatMap(makeFinalBlock), markers: node.markers)
+            
+            let block = QuoteBlock(
+                content: node.content.flatMap(makeFinalBlock),
+                markers: node.markers
+            )
+            
+            return .quote(block)
 
 
         case let node as ListBlockNode<View>:
-            let items = node.items.map { MarkdownListItemBlock(marker: $0.markerSpan, content: $0.content.flatMap(makeFinalBlock)) }
-            return .list(kind: MarkdownListKind(kind: node.kind), items: items)
+            let items = node.items.map {
+                return MarkdownListItemBlock(
+                    marker: $0.markerSpan,
+                    content: $0.content.flatMap(makeFinalBlock)
+                )
+            }
+            
+            let block = ListBlock(kind: MarkdownListKind(kind: node.kind), items: items)
+            
+            return .list(block)
 
 
         case let node as CodeBlockNode<View>:
-            return .code(text: node.text)
+            return .code(CodeBlock(text: node.text))
 
 
         case let node as FenceBlockNode<View>:
-            return .fence(name: node.name, text: node.text, markers: node.markers)
+            let block = FenceBlock<View>(
+                name: node.name,
+                text: node.text,
+                markers: node.markers
+            )
+            return .fence(block)
             
             
         case let node as ThematicBreakBlockNode<View>:
-            return .thematicBreak(marker: node.span)
+            return .thematicBreak(ThematicBreakBlock(marker: node.span))
             
             
         case is ReferenceDefinitionBlockNode<View>:

@@ -27,7 +27,7 @@ extension MarkdownParser {
                 let curTokenKind = tokenKind(token)
                 defer { prevTokenKind = curTokenKind }
 
-                if token == space {
+                if token == Codec.space {
                     numberOfPreviousSpaces += 1
                     continue
                 } else {
@@ -36,7 +36,7 @@ extension MarkdownParser {
 
                 switch token {
 
-                case underscore, asterisk:
+                case Codec.underscore, Codec.asterisk:
                     let idxBeforeRun = scanner.data.index(before: scanner.startIndex)
                     scanner.popWhile(token)
                     let nextTokenKind: TokenKind
@@ -45,45 +45,45 @@ extension MarkdownParser {
                     } else {
                         nextTokenKind = .whitespace
                     }
-                    let delimiterState = DelimiterState(token: token, prev: prevTokenKind, next: nextTokenKind)
+                    let delimiterState = DelimiterState(token: token, prev: prevTokenKind, next: nextTokenKind, codec: Codec.self)
                     let lvl = scanner.data.distance(from: idxBeforeRun, to: scanner.startIndex)
-                    let kind: EmphasisKind = token == underscore ? .underscore : .asterisk
+                    let kind: EmphasisKind = token == Codec.underscore ? .underscore : .asterisk
                     delimiters.append((.emph(kind, delimiterState, Int(lvl.toIntMax())), scanner.startIndex))
 
-                case backtick:
+                case Codec.backtick:
                     let idxBeforeRun = scanner.data.index(before: scanner.startIndex)
-                    scanner.popWhile(backtick)
+                    scanner.popWhile(Codec.backtick)
                     let lvl = Int(scanner.data.distance(from: idxBeforeRun, to: scanner.startIndex).toIntMax())
                     delimiters.append((.code(lvl), scanner.startIndex))
 
-                case exclammark:
-                    if scanner.pop(leftsqbck) {
+                case Codec.exclammark:
+                    if scanner.pop(Codec.leftsqbck) {
                         delimiters.append((.unwrappedRefOpener, scanner.startIndex))
                     }
 
-                case leftsqbck:
+                case Codec.leftsqbck:
                     delimiters.append((.refOpener, scanner.startIndex))
 
-                case rightsqbck:
+                case Codec.rightsqbck:
                     delimiters.append((.refCloser, scanner.startIndex))
-                    if scanner.pop(leftparen) {
+                    if scanner.pop(Codec.leftparen) {
                         delimiters.append((.refValueOpener, scanner.startIndex))
                     }
 
-                case leftparen:
+                case Codec.leftparen:
                     delimiters.append((.leftParen, scanner.startIndex))
 
-                case rightparen:
+                case Codec.rightparen:
                     delimiters.append((.rightParen, scanner.startIndex))
 
-                case backslash:
+                case Codec.backslash:
                     guard let el = scanner.peek() else {
                         potentialBackslashHardbreak = true
                         break
                     }
                     if isPunctuation(el) {
                         delimiters.append((.ignored, scanner.startIndex))
-                        if el != backtick { _ = scanner.pop() }
+                        if el != Codec.backtick { _ = scanner.pop() }
                     }
 
                 case _:

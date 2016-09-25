@@ -71,7 +71,7 @@ extension MarkdownParser {
                 
                 delimiters[valueCloserDelIdx] = nil
                 
-                let definition = Token.string(fromTokens: view[nextDel.idx ..< view.index(before: valueCloserDel.idx)])
+                let definition = Codec.string(fromTokens: view[nextDel.idx ..< view.index(before: valueCloserDel.idx)])
                 let span = { () -> Range<View.Index> in
                     let lowerbound = view.index(openingTitleDel.idx, offsetBy: View.IndexDistance(IntMax(-refKind.textWidth)))
                     return lowerbound ..< valueCloserDel.idx
@@ -92,7 +92,7 @@ extension MarkdownParser {
                     return nil
                 }
                 
-                let s = Token.string(fromTokens: view[nextDel.idx ..< view.index(before: aliasCloserDel.idx)]).lowercased()
+                let s = Codec.string(fromTokens: view[nextDel.idx ..< view.index(before: aliasCloserDel.idx)]).lowercased()
                 guard let definition = referenceDefinitions[s] else {
                     var newNextDel = nextDel
                     newNextDel.kind = .refOpener
@@ -109,7 +109,7 @@ extension MarkdownParser {
                 return (definition, span, aliasCloserIdx)
                 
             default:
-                let s = Token.string(fromTokens: view[openingTitleDel.idx ..< view.index(before: closingTitleDel.idx)]).lowercased()
+                let s = Codec.string(fromTokens: view[openingTitleDel.idx ..< view.index(before: closingTitleDel.idx)]).lowercased()
                 guard let definition = referenceDefinitions[s] else {
                     return nil
                 }

@@ -6,8 +6,7 @@
 // I’m so sorry for the code in this file...
 
 final class SubInlineAST <View: BidirectionalCollection> where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     typealias NodeList = LinkedList<InlineNode<View>>

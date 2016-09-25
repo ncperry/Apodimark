@@ -21,7 +21,7 @@ class PerformanceTests : XCTestCase {
         }
         // Step 3: measure the time it takes to build the AST
         measure {
-            _ = parsedMarkdown(source: s.utf16)
+            _ = parsedMarkdown(source: s.utf16, codec: UTF16.self)
         }
         // Step 4: look at result, cry.
     }

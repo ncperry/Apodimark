@@ -75,29 +75,12 @@ private func stringForTest(number: Int, result: Bool = false) -> String {
     return try! String(contentsOf: fileUrl)
 }
 
-extension Character: MarkdownParserToken {
-
-    public static func fromASCII(_ char: UInt8) -> Character {
-        return Character(UnicodeScalar(char))
-    }
-
-    public static func digit(representedByToken token: Character) -> Int {
-        return Int(String(token))!
-    }
-
-    public static func string <C: Collection> (fromTokens tokens: C) -> String
-        where C.Iterator.Element == Character
-    {
-        return String(tokens)
-    }
-}
-
 class CommonMarkConformanceTests : XCTestCase {
     func testSpecStringUTF16View() {
         for no in tests {
             let source = stringForTest(number: no).utf16
-            let doc = parsedMarkdown(source: source)
-            let desc = MarkdownBlock.output(nodes: doc, source: source)
+            let doc = parsedMarkdown(source: source, codec: UTF16.self)
+            let desc = MarkdownBlock.output(nodes: doc, source: source, codec: UTF16.self)
             let result = stringForTest(number: no, result: true)
             XCTAssertEqual(desc, result, "\(no)")
         }
@@ -106,8 +89,8 @@ class CommonMarkConformanceTests : XCTestCase {
     func testSpecStringCharacterView() {
         for no in tests {
             let source = stringForTest(number: no).characters
-            let doc = parsedMarkdown(source: source)
-            let desc = MarkdownBlock.output(nodes: doc, source: source)
+            let doc = parsedMarkdown(source: source, codec: CharacterCodec.self)
+            let desc = MarkdownBlock.output(nodes: doc, source: source, codec: CharacterCodec.self)
             let result = stringForTest(number: no, result: true)
             XCTAssertEqual(desc, result, "\(no)")
         }
@@ -117,8 +100,8 @@ class CommonMarkConformanceTests : XCTestCase {
         for no in tests {
             let arr = Array(stringForTest(number: no).utf8)
             let source = arr.withUnsafeBufferPointer { $0 }
-            let doc = parsedMarkdown(source: source)
-            let desc = MarkdownBlock.output(nodes: doc, source: source)
+            let doc = parsedMarkdown(source: source, codec: UTF8.self)
+            let desc = MarkdownBlock.output(nodes: doc, source: source, codec: UTF8.self)
             let result = stringForTest(number: no, result: true)
             XCTAssertEqual(desc, result, "\(no)")
         }

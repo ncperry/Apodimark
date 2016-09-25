@@ -15,8 +15,7 @@ public enum ReferenceKind {
 }
 
 enum InlineNodeKind <View: BidirectionalCollection> where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     indirect case reference(ReferenceKind, title: Range<View.Index>, definition: ReferenceDefinition)
@@ -28,8 +27,7 @@ enum InlineNodeKind <View: BidirectionalCollection> where
 }
 
 struct InlineNode <View: BidirectionalCollection> where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
 

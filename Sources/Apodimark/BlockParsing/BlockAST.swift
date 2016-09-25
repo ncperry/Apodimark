@@ -8,8 +8,7 @@ enum ListState {
 }
 
 class BlockNode <View: BidirectionalCollection> where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     typealias Indices = Range<View.Index>
@@ -19,8 +18,7 @@ class BlockNode <View: BidirectionalCollection> where
 }
 
 final class ParagraphBlockNode <View: BidirectionalCollection>: BlockNode<View> where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     var text: [Indices]
@@ -50,8 +48,7 @@ final class ParagraphBlockNode <View: BidirectionalCollection>: BlockNode<View> 
 }
 
 final class HeaderBlockNode <View: BidirectionalCollection>: BlockNode<View> where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     let markers: (Indices, Indices?)
@@ -69,8 +66,7 @@ final class HeaderBlockNode <View: BidirectionalCollection>: BlockNode<View> whe
 }
 
 final class QuoteBlockNode <View: BidirectionalCollection>: BlockNode<View> where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     var markers: [View.Index]
@@ -122,8 +118,7 @@ final class QuoteBlockNode <View: BidirectionalCollection>: BlockNode<View> wher
 }
 
 final class ListItemBlockNode <View: BidirectionalCollection>: BlockNode<View> where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     let markerSpan: Range<View.Index>
@@ -132,13 +127,10 @@ final class ListItemBlockNode <View: BidirectionalCollection>: BlockNode<View> w
     init(markerSpan: Range<View.Index>, content: [BlockNode<View>]) {
         (self.markerSpan, self.content) = (markerSpan, content)
     }
-    
-    
 }
 
 final class ListBlockNode <View: BidirectionalCollection>: BlockNode<View> where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     let kind: ListKind
@@ -239,8 +231,7 @@ final class ListBlockNode <View: BidirectionalCollection>: BlockNode<View> where
 }
 
 final class FenceBlockNode <View: BidirectionalCollection>: BlockNode<View> where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     let kind: FenceKind
@@ -261,7 +252,7 @@ final class FenceBlockNode <View: BidirectionalCollection>: BlockNode<View> wher
             return false
         }
         
-        let line = line.removingFirstIndents(n: indent).restoringIndentInSubview()
+        let line = line.removingFirstIndents(n: indent).restoringIndentInScanner()
         
         switch line.kind {
             
@@ -280,8 +271,7 @@ final class FenceBlockNode <View: BidirectionalCollection>: BlockNode<View> wher
 }
 
 final class CodeBlockNode <View: BidirectionalCollection>: BlockNode<View> where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     var text: [Indices]
@@ -295,11 +285,11 @@ final class CodeBlockNode <View: BidirectionalCollection>: BlockNode<View> where
         switch line.kind {
             
         case .empty:
-            let line = line.removingFirstIndents(n: 4).restoringIndentInSubview()
+            let line = line.removingFirstIndents(n: 4).restoringIndentInScanner()
             trailingEmptyLines.append(line.scanner.indices)
             
         case _ where line.indent.level >= 4:
-            let line = line.removingFirstIndents(n: 4).restoringIndentInSubview()
+            let line = line.removingFirstIndents(n: 4).restoringIndentInScanner()
             text.append(contentsOf: trailingEmptyLines)
             text.append(line.scanner.indices)
             trailingEmptyLines.removeAll()
@@ -315,8 +305,7 @@ final class CodeBlockNode <View: BidirectionalCollection>: BlockNode<View> where
 }
 
 final class ThematicBreakBlockNode <View: BidirectionalCollection>: BlockNode<View> where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     let span: Indices
@@ -332,8 +321,7 @@ final class ThematicBreakBlockNode <View: BidirectionalCollection>: BlockNode<Vi
 }
 
 final class ReferenceDefinitionBlockNode <View: BidirectionalCollection>: BlockNode<View> where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     let title: String
@@ -353,7 +341,7 @@ final class ReferenceDefinitionBlockNode <View: BidirectionalCollection>: BlockN
 extension Line {
     func node() -> BlockNode<View> {
         guard indent.level < 4 else {
-            let newline = self.removingFirstIndents(n: 4).restoringIndentInSubview()
+            let newline = self.removingFirstIndents(n: 4).restoringIndentInScanner()
             return CodeBlockNode(text: [newline.scanner.indices], trailingEmptyLines: [])
         }
         

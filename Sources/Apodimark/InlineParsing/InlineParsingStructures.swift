@@ -32,13 +32,13 @@ enum DelimiterKind {
 
 
 /// Returns true iff a token between `prev` and `next` is considered "left-flanking"
-private func isLeftFlanking(prev: TokenKind, next: TokenKind) -> Bool {
+private func leftFlanking(prev: TokenKind, next: TokenKind) -> Bool {
     return next != .whitespace && (next != .punctuation || prev != .neither)
 }
 
 /// Returns true iff a token between `prev` and `next` is considered "right-flanking"
-private func isRightFlanking(prev: TokenKind, next: TokenKind) -> Bool {
-    return isLeftFlanking(prev: next, next: prev)
+private func rightFlanking(prev: TokenKind, next: TokenKind) -> Bool {
+    return leftFlanking(prev: next, next: prev)
 }
 
 
@@ -54,20 +54,20 @@ struct DelimiterState: OptionSet {
     static let closing = DelimiterState(rawValue: 0b01)
     static let opening = DelimiterState(rawValue: 0b10)
 
-    init <T: MarkdownParserToken> (token: T, prev: TokenKind, next: TokenKind) {
+    init <Codec: MarkdownParserCodec> (token: Codec.CodeUnit, prev: TokenKind, next: TokenKind, codec: Codec.Type) {
         var state: DelimiterState = []
-        let leftFlanking = isLeftFlanking(prev: prev, next: next)
-        let rightFlanking = isRightFlanking(prev: prev, next: next)
+        let isLeftFlanking = leftFlanking(prev: prev, next: next)
+        let isRightFlanking = rightFlanking(prev: prev, next: next)
 
         switch token {
 
-        case T.fromASCII(.asterisk):
-            if rightFlanking { state.formUnion(.closing) }
-            if leftFlanking  { state.formUnion(.opening) }
+        case Codec.asterisk:
+            if isRightFlanking { state.formUnion(.closing) }
+            if isLeftFlanking  { state.formUnion(.opening) }
 
-        case T.fromASCII(.underscore):
-            if rightFlanking && (!leftFlanking  || prev == .punctuation) { state.formUnion(.closing) }
-            if leftFlanking  && (!rightFlanking || next == .punctuation) { state.formUnion(.opening) }
+        case Codec.underscore:
+            if isRightFlanking && (!isLeftFlanking  || prev == .punctuation) { state.formUnion(.closing) }
+            if isLeftFlanking  && (!isRightFlanking || next == .punctuation) { state.formUnion(.opening) }
 
         default:
             fatalError("trying to create emphasis delimiter with character other than asterisk or underscore")
@@ -85,10 +85,10 @@ enum TokenKind {
 
 extension MarkdownParser {
 
-    func tokenKind(_ token: Token) -> TokenKind {
+    func tokenKind(_ token: Codec.CodeUnit) -> TokenKind {
         switch token {
 
-        case space, linefeed:
+        case Codec.space, Codec.linefeed:
             return .whitespace
 
         case let t where isPunctuation(t):

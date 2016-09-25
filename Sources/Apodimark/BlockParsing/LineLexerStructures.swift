@@ -4,7 +4,7 @@
 //
 
 /// The kind of a fence
-enum FenceKind { case Backtick, Tilde }
+enum FenceKind { case backtick, tilde }
 
 /// The kind of a list
 enum ListKind {
@@ -24,7 +24,7 @@ enum ListKind {
     var width: Int {
         switch self {
 
-        case .bullet(_):
+        case .bullet:
             return 1
 
         case .number(_, var value):
@@ -55,8 +55,7 @@ func ~= (lhs: ListKind, rhs: ListKind) -> Bool {
 
 /// The kind of a line
 enum LineKind <View: BidirectionalCollection> where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     indirect case list(ListKind, Line<View>)
@@ -84,13 +83,13 @@ enum IndentKind: Int {
     case space = 1
     case tab = 4
 
-    init? <Token: MarkdownParserToken> (_ token: Token) {
+    init? <Codec: MarkdownParserCodec> (_ token: Codec.CodeUnit, codec: Codec.Type) {
         switch token {
 
-        case Token.fromASCII(.space):
+        case Codec.space:
             self = .space
 
-        case Token.fromASCII(.tab):
+        case Codec.tab:
             self = .tab
 
         default:
@@ -130,9 +129,9 @@ internal struct Indent {
             levelsRemoved += composition[idx].rawValue
             idx += 1
         }
-        let newkinds = Array(composition[idx ..< composition.endIndex])
+        let newComposition = Array(composition[idx ..< composition.endIndex])
 
-        return Indent(level: level - n, composition: newkinds)
+        return Indent(level: level - n, composition: newComposition)
     }
 }
 
@@ -140,12 +139,9 @@ internal struct Indent {
 /// It contains the kind of the line (empty, potential list, simply text, etc.)
 /// as well as its indent and a scanner on the text of the line.
 struct Line <View: BidirectionalCollection> where
-    View.Iterator.Element: MarkdownParserToken,
-    View.SubSequence: Collection,
+    View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
-    typealias Token = View.Iterator.Element
-
     /// The kind of the line (quote, list, header, etc.)
     let kind: LineKind<View>
 
@@ -167,7 +163,7 @@ struct Line <View: BidirectionalCollection> where
 
     // - returns: a new line equal to `self`, except that its scanner contains the tokens making up the indent
     // - precondition: `self.scanner` doesn't contain the tokens making up the indent (precondition not checked at runtime)
-    func restoringIndentInSubview() -> Line {
+    func restoringIndentInScanner() -> Line {
 
         let newScanner = Scanner(
             data: scanner.data,

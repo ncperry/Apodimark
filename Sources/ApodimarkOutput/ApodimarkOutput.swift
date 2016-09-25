@@ -4,56 +4,66 @@ import Apodimark
 // FUNCTIONS INTENDED ONLY FOR TESTING PURPOSES
 // DO NOT USE “APODIMARK OUTPUT” IF YOU ARE NOT TESTING APODIMARK
 
-extension MarkdownBlock {
+extension MarkdownBlock where View.Iterator.Element: Comparable & Hashable {
     typealias Token = View.Iterator.Element
 
-    static func combineNodeOutput(source: View) -> (String, MarkdownBlock) -> String {
+    static func combineNodeOutput <Codec: MarkdownParserCodec> (source: View, codec: Codec.Type) -> (String, MarkdownBlock) -> String
+        where Codec.CodeUnit == Token
+    {
         return { (acc: String, cur: MarkdownBlock) -> String in
-            let appending = output(node: cur, source: source)
+            let appending = output(node: cur, source: source, codec: Codec.self)
             guard !appending.isEmpty else { return acc }
             return acc + appending + ", "
         }
     }
 
-    static func combineNodeOutput(source: View) -> (String, MarkdownInline<View>) -> String {
+    static func combineNodeOutput <Codec: MarkdownParserCodec> (source: View, codec: Codec.Type) -> (String, MarkdownInline<View>) -> String
+        where Codec.CodeUnit == Token
+    {
         return { (acc: String, cur: MarkdownInline<View>) -> String in
-            let appending = output(node: cur, source: source)
+            let appending = output(node: cur, source: source, codec: Codec.self)
             guard !appending.isEmpty else { return acc }
             return acc + appending
         }
     }
 
-    public static func output(nodes: [MarkdownBlock], source: View) -> String {
-        return nodes.reduce("Document { ", combineNodeOutput(source: source)) + "}"
+    public static func output <Codec: MarkdownParserCodec> (nodes: [MarkdownBlock], source: View, codec: Codec.Type) -> String
+        where Codec.CodeUnit == Token
+    {
+        return nodes.reduce("Document { ", combineNodeOutput(source: source, codec: Codec.self)) + "}"
     }
-    static func output(nodes: [MarkdownInline<View>], source: View) -> String {
-        return nodes.reduce("", combineNodeOutput(source: source))
+    static func output <Codec: MarkdownParserCodec> (nodes: [MarkdownInline<View>], source: View, codec: Codec.Type) -> String
+        where Codec.CodeUnit == Token
+    {
+        return nodes.reduce("", combineNodeOutput(source: source, codec: Codec.self))
     }
 
-    static func output(node: MarkdownInline<View>, source: View) -> String {
+    static func output <Codec: MarkdownParserCodec> (node: MarkdownInline<View>, source: View, codec: Codec.Type) -> String
+        where Codec.CodeUnit == Token
+    {
         switch node {
 
-        case .text(let indices):
-            return Token.string(fromTokens: source[indices])
+        case .text(let t):
+            return Codec.string(fromTokens: source[t.span])
 
-        case .emphasis(level: let level, content: let content, _):
-            return "e\(level)(" + content.reduce("", combineNodeOutput(source: source)) + ")"
+        case .emphasis(let e):
+            return "e\(e.level)(" + e.content.reduce("", combineNodeOutput(source: source, codec: Codec.self)) + ")"
 
-        case .monospacedText(let children, _):
-            return "code(" + children.reduce("") { (acc, cur) in
+        case .monospacedText(let m):
+            return "code(" + m.content.reduce("") { (acc, cur) in
                 let next: String
                 switch cur {
                 case .softbreak, .hardbreak: next = " "
-                case .text(let idcs): next = Token.string(fromTokens: source[idcs])
+                case .text(let t): next = Codec.string(fromTokens: source[t.span])
                 default: fatalError()
                 }
                 return acc + next
             } + ")"
 
-        case .reference(kind: let kind, title: let title, definition: let definition, markers: _):
-            let kindDesc = kind == .unwrapped ? "uref" : "ref"
-            let titleDesc = output(nodes: title, source: source)
-            return "[\(kindDesc): \(titleDesc)(\(definition))]"
+        case .reference(let r):
+            let kindDesc = r.kind == .unwrapped ? "uref" : "ref"
+            let titleDesc = output(nodes: r.title, source: source, codec: Codec.self)
+            return "[\(kindDesc): \(titleDesc)(\(r.definition))]"
 
         case .hardbreak:
             return "[hardbreak]"
@@ -63,43 +73,45 @@ extension MarkdownBlock {
         }
     }
 
-    static func output(node: MarkdownBlock, source: View) -> String {
+    static func output <Codec: MarkdownParserCodec> (node: MarkdownBlock, source: View, codec: Codec.Type) -> String
+        where Codec.CodeUnit == Token
+    {
         switch node {
 
-        case .paragraph(text: let idcs):
-            return "Paragraph(\(idcs.reduce("", combineNodeOutput(source: source))))"
+        case .paragraph(let p):
+            return "Paragraph(\(p.text.reduce("", combineNodeOutput(source: source, codec: Codec.self))))"
 
-        case .header(level: let level, text: let text, markers: _):
-            return "Header(\(level), \(text.reduce("", combineNodeOutput(source: source))))"
+        case .header(let h):
+            return "Header(\(h.level), \(h.text.reduce("", combineNodeOutput(source: source, codec: Codec.self))))"
 
-        case .code(text: let text):
-            if let first = text.first {
-                return "Code[" + text.dropFirst().reduce(Token.string(fromTokens: source[first])) { acc, cur in
-                    return acc + "\n" + Token.string(fromTokens: source[cur])
+        case .code(let c):
+            if let first = c.text.first {
+                return "Code[" + c.text.dropFirst().reduce(Codec.string(fromTokens: source[first])) { acc, cur in
+                    return acc + "\n" + Codec.string(fromTokens: source[cur])
                     } + "]"
             } else {
                 return "Code[]"
             }
 
-        case .fence(name: let name, text: let text, _):
-            let name = Token.string(fromTokens: source[name])
-            if let first = text.first {
-                return "Fence[" + name + "][" + text.dropFirst().reduce(Token.string(fromTokens: source[first])) { acc, cur in
-                    return acc + "\n" + Token.string(fromTokens: source[cur])
+        case .fence(let f):
+            let name = Codec.string(fromTokens: source[f.name])
+            if let first = f.text.first {
+                return "Fence[" + name + "][" + f.text.dropFirst().reduce(Codec.string(fromTokens: source[first])) { acc, cur in
+                    return acc + "\n" + Codec.string(fromTokens: source[cur])
                     } + "]"
             } else {
                 return "Fence[" + name + "][]"
             }
 
-        case .quote(content: let content, _):
-            return "Quote { " + content.reduce("", combineNodeOutput(source: source)) + "}"
+        case .quote(let q):
+            return "Quote { " + q.content.reduce("", combineNodeOutput(source: source, codec: Codec.self)) + "}"
 
-        case .list(kind: let kind, items: let items):
+        case .list(let l):
             var itemsDesc = ""
-            for item in items {
-                itemsDesc += "Item { " + item.content.reduce("", combineNodeOutput(source: source)) + "}, "
+            for item in l.items {
+                itemsDesc += "Item { " + item.content.reduce("", combineNodeOutput(source: source, codec: Codec.self)) + "}, "
             }
-            return "List[\(kind)] { " + itemsDesc + "}"
+            return "List[\(l.kind)] { " + itemsDesc + "}"
             
             
         case .thematicBreak:

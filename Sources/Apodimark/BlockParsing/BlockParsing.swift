@@ -5,7 +5,7 @@
 
 extension MarkdownParser {
 
-    func parseBlocks() -> [BlockNode<View>] {
+    mutating func parseBlocks() -> [BlockNode<View>] {
 
         var children: [BlockNode<View>] = []
 
@@ -20,7 +20,7 @@ extension MarkdownParser {
                 }
             }
             // TODO: handle different line endings than LF
-            _ = scanner.pop(linefeed)
+            _ = scanner.pop(Codec.linefeed)
         }
 
         for child in children {
@@ -30,7 +30,7 @@ extension MarkdownParser {
         return children
     }
 
-    fileprivate func addReferenceDefinitions(fromNode node: BlockNode<View>) {
+    fileprivate mutating func addReferenceDefinitions(fromNode node: BlockNode<View>) {
         switch node {
         case let node as ReferenceDefinitionBlockNode<View> where referenceDefinitions[node.title] == nil:
             referenceDefinitions[node.title] = node.definition

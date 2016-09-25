@@ -39,8 +39,8 @@ extension MarkdownParser {
         }
         
         guard
-            case let openingDel? = delimiters[openingDelIdx],
-            case let closingDel? = delimiters[closingDelIdx],
+            let openingDel = delimiters[openingDelIdx],
+            let closingDel = delimiters[closingDelIdx],
             case .emph(let kind, let state1, let l1) = openingDel.kind,
             case .emph(kind, let state2, let l2) = closingDel.kind
         else {
