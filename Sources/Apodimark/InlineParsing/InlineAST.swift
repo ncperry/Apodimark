@@ -54,20 +54,19 @@ extension MarkdownParser {
             return insertNode(node, in: ast.parent!)
         }
 
-        let list = ast.list
         var prevI = ast.index
-        let i = prevI == nil ? list.startIndex : list.index(after: prevI!)
+        let i = prevI == nil ? ast.list.startIndex : ast.list.index(after: prevI!)
         
-        if i < list.endIndex {
-            if list[i].contains(node: node) {
-                return insertNode(node, in: InlineAST(list: list[i].children, index: nil, parent: ast.withIndex(prevI)))
+        if i < ast.list.endIndex {
+            if ast.list[i].contains(node: node) {
+                return insertNode(node, in: InlineAST(list: ast.list[i].children, index: nil, parent: ast.withIndex(prevI)))
             }
             prevI = i
         }
         
-        _ = list.add(node, after: prevI)
+        _ = ast.list.add(node, after: prevI)
 
-        return InlineAST(list: list, index: prevI, parent: ast.parent)
+        return InlineAST(list: ast.list, index: prevI, parent: ast.parent)
     }
 
     func makeAST(with nodes: [InlineNode<View>]) -> LinkedList<InlineNode<View>> {
