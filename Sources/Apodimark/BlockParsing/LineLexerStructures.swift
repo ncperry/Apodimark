@@ -61,8 +61,8 @@ enum LineKind <View: BidirectionalCollection> where
     indirect case list(ListKind, Line<View>)
     indirect case quote(Line<View>)
     case text
-    case header(Range<View.Index>, Int)
-    case fence(FenceKind, Range<View.Index>, Int)
+    case header(Range<View.Index>, View.IndexDistance)
+    case fence(FenceKind, Range<View.Index>, View.IndexDistance)
     case thematicBreak
     case empty
     case reference(String, ReferenceDefinition)

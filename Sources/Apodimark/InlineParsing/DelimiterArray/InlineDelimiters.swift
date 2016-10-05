@@ -42,12 +42,12 @@ extension MarkdownParser {
                     let delimiterState = DelimiterState(token: token, prev: prevTokenKind, next: nextTokenKind, codec: Codec.self)
                     let lvl = view.distance(from: idxBeforeRun, to: scanner.startIndex)
                     let kind: EmphasisKind = token == Codec.underscore ? .underscore : .asterisk
-                    delimiters.append((.emph(kind, delimiterState, Int(lvl.toIntMax())), scanner.startIndex))
+                    delimiters.append((.emph(kind, delimiterState, lvl), scanner.startIndex))
 
                 case Codec.backtick:
                     let idxBeforeRun = view.index(before: scanner.startIndex)
                     scanner.popWhile(Codec.backtick)
-                    let lvl = Int(view.distance(from: idxBeforeRun, to: scanner.startIndex).toIntMax())
+                    let lvl = view.distance(from: idxBeforeRun, to: scanner.startIndex)
                     delimiters.append((.code(lvl), scanner.startIndex))
 
                 case Codec.exclammark:

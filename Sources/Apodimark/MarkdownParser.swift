@@ -12,7 +12,7 @@ struct MarkdownParser <View: BidirectionalCollection, Codec: MarkdownParserCodec
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
-    typealias Delimiter = (kind: DelimiterKind, idx: View.Index)
+    typealias Delimiter = (kind: DelimiterKind<View>, idx: View.Index)
     
     let view: View
     var referenceDefinitions: [String: ReferenceDefinition]

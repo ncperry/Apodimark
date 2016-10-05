@@ -18,7 +18,7 @@ extension MarkdownParser {
     func processMonospacedText(_ delimiters: inout DelimiterSlice) -> (InlineNode<View>, newStart: Int)? {
 
         guard let (openingDelIdx, openingDel, closingDelIdx, closingDel, level) = {
-            () -> (Int, Delimiter, Int, Delimiter, Int)? in
+            () -> (Int, Delimiter, Int, Delimiter, View.IndexDistance)? in
             
             var ignoring = false
             
@@ -72,7 +72,7 @@ extension MarkdownParser {
         return (
             InlineNode(
                 kind: .code(level),
-                start: view.index(openingDel.idx, offsetBy: View.IndexDistance(-level.toIntMax())),
+                start: view.index(openingDel.idx, offsetBy: -level),
                 end: closingDel.idx
             ),
             closingDelIdx

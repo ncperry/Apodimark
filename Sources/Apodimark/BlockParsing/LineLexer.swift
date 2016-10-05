@@ -176,9 +176,9 @@ extension MarkdownParser {
 }
 
 /// Error type used for parsing a header line
-fileprivate enum HeaderParsingError: Error {
+fileprivate enum HeaderParsingError<View: BidirectionalCollection>: Error {
     case notAHeader
-    case emptyHeader(Int)
+    case emptyHeader(View.IndexDistance)
 }
 
 extension MarkdownParser {
@@ -194,27 +194,27 @@ extension MarkdownParser {
         // |_<--- (start of line)
 
         do {
-            var level = 0
+            var level: View.IndexDistance = 0
             try scanner.popWhile { token in
 
                 guard let token = token else {
-                    throw HeaderParsingError.emptyHeader(level)
+                    throw HeaderParsingError<View>.emptyHeader(level)
                 }
 
                 switch token {
 
                 case Codec.hash where level < 6:
-                    level += 1
+                    level = level + 1
                     return true
 
                 case Codec.space:
                     return false
 
                 case Codec.linefeed:
-                    throw HeaderParsingError.emptyHeader(level)
+                    throw HeaderParsingError<View>.emptyHeader(level)
 
                 default:
-                    throw HeaderParsingError.notAHeader
+                    throw HeaderParsingError<View>.notAHeader
                 }
             }
             // ##  Hello
@@ -234,12 +234,12 @@ extension MarkdownParser {
             let headerkind = LineKind<View>.header(start ..< end, level)
             return Line(headerkind, indent, initialSubview.prefix(upTo: scanner.startIndex))
         }
-        catch HeaderParsingError.notAHeader {
+        catch HeaderParsingError<View>.notAHeader {
             // scanner could point anywhere but not past end of line
             scanner.popUntil(Codec.linefeed)
             return Line(.text, indent, initialSubview.prefix(upTo: scanner.startIndex))
         }
-        catch HeaderParsingError.emptyHeader(let level) {
+        catch HeaderParsingError<View>.emptyHeader(let level) {
             // scanner could point anywhere but not past end of line
             scanner.popUntil(Codec.linefeed)
             let lineKind = LineKind<View>.header(scanner.startIndex ..< scanner.startIndex, level)
@@ -252,9 +252,9 @@ extension MarkdownParser {
 }
 
 /// Error type used for a parsing a Fence
-fileprivate enum FenceParsingError: Error {
+fileprivate enum FenceParsingError<View: BidirectionalCollection>: Error {
     case notAFence
-    case emptyFence(FenceKind, Int)
+    case emptyFence(FenceKind, View.IndexDistance)
 }
 
 extension MarkdownParser {
@@ -279,7 +279,7 @@ extension MarkdownParser {
                 break
 
             case Codec.backtick:
-                throw FenceParsingError.notAFence
+                throw FenceParsingError<View>.notAFence
 
             case _:
                 end = scanner.startIndex
@@ -312,28 +312,28 @@ extension MarkdownParser {
         // |_<---
 
         do {
-            var level = 1
+            var level: View.IndexDistance = 1
             try scanner.popWhile { token in
 
                 guard let token = token else {
-                    throw FenceParsingError.emptyFence(kind, level)
+                    throw FenceParsingError<View>.emptyFence(kind, level)
                 }
 
                 switch token {
 
                 case firstLetter:
-                    level += 1
+                    level = level + 1
                     return true
 
                 case Codec.linefeed:
                     guard level >= 3 else {
-                        throw FenceParsingError.notAFence
+                        throw FenceParsingError<View>.notAFence
                     }
-                    throw FenceParsingError.emptyFence(kind, level)
+                    throw FenceParsingError<View>.emptyFence(kind, level)
 
                 case _:
                     guard level >= 3 else {
-                        throw FenceParsingError.notAFence
+                        throw FenceParsingError<View>.notAFence
                     }
                     return false
                 }
@@ -355,12 +355,12 @@ extension MarkdownParser {
             let linekind = LineKind<View>.fence(kind, start ..< end, level)
             return Line(linekind, indent, initialSubview.prefix(upTo: scanner.startIndex))
         }
-        catch FenceParsingError.notAFence {
+        catch FenceParsingError<View>.notAFence {
             // scanner could point anywhere but not past end of line
             scanner.popUntil(Codec.linefeed)
             return Line(.text, indent, initialSubview.prefix(upTo: scanner.startIndex))
         }
-        catch let FenceParsingError.emptyFence(kind, level) {
+        catch FenceParsingError<View>.emptyFence(let kind, let level) {
             // scanner could point anywhere but not past end of line
             scanner.popUntil(Codec.linefeed)
             let linekind = LineKind<View>.fence(kind, scanner.startIndex ..< scanner.startIndex, level)

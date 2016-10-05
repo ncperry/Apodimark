@@ -19,8 +19,8 @@ enum InlineNodeKind <View: BidirectionalCollection> where
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     indirect case reference(ReferenceKind, title: Range<View.Index>, definition: ReferenceDefinition)
-    case code(Int)
-    case emphasis(Int)
+    case code(View.IndexDistance)
+    case emphasis(View.IndexDistance)
     case text
     case softbreak
     case hardbreak
@@ -40,8 +40,10 @@ struct InlineNode <View: BidirectionalCollection> where
         case .reference(_, let title, _):
             return title
 
-        case .code(let l), .emphasis(let l):
-            return view.index(start, offsetBy: View.IndexDistance(l.toIntMax())) ..< view.index(end, offsetBy: View.IndexDistance(-l.toIntMax()))
+        case .code(let l):
+            return view.index(start, offsetBy: l) ..< view.index(end, offsetBy: -l)
+        case .emphasis(let l):
+            return view.index(start, offsetBy: l) ..< view.index(end, offsetBy: -l)
 
         default:
             return start ..< end

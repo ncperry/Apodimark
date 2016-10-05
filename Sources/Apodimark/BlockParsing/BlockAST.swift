@@ -60,8 +60,8 @@ final class HeaderBlockNode <View: BidirectionalCollection>: BlockNode<View> whe
 {
     let markers: (Indices, Indices?)
     let text: Indices
-    let level: Int
-    init(markers: (Indices, Indices?), text: Indices, level: Int) {
+    let level: View.IndexDistance
+    init(markers: (Indices, Indices?), text: Indices, level: View.IndexDistance) {
         (self.markers, self.text, self.level) = (markers, text, level)
     }
     override func add(line: Line<View>) -> AddLineResult {
@@ -277,11 +277,11 @@ final class FenceBlockNode <View: BidirectionalCollection>: BlockNode<View> wher
     var markers: (Indices, Indices?)
     let name: Indices
     var text: [Indices]
-    let level: Int
+    let level: View.IndexDistance
     let indent: Int
     var closed: Bool
     
-    init (kind: FenceKind, startMarker: Indices, name: Indices, text: [Indices], level: Int, indent: Int) {
+    init (kind: FenceKind, startMarker: Indices, name: Indices, text: [Indices], level: View.IndexDistance, indent: Int) {
         (self.kind, self.markers, self.name, self.text, self.level, self.indent, self.closed) = (kind, (startMarker, nil), name, text, level, indent, false)
     }
     
@@ -418,7 +418,7 @@ extension Line {
             
             
         case .header(let text, let level):
-            let startHashes = scanner.startIndex ..< scanner.data.index(scanner.startIndex, offsetBy: View.IndexDistance(level.toIntMax()))
+            let startHashes = scanner.startIndex ..< scanner.data.index(scanner.startIndex, offsetBy: level)
             let endHashes: Range<View.Index>? = {
                 let tmp = text.upperBound ..< scanner.endIndex
                 return tmp.isEmpty ? nil : tmp
@@ -429,7 +429,7 @@ extension Line {
             return QuoteBlockNode(firstMarker: scanner.startIndex, firstNode: rest.node())
             
         case let .fence(kind, name, level):
-            let startMarker = scanner.startIndex ..< scanner.data.index(scanner.startIndex, offsetBy: View.IndexDistance(level.toIntMax()))
+            let startMarker = scanner.startIndex ..< scanner.data.index(scanner.startIndex, offsetBy: level)
             return FenceBlockNode(kind: kind, startMarker: startMarker, name: name, text: [], level: level, indent: indent.level)
             
         case .thematicBreak:

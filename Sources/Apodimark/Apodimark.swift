@@ -188,8 +188,8 @@ extension MarkdownParser {
             return .text(TextInline(span: node.contentRange(inView: view)))
 
         case .code(let level):
-            let startMarkers = node.start ..< view.index(node.start, offsetBy: View.IndexDistance(level.toIntMax()))
-            let endMarkers = view.index(node.end, offsetBy: View.IndexDistance(-level.toIntMax())) ..< node.end
+            let startMarkers = node.start ..< view.index(node.start, offsetBy: level)
+            let endMarkers = view.index(node.end, offsetBy: -level) ..< node.end
             
             let inline = MonospacedTextInline(
                 content: node.children.map(makeFinalInlineNode),
@@ -198,11 +198,11 @@ extension MarkdownParser {
             return .monospacedText(inline)
 
         case .emphasis(let level):
-            let startMarkers = node.start ..< view.index(node.start, offsetBy: View.IndexDistance(level.toIntMax()))
-            let endMarkers = view.index(node.end, offsetBy: View.IndexDistance(-level.toIntMax())) ..< node.end
+            let startMarkers = node.start ..< view.index(node.start, offsetBy: level)
+            let endMarkers = view.index(node.end, offsetBy: -level) ..< node.end
             
             let inline = EmphasisInline(
-                level: level,
+                level: Int(level.toIntMax()),
                 content: node.children.map(makeFinalInlineNode),
                 markers: (startMarkers, endMarkers)
             )
@@ -234,7 +234,7 @@ extension MarkdownParser {
 
         case let node as HeaderBlockNode<View>:
             let block = HeaderBlock(
-                level: node.level,
+                level: Int(node.level.toIntMax()),
                 text: parseInlines(text: [node.text]).map(makeFinalInlineNode),
                 markers: node.markers
             )

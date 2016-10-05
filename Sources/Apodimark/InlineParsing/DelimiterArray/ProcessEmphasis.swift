@@ -59,16 +59,15 @@ extension MarkdownParser {
             }
         }
         
-        switch Int.compare(l1, l2) {
+        switch View.IndexDistance.compare(l1, l2) {
             
         case .equal:
             delimiters[openingDelIdx] = nil
             delimiters[closingDelIdx] = nil
-            
             return (
                 InlineNode(
                     kind: .emphasis(l1),
-                    start: view.index(openingDel.idx, offsetBy: View.IndexDistance(-l1.toIntMax())),
+                    start: view.index(openingDel.idx, offsetBy: -l1),
                     end: closingDel.idx),
                 newStart
             )
@@ -76,10 +75,8 @@ extension MarkdownParser {
         case .lessThan:
             delimiters[openingDelIdx] = nil
             delimiters[closingDelIdx]!.kind = .emph(kind, state2, l2 - l1)
-            let startOffset = View.IndexDistance(-l1.toIntMax())
-            let endOffset1 = -(l2 - l1).toIntMax()
-            let endOffset = View.IndexDistance(endOffset1)
-            
+            let startOffset = -l1
+            let endOffset = -(l2 - l1)
             return (
                 InlineNode(
                     kind: .emphasis(l1),
@@ -91,13 +88,12 @@ extension MarkdownParser {
             
         case .greaterThan:
             delimiters[closingDelIdx] = nil
-            view.formIndex(&delimiters[openingDelIdx]!.idx, offsetBy: View.IndexDistance(-l2.toIntMax()))
+            view.formIndex(&delimiters[openingDelIdx]!.idx, offsetBy: -l2)
             delimiters[openingDelIdx]!.kind = .emph(kind, state1, l1 - l2)
-            
             return (
                 InlineNode(
                     kind: .emphasis(l2),
-                    start: view.index(openingDel.idx, offsetBy: View.IndexDistance(-l2.toIntMax())),
+                    start: view.index(openingDel.idx, offsetBy: -l2),
                     end: closingDel.idx
                 ),
                 newStart
