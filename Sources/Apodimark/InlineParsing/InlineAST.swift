@@ -5,7 +5,6 @@
 
 
 /// A reference to a node of an inline abstract syntax tree.
-final class InlineAST <View: BidirectionalCollection> where
 fileprivate final class InlineAST <View: BidirectionalCollection> where
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
