@@ -174,18 +174,8 @@ extension MarkdownParser {
         return parseBlocks().flatMap(makeFinalBlock)
     }
 
-    /// Return a MarkdownInline node from an instance of the internal InlineNode type
-    fileprivate func makeFinalInlineNode(from node: InlineNode<View>) -> MarkdownInline<View> {
+    fileprivate func makeFinalInlineNode(from node: NonTextInlineNode<View>) -> MarkdownInline<View> {
         switch node.kind {
-
-        case .hardbreak:
-            return .hardbreak(BreakInline(span: node.start ..< node.end))
-
-        case .softbreak:
-            return .softbreak(BreakInline(span: node.start ..< node.end))
-
-        case .text:
-            return .text(TextInline(span: node.contentRange(inView: view)))
 
         case .code(let level):
             let startMarkers = node.start ..< view.index(node.start, offsetBy: level)
@@ -220,6 +210,27 @@ extension MarkdownParser {
             )
             
             return .reference(inline)
+        }
+    }
+    
+    fileprivate func makeFinalInlineNode(from node: TextInlineNode<View>) -> MarkdownInline<View> {
+        switch node.kind {
+            
+        case .hardbreak:
+            return .hardbreak(BreakInline(span: node.start ..< node.end))
+            
+        case .softbreak:
+            return .softbreak(BreakInline(span: node.start ..< node.end))
+            
+        case .text:
+            return .text(TextInline(span: node.start ..< node.end))
+        }
+    }
+    
+    fileprivate func makeFinalInlineNode(from node: InlineNode<View>) -> MarkdownInline<View> {
+        switch node {
+        case .text(let i): return makeFinalInlineNode(from: i)
+        case .nonText(let i): return makeFinalInlineNode(from: i)
         }
     }
 

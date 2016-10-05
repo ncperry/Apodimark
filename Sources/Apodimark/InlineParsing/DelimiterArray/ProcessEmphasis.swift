@@ -5,8 +5,8 @@
 
 extension MarkdownParser {
     
-    func processAllEmphases(_ delimiters: inout DelimiterSlice) -> [InlineNode<View>] {
-        var all: [InlineNode<View>] = []
+    func processAllEmphases(_ delimiters: inout DelimiterSlice) -> [NonTextInlineNode<View>] {
+        var all: [NonTextInlineNode<View>] = []
         var start = delimiters.startIndex
         while let (r, newStart) = processEmphasis(&delimiters[start ..< delimiters.endIndex]) {
             all.append(r)
@@ -15,7 +15,7 @@ extension MarkdownParser {
         return all
     }
 
-    fileprivate func processEmphasis(_ delimiters: inout DelimiterSlice) -> (InlineNode<View>, newStart: Int)? {
+    fileprivate func processEmphasis(_ delimiters: inout DelimiterSlice) -> (NonTextInlineNode<View>, newStart: Int)? {
         
         guard let (newStart, openingDelIdx, closingDelIdx) = {
             () -> (Int, Int, Int)? in
@@ -65,7 +65,7 @@ extension MarkdownParser {
             delimiters[openingDelIdx] = nil
             delimiters[closingDelIdx] = nil
             return (
-                InlineNode(
+                NonTextInlineNode(
                     kind: .emphasis(l1),
                     start: view.index(openingDel.idx, offsetBy: -l1),
                     end: closingDel.idx),
@@ -78,7 +78,7 @@ extension MarkdownParser {
             let startOffset = -l1
             let endOffset = -(l2 - l1)
             return (
-                InlineNode(
+                NonTextInlineNode(
                     kind: .emphasis(l1),
                     start: view.index(openingDel.idx, offsetBy: startOffset),
                     end: view.index(closingDel.idx, offsetBy: endOffset)),
@@ -91,7 +91,7 @@ extension MarkdownParser {
             view.formIndex(&delimiters[openingDelIdx]!.idx, offsetBy: -l2)
             delimiters[openingDelIdx]!.kind = .emph(kind, state1, l1 - l2)
             return (
-                InlineNode(
+                NonTextInlineNode(
                     kind: .emphasis(l2),
                     start: view.index(openingDel.idx, offsetBy: -l2),
                     end: closingDel.idx

@@ -10,7 +10,7 @@ private func stringForTest(_ name: String, result: Bool = false) -> String {
 }
 
 // Step 1: get the document
-let mixed1 = stringForTest("emphases")
+let mixed1 = stringForTest("mixed1")
 var s = ""
 // Step 2: repeat the string until it reaches 10 million code points
 while s.utf16.count < 10_000_000 {

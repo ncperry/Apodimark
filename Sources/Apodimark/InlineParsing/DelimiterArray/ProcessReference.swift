@@ -5,8 +5,8 @@
 
 extension MarkdownParser {
 
-    func processAllReferences(_ delimiters: inout DelimiterSlice) -> [InlineNode<View>] {
-        var all: [InlineNode<View>] = []
+    func processAllReferences(_ delimiters: inout DelimiterSlice) -> [NonTextInlineNode<View>] {
+        var all: [NonTextInlineNode<View>] = []
         var start = delimiters.startIndex
         while let (ref, newStart) = processReference(&delimiters[start ..< delimiters.endIndex]) {
             all.append(contentsOf: ref)
@@ -15,7 +15,7 @@ extension MarkdownParser {
         return all
     }
 
-    fileprivate func processReference(_ delimiters: inout DelimiterSlice) -> ([InlineNode<View>], newStart: Int)? {
+    fileprivate func processReference(_ delimiters: inout DelimiterSlice) -> ([NonTextInlineNode<View>], newStart: Int)? {
 
         guard let (newStart, openingTitleDelIdx, openingTitleDel, closingTitleDelIdx, closingTitleDel, refKind) = {
             () -> (Int, Int, Delimiter, Int, Delimiter, ReferenceKind)? in
@@ -133,7 +133,7 @@ extension MarkdownParser {
             
         let title = openingTitleDel.idx ..< view.index(before: closingTitleDel.idx)
         
-        let refNode = InlineNode<View>(
+        let refNode = NonTextInlineNode<View>(
             kind: .reference(refKind, title: title, definition: definition),
             start: span.lowerBound,
             end: span.upperBound)

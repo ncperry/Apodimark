@@ -226,6 +226,10 @@ extension LinkedList: MutableCollection {
         return LinkedListIndices(startIndex: startIndex, endIndex: endIndex)
     }
 
+    func index(after idx: Index?) -> Index {
+        return idx.map { index(after: $0) } ?? startIndex
+    }
+    
     func index(after idx: Index) -> Index {
         return LinkedListIndex(position: idx.position + 1, node: idx.node.next)
     }

@@ -5,8 +5,8 @@
 
 extension MarkdownParser {
 
-    func processAllMonospacedText(_ delimiters: inout DelimiterSlice) -> [InlineNode<View>] {
-        var all: [InlineNode<View>] = []
+    func processAllMonospacedText(_ delimiters: inout DelimiterSlice) -> [NonTextInlineNode<View>] {
+        var all: [NonTextInlineNode<View>] = []
         var start = delimiters.startIndex
         while let (r, newStart) = processMonospacedText(&delimiters[start ..< delimiters.endIndex]) {
             all.append(r)
@@ -15,7 +15,7 @@ extension MarkdownParser {
         return all
     }
 
-    func processMonospacedText(_ delimiters: inout DelimiterSlice) -> (InlineNode<View>, newStart: Int)? {
+    func processMonospacedText(_ delimiters: inout DelimiterSlice) -> (NonTextInlineNode<View>, newStart: Int)? {
 
         guard let (openingDelIdx, openingDel, closingDelIdx, closingDel, level) = {
             () -> (Int, Delimiter, Int, Delimiter, View.IndexDistance)? in
@@ -70,7 +70,7 @@ extension MarkdownParser {
         }
         
         return (
-            InlineNode(
+            NonTextInlineNode(
                 kind: .code(level),
                 start: view.index(openingDel.idx, offsetBy: -level),
                 end: closingDel.idx

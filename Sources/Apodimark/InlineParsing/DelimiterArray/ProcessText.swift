@@ -5,8 +5,8 @@
 
 extension MarkdownParser {
 
-    func processText(_ delimiters: inout DelimiterSlice) -> [InlineNode<View>] {
 
+    func processText(_ delimiters: [Delimiter?]) -> [TextInlineNode<View>] {
         guard let first: Delimiter = {
             for case let del? in delimiters {
                 return del
@@ -17,32 +17,31 @@ extension MarkdownParser {
             fatalError()
         }
 
-        var textNodes = [InlineNode<View>]()
+        var textNodes = [TextInlineNode<View>]()
         var startViewIndex = first.idx
 
-        for i in delimiters.indices {
-            guard case let del? = delimiters[i] else { continue }
+        for case let del? in delimiters {
 
             switch del.kind {
             case .start:
                 startViewIndex = del.idx
-
+                
             case .end:
-                textNodes.append(InlineNode(kind: .text, start: startViewIndex, end: del.idx))
+                textNodes.append(TextInlineNode(kind: .text, start: startViewIndex, end: del.idx))
                 startViewIndex = del.idx
-
+                
             case .softbreak:
-                textNodes.append(InlineNode(kind: .softbreak, start: startViewIndex, end: del.idx))
+                textNodes.append(TextInlineNode(kind: .softbreak, start: startViewIndex, end: del.idx))
                 startViewIndex = del.idx
-
+                
             case .hardbreak:
-                textNodes.append(InlineNode(kind: .hardbreak, start: startViewIndex, end: del.idx))
+                textNodes.append(TextInlineNode(kind: .hardbreak, start: startViewIndex, end: del.idx))
                 startViewIndex = del.idx
-
+                
             case .ignored:
-                textNodes.append(InlineNode(kind: .text, start: startViewIndex, end: view.index(before: del.idx)))
+                textNodes.append(TextInlineNode(kind: .text, start: startViewIndex, end: view.index(before: del.idx)))
                 startViewIndex = del.idx
-
+                
             default:
                 break
             }

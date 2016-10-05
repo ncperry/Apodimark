@@ -14,24 +14,44 @@ public enum ReferenceKind {
     }
 }
 
-enum InlineNodeKind <View: BidirectionalCollection> where
+enum InlineNode <View: BidirectionalCollection> where
+    View.SubSequence: BidirectionalCollection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
+    case text(TextInlineNode<View>)
+    case nonText(NonTextInlineNode<View>)
+}
+
+enum NonTextInlineNodeKind <View: BidirectionalCollection> where
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     indirect case reference(ReferenceKind, title: Range<View.Index>, definition: ReferenceDefinition)
     case code(View.IndexDistance)
     case emphasis(View.IndexDistance)
+}
+
+
+enum TextInlineNodeKind {
     case text
     case softbreak
     case hardbreak
 }
 
-struct InlineNode <View: BidirectionalCollection> where
+struct TextInlineNode <View: BidirectionalCollection> where
+    View.SubSequence: BidirectionalCollection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
+    let kind: TextInlineNodeKind
+    let (start, end): (View.Index, View.Index)
+}
+
+struct NonTextInlineNode <View: BidirectionalCollection> where
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
 
-    let kind: InlineNodeKind<View>
+    let kind: NonTextInlineNodeKind<View>
     let (start, end): (View.Index, View.Index)
 
     func contentRange(inView view: View) -> Range<View.Index> {
@@ -45,14 +65,12 @@ struct InlineNode <View: BidirectionalCollection> where
         case .emphasis(let l):
             return view.index(start, offsetBy: l) ..< view.index(end, offsetBy: -l)
 
-        default:
-            return start ..< end
         }
     }
 
-    var children: LinkedList<InlineNode> = []
+    var children: LinkedList<InlineNode<View>> = []
 
-    init(kind: InlineNodeKind<View>, start: View.Index, end: View.Index) {
+    init(kind: NonTextInlineNodeKind<View>, start: View.Index, end: View.Index) {
         (self.kind, self.start, self.end) = (kind, start, end)
     }
 }
@@ -62,12 +80,18 @@ struct InlineNode <View: BidirectionalCollection> where
  sorting an array an InlineNode with a closure like `nodes.sort { $0.start < $1.start }` is less efficient
  than making InlineNode conform to Comparabe and use `nodes.sort()`.
  */
-extension InlineNode: Comparable {
-    static func <  (lhs: InlineNode, rhs: InlineNode) -> Bool { return lhs.start <  rhs.start }
-    static func <= (lhs: InlineNode, rhs: InlineNode) -> Bool { return lhs.start <= rhs.start }
-    static func == (lhs: InlineNode, rhs: InlineNode) -> Bool { return lhs.start == rhs.start }
-    static func >  (lhs: InlineNode, rhs: InlineNode) -> Bool { return lhs.start >  rhs.start }
-    static func >= (lhs: InlineNode, rhs: InlineNode) -> Bool { return lhs.start >= rhs.start }
+extension TextInlineNode: Comparable {
+    static func <  (lhs: TextInlineNode, rhs: TextInlineNode) -> Bool { return lhs.start <  rhs.start }
+    static func <= (lhs: TextInlineNode, rhs: TextInlineNode) -> Bool { return lhs.start <= rhs.start }
+    static func == (lhs: TextInlineNode, rhs: TextInlineNode) -> Bool { return lhs.start == rhs.start }
+    static func >  (lhs: TextInlineNode, rhs: TextInlineNode) -> Bool { return lhs.start >  rhs.start }
+    static func >= (lhs: TextInlineNode, rhs: TextInlineNode) -> Bool { return lhs.start >= rhs.start }
 }
 
-
+extension NonTextInlineNode: Comparable {
+    static func <  (lhs: NonTextInlineNode, rhs: NonTextInlineNode) -> Bool { return lhs.start <  rhs.start }
+    static func <= (lhs: NonTextInlineNode, rhs: NonTextInlineNode) -> Bool { return lhs.start <= rhs.start }
+    static func == (lhs: NonTextInlineNode, rhs: NonTextInlineNode) -> Bool { return lhs.start == rhs.start }
+    static func >  (lhs: NonTextInlineNode, rhs: NonTextInlineNode) -> Bool { return lhs.start >  rhs.start }
+    static func >= (lhs: NonTextInlineNode, rhs: NonTextInlineNode) -> Bool { return lhs.start >= rhs.start }
+}

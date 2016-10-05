@@ -3,10 +3,10 @@
 //  Apodimark
 //
 
-// I’m so sorry for the code in this file...
 
 /// A reference to a node of an inline abstract syntax tree.
 final class InlineAST <View: BidirectionalCollection> where
+fileprivate final class InlineAST <View: BidirectionalCollection> where
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
@@ -38,152 +38,125 @@ final class InlineAST <View: BidirectionalCollection> where
 }
 
 extension InlineNode {
-    fileprivate func contains(node: InlineNode) -> Bool {
+    fileprivate func contains(node: NonTextInlineNode<View>) -> Bool {
+        switch self {
+        case .text: return false
+        case .nonText(let n): return n.contains(node: node)
+        }
+    }
+}
+
+extension NonTextInlineNode {
+    fileprivate func contains(node: NonTextInlineNode) -> Bool {
         return start < node.start && end > node.end
     }
 }
 
 
 extension MarkdownParser {
-    
-    fileprivate func insertNode(_ node: InlineNode<View>, in ast: InlineAST<View>) -> InlineAST<View> {
 
-        // nodes are sorted before calling this function and ast is either basic or created with this function
+    func makeAST(nonText: [NonTextInlineNode<View>], text: [TextInlineNode<View>]) -> LinkedList<InlineNode<View>> {
+        
+        let topList = LinkedList<InlineNode<View>>()
+        
+        var ast = InlineAST<View>(list: topList, index: nil, parent: nil)
+        for node in nonText {
+            ast = insertNode(node, in: ast)
+        }
+        
+        ast = InlineAST(list: topList, index: nil, parent: nil)
+        
+        for node in text {
+            switch node.kind {
+            case .softbreak, .hardbreak:
+                if case let nexti = ast.list.index(after: ast.index),
+                   nexti < ast.list.endIndex,
+                   case .nonText(let nextNode) = ast.list[nexti],
+                   nextNode.start < node.start
+                {
+                    let i = nextNode.children.add(.text(node), after: nil)
+                    ast = InlineAST(list: nextNode.children, index: i, parent: ast)
+                } else {
+                    let i = ast.list.add(.text(node), after: ast.index)
+                    ast = ast.withIndex(i)
+                }
+                
+            case .text:
+                ast = insertText(node.start ..< node.end, view: view, in: ast)
+            }
+        }
+        
+        return topList
+    }
+    
+    fileprivate func insertNode(_ node: NonTextInlineNode<View>, in ast: InlineAST<View>) -> InlineAST<View> {
         
         if let parentNode = ast.parentNode, !parentNode.contains(node: node) {
             return insertNode(node, in: ast.parent!)
         }
-
-        var prevI = ast.index
-        let i = prevI == nil ? ast.list.startIndex : ast.list.index(after: prevI!)
         
-        if i < ast.list.endIndex {
-            if ast.list[i].contains(node: node) {
-                return insertNode(node, in: InlineAST(list: ast.list[i].children, index: nil, parent: ast.withIndex(prevI)))
+        var i = ast.index
+        let nexti = ast.list.index(after: i)
+        
+        if nexti < ast.list.endIndex {
+            if case let .nonText(n) = ast.list[nexti], n.contains(node: node) {
+                return insertNode(node, in: InlineAST(list: n.children, index: nil, parent: ast.withIndex(i)))
             }
-            prevI = i
+            i = nexti
         }
         
-        _ = ast.list.add(node, after: prevI)
-
-        return InlineAST(list: ast.list, index: prevI, parent: ast.parent)
+        _ = ast.list.add(.nonText(node), after: i)
+        
+        return InlineAST(list: ast.list, index: i, parent: ast.parent)
     }
-
-    func makeAST(with nodes: [InlineNode<View>]) -> LinkedList<InlineNode<View>> {
-
-        var ast = InlineAST<View>(list: [], index: nil, parent: nil)
-        let topList = ast.list
-
-        for node in nodes {
-            if case .text = node.kind {
-                continue
-            } else {
-                ast = insertNode(node, in: ast)
-            }
-        }
-
-        ast = InlineAST(list: topList, index: nil, parent: nil)
-
-        for node in nodes {
-            if case .text = node.kind {
-                ast = insertText(node.contentRange(inView: view), view: view, in: ast)
-            } else {
-                continue
-            }
-        }
-
-        return topList
-    }
-
 
     fileprivate func insertText(_ text: Range<View.Index>, view: View, in ast: InlineAST<View>) -> InlineAST<View> {
 
-        // text might span several nodes at different levels
-        /* e.g.
-         This *is _Bill_*.
-         
-         AST BEFORE:
-         emph(5...16, 6...15)
-           |
-         emph(9...15, 10...14)
-         
-         AST AFTER ADDING TEXT 0...16:
-         text(0...4) - emph - text(16...16)
-                        |
-                       text(6...8) - emph - text(15..<15)
-                                      |
-                                     text(10...13)
-         
-         
-         EDGE CASE:
-         *hello\! world* bye
-         
-         AST BEFORE;
-         emph(0...14, 1...13)
-         
-         AST AFTER ADDING TEXT 0...5:
-         emph
-          |
-         text(1...4)
-         
-         Return ast pointing to text(1...4)
-         
-         AST AFTER ADDING TEXT 6...18:
-         emph - text(15...18)
-          |
-         text(1...4) - text(6...13)
-         
-         */
-        
-        var idx = text.lowerBound
-
-        var i = ast.index
-        var nexti = i == nil ? ast.list.startIndex : ast.list.index(after: i!)
-        
-        if let parentNode = ast.parentNode {
-
+        if case let .nonText(parentNode)? = ast.parentNode {
+            
             let parentContentRange = parentNode.contentRange(inView: view)
-
+            
             if text.contains(parentContentRange.upperBound) {
+            
                 let leftText = text.clamped(to: parentContentRange)
                 _ = insertText(leftText, view: view, in: ast)
                 
                 if parentNode.end < text.upperBound {
                     let rightText = parentNode.end ..< text.upperBound
-                    // ast.parent exists if ast.parentNode exists
                     return insertText(rightText, view: view, in: ast.parent!)
                 } else {
-                    // ast.parent exists if ast.parentNode exists
                     return ast.parent!
                 }
             }
         }
-
+        
+        var idx = text.lowerBound
+        var i = ast.index
+        var nexti = ast.list.index(after: i)
+        
         while nexti < ast.list.endIndex && idx < text.upperBound {
-
+            
             defer {
                 i = nexti
                 ast.list.formIndex(after: &nexti)
             }
-
-            let (start, end) = (ast.list[nexti].start, ast.list[nexti].end)
+            guard case let .nonText(nextNode) = ast.list[nexti] else { fatalError() }
             
+            let (start, end) = (nextNode.start, nextNode.end)
             let (startC, endC): (View.Index, View.Index) = {
-                let curContentRange = ast.list[nexti].contentRange(inView: view)
+               let curContentRange = nextNode.contentRange(inView: view)
                 return (curContentRange.lowerBound, curContentRange.upperBound)
             }()
-            
+
             if idx < start {
-                // add text before node
                 if start <= text.upperBound {
-                    i = ast.list.add(InlineNode(kind: .text, start: idx, end: start), after: i)
+                    i = ast.list.add(.text(TextInlineNode(kind: .text, start: idx, end: start)), after: i)
                     // nexti invalidated -> recompute it
                     nexti = ast.list.index(after: i!)
                 }
                 // add text before node but text ends before start of node
                 else {
-                    let newIndex = ast.list.add(InlineNode(kind: .text, start: idx, end: text.upperBound), after: i)
-
+                    let newIndex = ast.list.add(.text(TextInlineNode(kind: .text, start: idx, end: text.upperBound)), after: i)
                     return ast.withIndex(newIndex)
                 }
             }
@@ -194,10 +167,12 @@ extension MarkdownParser {
                 continue
             }
             
+            guard case let .nonText(newNextNode) = ast.list[nexti] else { fatalError() }
+            
             // add text inside the node content
             if endC <= text.upperBound {
                 _ = insertText(idx ..< endC, view: view,
-                               in: InlineAST(list: ast.list[nexti].children, index: nil, parent: ast.withIndex(i)))
+                               in: InlineAST(list: newNextNode.children, index: nil, parent: ast.withIndex(i)))
                 return insertText(end ..< text.upperBound, view: view, in: ast.withIndex(nexti))
             }
             // add text inside the node content but text ends before end of node content
@@ -205,14 +180,14 @@ extension MarkdownParser {
                 let rest = idx ..< text.upperBound
                 if !rest.isEmpty {
                     return insertText(idx ..< text.upperBound, view: view,
-                                      in: InlineAST(list: ast.list[nexti].children, index: nil, parent: ast.withIndex(i)))
+                                      in: InlineAST(list: newNextNode.children, index: nil, parent: ast.withIndex(i)))
                 } else {
                     return ast.withIndex(i)
                 }
             }
         }
         if idx < text.upperBound {
-            i = ast.list.add(InlineNode(kind: .text, start: idx, end: text.upperBound), after: i)
+            i = ast.list.add(.text(TextInlineNode(kind: .text, start: idx, end: text.upperBound)), after: i)
         }
         return ast.withIndex(i)
     }
