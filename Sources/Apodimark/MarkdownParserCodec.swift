@@ -14,24 +14,16 @@ public protocol MarkdownParserCodec {
     static func fromASCII(_ char: UInt8) -> CodeUnit
     
     /**
-     Return the digit represented by `token`
-     - precondition: `token` corresponds to a digit.
-     ```
-     (fromASCII(zero) ... fromASCII(nine)).contains(token)
-     ```
-     - postcondition: return value is contained in 0 ... 9
-     */
-    static func digit(representedByToken token: CodeUnit) -> Int
-    
-    /**
      Return the string corresponding to `tokens`
      
      - Note:
      The collection “`tokens`” might not represent a valid String.
      If that happens, this function should not crash.
      */
-    static func string <C: Collection> (fromTokens tokens: C) -> String
-    where C.Iterator.Element == CodeUnit
+    static func string <S: Sequence> (fromTokens tokens: S) -> String
+        where S.Iterator.Element == CodeUnit
+    
+    static func unicodeScalar(from token: CodeUnit) -> UnicodeScalar?
 }
 
 extension MarkdownParserCodec {
@@ -60,55 +52,60 @@ extension MarkdownParserCodec {
     static var tilde      : CodeUnit { return Self.fromASCII(0x7E) }
 }
 
-enum CharacterCodec: MarkdownParserCodec {
-    typealias CodeUnit = Character
+private let asciiPunctuationTokens: [Bool] = {
+    var map = Array(repeating: false, count: 128)
+    let punctuationSigns = [
+        0x21, 0x22, 0x23, 0x24,
+        0x25, 0x26, 0x27, 0x28,
+        0x29, 0x2A, 0x2B, 0x2C,
+        0x2D, 0x2E, 0x2F, 0x3A,
+        0x3B, 0x3C, 0x3D, 0x3E,
+        0x3F, 0x40, 0x5B, 0x5C,
+        0x5D, 0x5E, 0x5F, 0x60,
+        0x7B, 0x7C, 0x7D, 0x7E,
+        ]
+    for codeUnit in punctuationSigns {
+        map[codeUnit] = true
+    }
+    return map
+}()
+
+
+extension MarkdownParserCodec {
     
-    public static func fromASCII(_ char: UInt8) -> Character {
-        return Character(UnicodeScalar(char))
+    public static func isPunctuation(_ token: CodeUnit) -> Bool {
+        guard let scalar = unicodeScalar(from: token), scalar.value < 128 else { return false }
+        return asciiPunctuationTokens[Int(scalar.value)]
     }
     
-    public static func digit(representedByToken token: Character) -> Int {
-        return Int(String(token))!
-    }
-    
-    public static func string <C: Collection> (fromTokens tokens: C) -> String
-        where C.Iterator.Element == Character
-    {
-        return String(tokens)
+    /**
+     Return the digit represented by `token`
+     - precondition: `token` corresponds to a digit.
+     ```
+     (fromASCII(zero) ... fromASCII(nine)).contains(token)
+     ```
+     - postcondition: return value is contained in 0 ... 9
+     */
+    static func digit(representedByToken token: CodeUnit) -> Int {
+        let scalar = unicodeScalar(from: token)!
+        return Int(scalar.value - 0x30)
     }
 }
 
-enum UnicodeScalarCodec: MarkdownParserCodec {
-    typealias CodeUnit = UnicodeScalar
+public enum UTF8MarkdownCodec: MarkdownParserCodec {
     
-    public static func fromASCII(_ char: UInt8) -> UnicodeScalar {
-        return UnicodeScalar(char)
+    public static func unicodeScalar(from token: UInt8) -> UnicodeScalar? {
+        return UnicodeScalar(token)
     }
     
-    public static func digit(representedByToken token: UnicodeScalar) -> Int {
-        return Int(token.value - 0x30)
-    }
+    public typealias CodeUnit = UInt8
     
-    public static func string <C: Collection> (fromTokens tokens: C) -> String
-        where C.Iterator.Element == UnicodeScalar
-    {
-        var s = ""
-        s.unicodeScalars.append(contentsOf: tokens)
-        return s
-    }
-}
-
-extension UTF8: MarkdownParserCodec {
     public static func fromASCII(_ char: UInt8) -> CodeUnit {
         return char
     }
     
-    public static func digit(representedByToken token: CodeUnit) -> Int {
-        return Int(token - 0x30)
-    }
-    
-    public static func string <C: Collection> (fromTokens tokens: C) -> String
-        where C.Iterator.Element == CodeUnit
+    public static func string <S: Sequence> (fromTokens tokens: S) -> String
+        where S.Iterator.Element == CodeUnit
     {
         var codec = UTF8()
         var iter = tokens.makeIterator()
@@ -118,12 +115,18 @@ extension UTF8: MarkdownParserCodec {
         }
         return s
     }
-    
 }
-extension UTF16: MarkdownParserCodec {
 
-    public static func string <C : Collection> (fromTokens tokens: C) -> String
-        where C.Iterator.Element == UTF16.CodeUnit
+public enum UTF16MarkdownCodec: MarkdownParserCodec {
+    
+    public typealias CodeUnit = UInt16
+
+    public static func unicodeScalar(from token: UInt16) -> UnicodeScalar? {
+        return UnicodeScalar(token)
+    }
+    
+    public static func string <S: Sequence> (fromTokens tokens: S) -> String
+        where S.Iterator.Element == CodeUnit
     {
         var iter = tokens.makeIterator()
         var codec = UTF16()
@@ -134,19 +137,21 @@ extension UTF16: MarkdownParserCodec {
         return s
     }
 
-    public static func digit(representedByToken token: CodeUnit) -> Int {
-        return Int(token - 0x30)
-    }
-
     public static func fromASCII(_ char: UInt8) -> CodeUnit {
         return UInt16(char)
     }
 }
 
-extension UTF32: MarkdownParserCodec {
+public enum UTF32MarkdownCodec: MarkdownParserCodec {
+
+    public typealias CodeUnit = UInt32
     
-    public static func string <C : Collection> (fromTokens tokens: C) -> String
-        where C.Iterator.Element == UTF32.CodeUnit
+    public static func unicodeScalar(from token: UInt32) -> UnicodeScalar? {
+        return UnicodeScalar(token)
+    }
+    
+    public static func string <S: Sequence> (fromTokens tokens: S) -> String
+        where S.Iterator.Element == CodeUnit
     {
         var iter = tokens.makeIterator()
         var codec = UTF32()
@@ -156,18 +161,48 @@ extension UTF32: MarkdownParserCodec {
         }
         return s
     }
-    
-    public static func digit(representedByToken token: CodeUnit) -> Int {
-        return Int(token - 0x30)
-    }
-    
+
     public static func fromASCII(_ char: UInt8) -> CodeUnit {
         return UInt32(char)
     }
 }
 
+public enum CharacterMarkdownCodec: MarkdownParserCodec {
+    
+    public typealias CodeUnit = Character
 
+    public static func unicodeScalar(from token: Character) -> UnicodeScalar? {
+        return String(token).unicodeScalars.first
+    }
+    
+    public static func fromASCII(_ char: UInt8) -> Character {
+        return Character(UnicodeScalar(char))
+    }
+    
+    public static func string <S: Sequence> (fromTokens tokens: S) -> String
+        where S.Iterator.Element == CodeUnit
+    {
+        return String(tokens)
+    }
+}
 
+public enum UnicodeScalarMarkdownCodec: MarkdownParserCodec {
+    
+    public typealias CodeUnit = UnicodeScalar
 
-
-
+    public static func unicodeScalar(from token: UnicodeScalar) -> UnicodeScalar? {
+        return token
+    }
+    
+    public static func fromASCII(_ char: UInt8) -> UnicodeScalar {
+        return UnicodeScalar(char)
+    }
+    
+    public static func string <S: Sequence> (fromTokens tokens: S) -> String
+        where S.Iterator.Element == CodeUnit
+    {
+        var s = ""
+        s.unicodeScalars.append(contentsOf: tokens)
+        return s
+    }
+}

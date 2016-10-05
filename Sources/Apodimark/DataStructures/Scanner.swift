@@ -33,9 +33,9 @@ struct Scanner <Data: BidirectionalCollection> {
     let data: Data
 
     /// Index of the first element accessible to the scanner
-    fileprivate(set) var startIndex: Data.Index
+    var startIndex: Data.Index
     /// Successor of the index of the last element accessible to the scanner
-    fileprivate(set) var endIndex: Data.Index
+    var endIndex: Data.Index
 
     /// Initialize a scanner reading from `data`, from `startIndex` to `endIndex`.
     /// - parameter startIndex: index of first element accessible to the new scanner
@@ -117,13 +117,6 @@ extension Scanner {
         precondition(startIndex <= end && end <= endIndex)
         return Scanner(data: data, startIndex: startIndex, endIndex: end)
     }
-
-    /*
-    func suffixFrom(start: Data.Index) -> Scanner {
-        precondition(startIndex <= start && start <= endIndex)
-        return Scanner(view: view, startIndex: start, endIndex: endIndex)
-    }
-    */
 }
 extension Scanner where Data.Iterator.Element: Equatable {
 

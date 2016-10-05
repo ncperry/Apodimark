@@ -5,32 +5,38 @@
 
 extension MarkdownParser {
 
-    func processAllReferences(delimiters: inout DelimiterSlice) -> [InlineNode<View>] {
+    func processAllReferences(_ delimiters: inout DelimiterSlice) -> [InlineNode<View>] {
         var all: [InlineNode<View>] = []
-        while case let ref? = processReference(delimiters: &delimiters) {
+        var start = delimiters.startIndex
+        while let (ref, newStart) = processReference(&delimiters[start ..< delimiters.endIndex]) {
             all.append(contentsOf: ref)
+            start = newStart
         }
         return all
     }
 
-    fileprivate func processReference(delimiters: inout DelimiterSlice) -> [InlineNode<View>]? {
+    fileprivate func processReference(_ delimiters: inout DelimiterSlice) -> ([InlineNode<View>], newStart: Int)? {
 
-        guard let (openingTitleDelIdx, openingTitleDel, closingTitleDelIdx, closingTitleDel, refKind) = {
-            () -> (DelimiterSlice.Index, Delimiter, DelimiterSlice.Index, Delimiter, ReferenceKind)? in
+        guard let (newStart, openingTitleDelIdx, openingTitleDel, closingTitleDelIdx, closingTitleDel, refKind) = {
+            () -> (Int, Int, Delimiter, Int, Delimiter, ReferenceKind)? in
             
-            var opener: (index: DelimiterSlice.Index, del: Delimiter, kind: ReferenceKind)?
+            var firstOpeningReferenceIdx: Int? = nil
+            var opener: (index: Int, del: Delimiter, kind: ReferenceKind)?
             
             for case let (i, del?) in zip(delimiters.indices, delimiters) {
+    
                 switch del.kind {
                 case .refCloser:
                     if let o = opener {
-                        return (o.index, o.del, i, del, o.kind)
+                        return (firstOpeningReferenceIdx!, o.index, o.del, i, del, o.kind)
                     }
                     
                 case .refOpener:
+                    if firstOpeningReferenceIdx == nil { firstOpeningReferenceIdx = i }
                     opener = (i, del, .normal)
                     
                 case .unwrappedRefOpener:
+                    if firstOpeningReferenceIdx == nil { firstOpeningReferenceIdx = i }
                     opener = (i, del, .unwrapped)
                     
                 default:
@@ -48,19 +54,19 @@ extension MarkdownParser {
         
         let nextDelIdx = closingTitleDelIdx+1
         guard nextDelIdx < delimiters.endIndex, let nextDel = delimiters[nextDelIdx] else {
-            return []
+            return ([], newStart)
         }
         
         let suffix = delimiters.suffix(from: nextDelIdx)
         
         guard let (definition, span, spanEndDelIdx) = {
-            () -> (ReferenceDefinition, Range<View.Index>, DelimiterSlice.Index)? in
+            () -> (ReferenceDefinition, Range<View.Index>, Int)? in
          
             switch nextDel.kind {
                 
             case .refValueOpener:
                 delimiters[nextDelIdx] = nil
-                guard let (valueCloserDelIdx, valueCloserDel) = { () -> (DelimiterSlice.Index, Delimiter)? in
+                guard let (valueCloserDelIdx, valueCloserDel) = { () -> (Int, Delimiter)? in
                     for case let (i, del?) in zip(suffix.indices, suffix) {
                         if case .rightParen = del.kind { return (i, del) }
                     }
@@ -73,7 +79,7 @@ extension MarkdownParser {
                 
                 let definition = Codec.string(fromTokens: view[nextDel.idx ..< view.index(before: valueCloserDel.idx)])
                 let span = { () -> Range<View.Index> in
-                    let lowerbound = view.index(openingTitleDel.idx, offsetBy: View.IndexDistance(IntMax(-refKind.textWidth)))
+                    let lowerbound = view.index(openingTitleDel.idx, offsetBy: View.IndexDistance(-refKind.textWidth.toIntMax()))
                     return lowerbound ..< valueCloserDel.idx
                 }()
 
@@ -82,7 +88,7 @@ extension MarkdownParser {
             case .refOpener where nextDel.idx == view.index(after: closingTitleDel.idx):
                 
                 delimiters[nextDelIdx] = nil
-                guard let (aliasCloserIdx, aliasCloserDel) = { () -> (DelimiterSlice.Index, Delimiter)? in
+                guard let (aliasCloserIdx, aliasCloserDel) = { () -> (Int, Delimiter)? in
                     for case let (i, del?) in zip(suffix.indices, suffix) {
                         if case .refCloser = del.kind { return (i, del) }
                     }
@@ -102,10 +108,10 @@ extension MarkdownParser {
                 
                 delimiters[openingTitleDelIdx] = nil
                 delimiters[aliasCloserIdx] = nil
-                
+            
                 let width = refKind == .unwrapped ? 2 : 1
-                let span = view.index(openingTitleDel.idx, offsetBy: View.IndexDistance(IntMax(-width))) ..< aliasCloserDel.idx
-                
+                let span = view.index(openingTitleDel.idx, offsetBy: View.IndexDistance(-width.toIntMax())) ..< aliasCloserDel.idx
+
                 return (definition, span, aliasCloserIdx)
                 
             default:
@@ -116,13 +122,13 @@ extension MarkdownParser {
                 
                 delimiters[openingTitleDelIdx] = nil
                 let width = refKind == .unwrapped ? 2 : 1
-                let span = view.index(openingTitleDel.idx, offsetBy: View.IndexDistance(IntMax(-width))) ..< closingTitleDel.idx
+                let span = view.index(openingTitleDel.idx, offsetBy: View.IndexDistance(-width.toIntMax())) ..< closingTitleDel.idx
                 
                 return (definition, span, closingTitleDelIdx)
             }
         }()
         else {
-            return []
+            return ([], newStart)
         }
             
         let title = openingTitleDel.idx ..< view.index(before: closingTitleDel.idx)
@@ -133,7 +139,7 @@ extension MarkdownParser {
             end: span.upperBound)
         
         let delimiterRangeForTitle = (openingTitleDelIdx + 1) ..< closingTitleDelIdx
-        var inlineNodes = processAllEmphases(delimiters: &delimiters[delimiterRangeForTitle])
+        var inlineNodes = processAllEmphases(&delimiters[delimiterRangeForTitle])
         
         let delimiterRangeForSpan = openingTitleDelIdx ... spanEndDelIdx
         
@@ -149,6 +155,6 @@ extension MarkdownParser {
         }
         
         inlineNodes.append(refNode)
-        return inlineNodes
+        return (inlineNodes, newStart)
     }
 }

@@ -154,15 +154,16 @@ public enum MarkdownListKind: CustomStringConvertible {
     }
 }
 
-@_specialize(String.UTF16View, UTF16)
-public func parsedMarkdown <View: BidirectionalCollection, Codec: MarkdownParserCodec> (source: View, codec: Codec.Type) -> [MarkdownBlock<View>] where
+@_specialize(String.UTF16View, UTF16MarkdownCodec)
+public func parsedMarkdown <View, Codec> (source: View, codec: Codec.Type) -> [MarkdownBlock<View>] where
+    View: BidirectionalCollection,
+    Codec: MarkdownParserCodec,
     View.Iterator.Element == Codec.CodeUnit,
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     var parser = MarkdownParser<View, Codec>(view: source)
-    let ast = parser.finalAST()
-    return ast
+    return parser.finalAST()
 }
 
 extension MarkdownParser {

@@ -76,11 +76,13 @@ private func stringForTest(number: Int, result: Bool = false) -> String {
 }
 
 class CommonMarkConformanceTests : XCTestCase {
+
     func testSpecStringUTF16View() {
         for no in tests {
+            print(no)
             let source = stringForTest(number: no).utf16
-            let doc = parsedMarkdown(source: source, codec: UTF16.self)
-            let desc = MarkdownBlock.output(nodes: doc, source: source, codec: UTF16.self)
+            let doc = parsedMarkdown(source: source, codec: UTF16MarkdownCodec.self)
+            let desc = MarkdownBlock.output(nodes: doc, source: source, codec: UTF16MarkdownCodec.self)
             let result = stringForTest(number: no, result: true)
             XCTAssertEqual(desc, result, "\(no)")
         }
@@ -89,8 +91,8 @@ class CommonMarkConformanceTests : XCTestCase {
     func testSpecStringCharacterView() {
         for no in tests {
             let source = stringForTest(number: no).characters
-            let doc = parsedMarkdown(source: source, codec: CharacterCodec.self)
-            let desc = MarkdownBlock.output(nodes: doc, source: source, codec: CharacterCodec.self)
+            let doc = parsedMarkdown(source: source, codec: CharacterMarkdownCodec.self)
+            let desc = MarkdownBlock.output(nodes: doc, source: source, codec: CharacterMarkdownCodec.self)
             let result = stringForTest(number: no, result: true)
             XCTAssertEqual(desc, result, "\(no)")
         }
@@ -100,8 +102,8 @@ class CommonMarkConformanceTests : XCTestCase {
         for no in tests {
             let arr = Array(stringForTest(number: no).utf8)
             let source = arr.withUnsafeBufferPointer { $0 }
-            let doc = parsedMarkdown(source: source, codec: UTF8.self)
-            let desc = MarkdownBlock.output(nodes: doc, source: source, codec: UTF8.self)
+            let doc = parsedMarkdown(source: source, codec: UTF8MarkdownCodec.self)
+            let desc = MarkdownBlock.output(nodes: doc, source: source, codec: UTF8MarkdownCodec.self)
             let result = stringForTest(number: no, result: true)
             XCTAssertEqual(desc, result, "\(no)")
         }

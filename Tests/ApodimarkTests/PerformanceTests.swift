@@ -21,13 +21,9 @@ class PerformanceTests : XCTestCase {
         }
         // Step 3: measure the time it takes to build the AST
         measure {
-            _ = parsedMarkdown(source: s.utf16, codec: UTF16.self)
+            _ = parsedMarkdown(source: s.utf16, codec: UTF16MarkdownCodec.self)
         }
         // Step 4: look at result, cry.
-    }
-
-    static var allTests : [(String, (PerformanceTests) -> () throws -> Void)] {
-        return [("testMixed1", testMixed1)]
     }
 }
 

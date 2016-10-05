@@ -5,14 +5,12 @@
 
 extension MarkdownParser {
 
-    typealias Delimiter = (kind: DelimiterKind, idx: View.Index)
+    func delimiters(in text: [Range<View.Index>]) -> [Delimiter?] {
 
-    func delimiters(in scanners: [Scanner<View>]) -> [Delimiter?] {
+        var delimiters: [Delimiter?] = []
 
-        var delimiters = [Delimiter?]()
-
-        var scannersIterator = scanners.makeIterator()
-        var optScanner: Scanner? = scannersIterator.next()!
+        var scanners = text.lazy.map { Scanner(data: self.view, startIndex: $0.lowerBound, endIndex: $0.upperBound) }.makeIterator()
+        var optScanner: Scanner? = scanners.next()!
 
         while var scanner = optScanner {
 
@@ -37,23 +35,19 @@ extension MarkdownParser {
                 switch token {
 
                 case Codec.underscore, Codec.asterisk:
-                    let idxBeforeRun = scanner.data.index(before: scanner.startIndex)
+                    let idxBeforeRun = view.index(before: scanner.startIndex)
                     scanner.popWhile(token)
-                    let nextTokenKind: TokenKind
-                    if let nextToken = scanner.peek() {
-                        nextTokenKind = tokenKind(nextToken)
-                    } else {
-                        nextTokenKind = .whitespace
-                    }
+                    let nextTokenKind: TokenKind = scanner.peek().flatMap { tokenKind($0) } ?? .whitespace
+        
                     let delimiterState = DelimiterState(token: token, prev: prevTokenKind, next: nextTokenKind, codec: Codec.self)
-                    let lvl = scanner.data.distance(from: idxBeforeRun, to: scanner.startIndex)
+                    let lvl = view.distance(from: idxBeforeRun, to: scanner.startIndex)
                     let kind: EmphasisKind = token == Codec.underscore ? .underscore : .asterisk
                     delimiters.append((.emph(kind, delimiterState, Int(lvl.toIntMax())), scanner.startIndex))
 
                 case Codec.backtick:
-                    let idxBeforeRun = scanner.data.index(before: scanner.startIndex)
+                    let idxBeforeRun = view.index(before: scanner.startIndex)
                     scanner.popWhile(Codec.backtick)
-                    let lvl = Int(scanner.data.distance(from: idxBeforeRun, to: scanner.startIndex).toIntMax())
+                    let lvl = Int(view.distance(from: idxBeforeRun, to: scanner.startIndex).toIntMax())
                     delimiters.append((.code(lvl), scanner.startIndex))
 
                 case Codec.exclammark:
@@ -81,7 +75,7 @@ extension MarkdownParser {
                         potentialBackslashHardbreak = true
                         break
                     }
-                    if isPunctuation(el) {
+                    if Codec.isPunctuation(el) {
                         delimiters.append((.ignored, scanner.startIndex))
                         if el != Codec.backtick { _ = scanner.pop() }
                     }
@@ -91,9 +85,9 @@ extension MarkdownParser {
                 }
             }
 
-            optScanner = scannersIterator.next()
+            optScanner = scanners.next()
             let offset =  IntMax(-(numberOfPreviousSpaces + ((potentialBackslashHardbreak && optScanner != nil) ? 1 : 0)))
-            let lastIndex = scanner.data.index(scanner.startIndex, offsetBy: View.IndexDistance(offset))
+            let lastIndex = view.index(scanner.startIndex, offsetBy: View.IndexDistance(offset))
             delimiters.append((.end, lastIndex))
 
             if optScanner != nil { // linefeed
@@ -105,6 +99,7 @@ extension MarkdownParser {
                 }
             }
         }
+        
         return delimiters
     }
 }

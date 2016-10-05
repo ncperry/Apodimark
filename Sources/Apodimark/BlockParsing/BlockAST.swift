@@ -7,13 +7,18 @@ enum ListState {
     case normal, followedByEmptyLine, closed
 }
 
+enum AddLineResult {
+    case success
+    case failure
+}
+
 class BlockNode <View: BidirectionalCollection> where
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     typealias Indices = Range<View.Index>
     
-    func add(line: Line<View>) -> Bool { fatalError() }
+    func add(line: Line<View>) -> AddLineResult { fatalError() }
     func allowsLazyContinuation() -> Bool { fatalError() }
 }
 
@@ -27,8 +32,8 @@ final class ParagraphBlockNode <View: BidirectionalCollection>: BlockNode<View> 
         (self.text, self.closed) = (text, false)
     }
     
-    override func add(line: Line<View>) -> Bool {
-        guard !closed else { return false }
+    override func add(line: Line<View>) -> AddLineResult {
+        guard !closed else { return .failure }
         switch line.kind {
         case .text, .reference:
             text.append(line.scanner.indices)
@@ -37,10 +42,12 @@ final class ParagraphBlockNode <View: BidirectionalCollection>: BlockNode<View> 
             closed = true
             
         default:
-            guard line.indent.level >= 4 else { return false }
-            text.append(line.removingFirstIndents(n: 4).scanner.indices)
+            guard line.indent.level >= 4 else { return .failure }
+            var line = line
+            line.removeFirstIndents(4)
+            text.append(line.scanner.indices)
         }
-        return true
+        return .success
     }
     override func allowsLazyContinuation() -> Bool {
         return !closed
@@ -57,8 +64,8 @@ final class HeaderBlockNode <View: BidirectionalCollection>: BlockNode<View> whe
     init(markers: (Indices, Indices?), text: Indices, level: Int) {
         (self.markers, self.text, self.level) = (markers, text, level)
     }
-    override func add(line: Line<View>) -> Bool {
-        return false
+    override func add(line: Line<View>) -> AddLineResult {
+        return .failure
     }
     override func allowsLazyContinuation() -> Bool {
         return false
@@ -71,49 +78,59 @@ final class QuoteBlockNode <View: BidirectionalCollection>: BlockNode<View> wher
 {
     var markers: [View.Index]
     var content: [BlockNode<View>]
+    
+    var _allowsLazyContinuation: Bool
+    
     var closed: Bool
     
     init(firstMarker: View.Index, firstNode: BlockNode<View>) {
-        (self.markers, self.content, self.closed) = ([firstMarker], [firstNode], false)
+        (self.markers, self.content, self.closed, self._allowsLazyContinuation) = ([firstMarker], [firstNode], false, firstNode.allowsLazyContinuation())
     }
     
     fileprivate func directlyAddLine(line: Line<View>) {
-        if let last = content.last, last.add(line: line) == false && !line.kind.isEmpty() {
-            content.append(line.node())
+        let last = content.last! // content is never empty because initializer must provide "firstNode"
+        if case .success = last.add(line: line) {
+            _allowsLazyContinuation = last.allowsLazyContinuation()
+        } else {
+            if !line.kind.isEmpty() {
+                let newNode = line.node()
+                content.append(newNode)
+                _allowsLazyContinuation = newNode.allowsLazyContinuation()
+            }
         }
     }
     
-    override func add(line: Line<View>) -> Bool {
-        guard !closed else { return false }
-        let lazyContinuationIsPossible = self.allowsLazyContinuation()
-        guard !(line.indent.level >= 4 && lazyContinuationIsPossible) else {
-            let line = Line(.text, line.indent, line.scanner)
-            directlyAddLine(line: line)
-            return true
+    override func add(line: Line<View>) -> AddLineResult {
+        guard !closed else { return .failure }
+
+        guard !(line.indent.level >= 4 && _allowsLazyContinuation) else {
+            directlyAddLine(line: Line(.text, line.indent, line.scanner))
+            return .success
         }
         
         switch line.kind {
             
         case .empty:
             closed = true
+            _allowsLazyContinuation = false
             
         case .quote(let rest):
             markers.append(line.scanner.startIndex)
             directlyAddLine(line: rest)
             
         case .text:
-            guard lazyContinuationIsPossible else {
-                return false
+            guard _allowsLazyContinuation else {
+                return .failure
             }
             directlyAddLine(line: line)
             
         default:
-            return false
+            return .failure
         }
-        return true
+        return .success
     }
     override func allowsLazyContinuation() -> Bool {
-        return !closed && (content.last?.allowsLazyContinuation() ?? true)
+        return _allowsLazyContinuation
     }
 }
 
@@ -135,42 +152,51 @@ final class ListBlockNode <View: BidirectionalCollection>: BlockNode<View> where
 {
     let kind: ListKind
     var items: [ListItemBlockNode<View>]
+    
+    var _allowsLazyContinuations: Bool
+    
     fileprivate var state: ListState
     fileprivate var minimumIndent: Int
     
     init(kind: ListKind, items: [ListItemBlockNode<View>], state: ListState, minimumIndent: Int) {
-        (self.kind, self.items, self.state, self.minimumIndent) = (kind, items, state, minimumIndent)
+        self.kind = kind
+        self.items = items
+        self.state = state
+        self.minimumIndent = minimumIndent
+        self._allowsLazyContinuations = items.last?.content.last?.allowsLazyContinuation() ?? true
     }
     
     fileprivate func preparedLine(from initialLine: Line<View>) -> Line<View>? {
         guard state != .closed else {
             return nil
         }
+        var line = initialLine
         guard !initialLine.kind.isEmpty() else {
-            return initialLine
+            return line
         }
         guard !(initialLine.indent.level >= minimumIndent + 4 && allowsLazyContinuation()) else {
-            return initialLine.removingFirstIndents(n: minimumIndent)
+            line.removeFirstIndents(minimumIndent)
+            return line
         }
         
-        let lineWithoutIndent = initialLine.removingFirstIndents(n: minimumIndent)
-        let isWellIndented = lineWithoutIndent.indent.level >= 0
+        line.removeFirstIndents(minimumIndent)
+        let isWellIndented = line.indent.level >= 0
         
-        switch lineWithoutIndent.kind {
+        switch line.kind {
             
         case .text:
-            return isWellIndented || (state == .normal && allowsLazyContinuation()) ? lineWithoutIndent : nil
+            return isWellIndented || (state == .normal && allowsLazyContinuation()) ? line : nil
             
         case let .list(k, _):
             if isWellIndented {
-                return lineWithoutIndent
+                return line
             }
             else {
-                return k ~= kind ? lineWithoutIndent : nil
+                return k ~= kind ? line : nil
             }
             
         case .quote, .header, .fence, .reference:
-            return isWellIndented ? lineWithoutIndent : nil
+            return isWellIndented ? line : nil
             
         default:
             return nil
@@ -188,45 +214,58 @@ final class ListBlockNode <View: BidirectionalCollection>: BlockNode<View> where
             
             guard self.state == .normal || (shallowestNonListChild is FenceBlockNode) else {
                 self.state = .closed
+                _allowsLazyContinuations = false
                 return
             }
-            guard !items.isEmpty && !(items.last!.content.isEmpty) else {
+
+            guard let lastItem = items.last, let lastItemContent = lastItem.content.last else {
                 return
             }
             state = .followedByEmptyLine
             
-            _ = items.last?.content.last?.add(line: preparedLine)
-
+            _ = lastItemContent.add(line: preparedLine)
+            _allowsLazyContinuations = lastItemContent.allowsLazyContinuation()
+            
         case .list(let marker, let rest) where preparedLine.indent.level < 0:
             state = .normal
             minimumIndent += preparedLine.indent.level + marker.width + 1
             
-            let item: ListItemBlockNode<View>
-            let markerSpan = preparedLine.scanner.startIndex ..< preparedLine.scanner.data.index(preparedLine.scanner.startIndex, offsetBy: View.IndexDistance(marker.width.toIntMax()))
-            if rest.kind.isEmpty() {
-                item = ListItemBlockNode(markerSpan: markerSpan, content: [])
-            } else {
-                item = ListItemBlockNode(markerSpan: markerSpan, content: [rest.node()])
-            }
+            let (item, newAllowsLazyContinuations): (ListItemBlockNode<View>, Bool) = {
+                let sc = preparedLine.scanner
+                let markerSpan = sc.startIndex ..< sc.data.index(sc.startIndex, offsetBy: View.IndexDistance(marker.width.toIntMax()))
+                
+                guard !rest.kind.isEmpty() else {
+                    return (ListItemBlockNode(markerSpan: markerSpan, content: []), true)
+                }
+                let node = rest.node()
+                return (ListItemBlockNode(markerSpan: markerSpan, content: [node]), node.allowsLazyContinuation())
+            }()
+            _allowsLazyContinuations = newAllowsLazyContinuations
             items.append(item)
             
         default:
             state = .normal
             let lastItem = items.last!
-            if lastItem.content.isEmpty || !items.last!.content.last!.add(line: preparedLine) {
-                lastItem.content.append(preparedLine.node())
+    
+            if case .failure = lastItem.content.last?.add(line: preparedLine) ?? .failure {
+                let node = preparedLine.node()
+                lastItem.content.append(node)
+                _allowsLazyContinuations = node.allowsLazyContinuation()
             }
         }
     }
     
-    override func add(line: Line<View>) -> Bool {
-        guard let line = preparedLine(from: line) else { return false }
+    override func add(line: Line<View>) -> AddLineResult {
+        guard let line = preparedLine(from: line) else {
+            return .failure
+        }
         addPreparedLine(line)
-        return true
+        return .success
     }
     
     override func allowsLazyContinuation() -> Bool {
-        return items.last?.content.last?.allowsLazyContinuation() ?? true
+        return _allowsLazyContinuations
+        //return items.last?.content.last?.allowsLazyContinuation() ?? true
     }
 }
 
@@ -246,13 +285,14 @@ final class FenceBlockNode <View: BidirectionalCollection>: BlockNode<View> wher
         (self.kind, self.markers, self.name, self.text, self.level, self.indent, self.closed) = (kind, (startMarker, nil), name, text, level, indent, false)
     }
     
-    override func add(line: Line<View>) -> Bool {
+    override func add(line: Line<View>) -> AddLineResult {
         
         guard line.indent.level >= 0 && !closed else {
-            return false
+            return .failure
         }
-        
-        let line = line.removingFirstIndents(n: indent).restoringIndentInScanner()
+        var line = line
+        line.removeFirstIndents(indent)
+        line.restoreIndentInScanner()
         
         switch line.kind {
             
@@ -263,7 +303,7 @@ final class FenceBlockNode <View: BidirectionalCollection>: BlockNode<View> wher
         default:
             text.append(line.scanner.indices)
         }
-        return true
+        return .success
     }
     override func allowsLazyContinuation() -> Bool {
         return false
@@ -281,23 +321,28 @@ final class CodeBlockNode <View: BidirectionalCollection>: BlockNode<View> where
         (self.text, self.trailingEmptyLines) = (text, trailingEmptyLines)
     }
     
-    override func add(line: Line<View>) -> Bool {
+    override func add(line: Line<View>) -> AddLineResult {
         switch line.kind {
             
         case .empty:
-            let line = line.removingFirstIndents(n: 4).restoringIndentInScanner()
+            var line = line
+            line.removeFirstIndents(4)
+            line.restoreIndentInScanner()
             trailingEmptyLines.append(line.scanner.indices)
             
         case _ where line.indent.level >= 4:
-            let line = line.removingFirstIndents(n: 4).restoringIndentInScanner()
+            var line = line
+            line.removeFirstIndents(4)
+            line.restoreIndentInScanner()
+
             text.append(contentsOf: trailingEmptyLines)
             text.append(line.scanner.indices)
             trailingEmptyLines.removeAll()
             
         default:
-            return false
+            return .failure
         }
-        return true
+        return .success
     }
     override func allowsLazyContinuation() -> Bool {
         return false
@@ -312,8 +357,8 @@ final class ThematicBreakBlockNode <View: BidirectionalCollection>: BlockNode<Vi
     init(span: Indices) {
         self.span = span
     }
-    override func add(line: Line<View>) -> Bool {
-        return false
+    override func add(line: Line<View>) -> AddLineResult {
+        return .failure
     }
     override func allowsLazyContinuation() -> Bool {
         return false
@@ -330,8 +375,8 @@ final class ReferenceDefinitionBlockNode <View: BidirectionalCollection>: BlockN
         (self.title, self.definition) = (title, definition)
     }
     
-    override func add(line: Line<View>) -> Bool {
-        return false
+    override func add(line: Line<View>) -> AddLineResult {
+        return .failure
     }
     override func allowsLazyContinuation() -> Bool {
         return false
@@ -341,8 +386,10 @@ final class ReferenceDefinitionBlockNode <View: BidirectionalCollection>: BlockN
 extension Line {
     func node() -> BlockNode<View> {
         guard indent.level < 4 else {
-            let newline = self.removingFirstIndents(n: 4).restoringIndentInScanner()
-            return CodeBlockNode(text: [newline.scanner.indices], trailingEmptyLines: [])
+            var newLine = self
+            newLine.removeFirstIndents(4)
+            newLine.restoreIndentInScanner()
+            return CodeBlockNode(text: [newLine.scanner.indices], trailingEmptyLines: [])
         }
         
         switch kind {

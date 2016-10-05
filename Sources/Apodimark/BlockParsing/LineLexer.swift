@@ -540,10 +540,11 @@ extension MarkdownParser {
 
 
         case Codec.hyphen, Codec.asterisk:
-            guard let _ = try? readThematicBreak(scanner: &scanner, firstToken: firstToken) else {
+            if case .some = try? readThematicBreak(scanner: &scanner, firstToken: firstToken) {
+                return Line(.thematicBreak, indent, viewAfterIndent.prefix(upTo: scanner.startIndex))
+            } else {
                 return parseList(scanner: &scanner, indent: indent)
             }
-            return Line(.thematicBreak, indent, viewAfterIndent.prefix(upTo: scanner.startIndex))
 
 
         case Codec.plus, Codec.zero...Codec.nine:
@@ -576,4 +577,3 @@ extension MarkdownParser {
         }
     }
 }
-

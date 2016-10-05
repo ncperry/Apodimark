@@ -91,7 +91,7 @@ extension MarkdownParser {
         case Codec.space, Codec.linefeed:
             return .whitespace
 
-        case let t where isPunctuation(t):
+        case let t where Codec.isPunctuation(t):
             return .punctuation
 
         default:

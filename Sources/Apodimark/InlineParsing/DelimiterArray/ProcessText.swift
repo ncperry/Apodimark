@@ -5,10 +5,12 @@
 
 extension MarkdownParser {
 
-    func processText(delimiters: inout DelimiterSlice) -> [InlineNode<View>] {
+    func processText(_ delimiters: inout DelimiterSlice) -> [InlineNode<View>] {
 
         guard let first: Delimiter = {
-            for case let del? in delimiters { return del }
+            for case let del? in delimiters {
+                return del
+            }
             return nil
         }()
         else {
@@ -18,7 +20,9 @@ extension MarkdownParser {
         var textNodes = [InlineNode<View>]()
         var startViewIndex = first.idx
 
-        for case let del? in delimiters {
+        for i in delimiters.indices {
+            guard case let del? = delimiters[i] else { continue }
+
             switch del.kind {
             case .start:
                 startViewIndex = del.idx

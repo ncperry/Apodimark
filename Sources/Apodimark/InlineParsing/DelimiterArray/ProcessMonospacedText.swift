@@ -5,18 +5,20 @@
 
 extension MarkdownParser {
 
-    func processAllMonospacedText(delimiters: inout DelimiterSlice) -> [InlineNode<View>] {
+    func processAllMonospacedText(_ delimiters: inout DelimiterSlice) -> [InlineNode<View>] {
         var all: [InlineNode<View>] = []
-        while let r = processMonospacedText(delimiters: &delimiters) {
+        var start = delimiters.startIndex
+        while let (r, newStart) = processMonospacedText(&delimiters[start ..< delimiters.endIndex]) {
             all.append(r)
+            start = newStart
         }
         return all
     }
 
-    func processMonospacedText(delimiters: inout DelimiterSlice) -> InlineNode<View>? {
+    func processMonospacedText(_ delimiters: inout DelimiterSlice) -> (InlineNode<View>, newStart: Int)? {
 
         guard let (openingDelIdx, openingDel, closingDelIdx, closingDel, level) = {
-            () -> (DelimiterSlice.Index, Delimiter, DelimiterSlice.Index, Delimiter, Int)? in
+            () -> (Int, Delimiter, Int, Delimiter, Int)? in
             
             var ignoring = false
             
@@ -35,7 +37,7 @@ extension MarkdownParser {
                     ignoring = true
                     
                 case .code(let level):
-                    guard let closingDelIdx = { () -> DelimiterSlice.Index? in
+                    guard let closingDelIdx = { () -> Int? in
                         for j in i+1 ..< delimiters.endIndex {
                             guard case .code(level)? = delimiters[j]?.kind else { continue }
                             return j
@@ -67,9 +69,13 @@ extension MarkdownParser {
             }
         }
         
-        return InlineNode(
-            kind: .code(level),
-            start: view.index(openingDel.idx, offsetBy: View.IndexDistance(IntMax(-level))),
-            end: closingDel.idx)
+        return (
+            InlineNode(
+                kind: .code(level),
+                start: view.index(openingDel.idx, offsetBy: View.IndexDistance(-level.toIntMax())),
+                end: closingDel.idx
+            ),
+            closingDelIdx
+        )
     }
 }

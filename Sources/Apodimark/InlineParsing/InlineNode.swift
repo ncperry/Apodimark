@@ -41,7 +41,7 @@ struct InlineNode <View: BidirectionalCollection> where
             return title
 
         case .code(let l), .emphasis(let l):
-            return view.index(start, offsetBy: View.IndexDistance(IntMax(l))) ..< view.index(end, offsetBy: View.IndexDistance(IntMax(-l)))
+            return view.index(start, offsetBy: View.IndexDistance(l.toIntMax())) ..< view.index(end, offsetBy: View.IndexDistance(-l.toIntMax()))
 
         default:
             return start ..< end
@@ -54,4 +54,18 @@ struct InlineNode <View: BidirectionalCollection> where
         (self.kind, self.start, self.end) = (kind, start, end)
     }
 }
+
+/*
+ This is only used to efficiently sort an array of InlineNode. For reasons I can’t understand, 
+ sorting an array an InlineNode with a closure like `nodes.sort { $0.start < $1.start }` is less efficient
+ than making InlineNode conform to Comparabe and use `nodes.sort()`.
+ */
+extension InlineNode: Comparable {
+    static func <  (lhs: InlineNode, rhs: InlineNode) -> Bool { return lhs.start <  rhs.start }
+    static func <= (lhs: InlineNode, rhs: InlineNode) -> Bool { return lhs.start <= rhs.start }
+    static func == (lhs: InlineNode, rhs: InlineNode) -> Bool { return lhs.start == rhs.start }
+    static func >  (lhs: InlineNode, rhs: InlineNode) -> Bool { return lhs.start >  rhs.start }
+    static func >= (lhs: InlineNode, rhs: InlineNode) -> Bool { return lhs.start >= rhs.start }
+}
+
 

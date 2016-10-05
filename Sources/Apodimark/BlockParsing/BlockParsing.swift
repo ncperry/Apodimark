@@ -11,13 +11,14 @@ extension MarkdownParser {
 
         var scanner = Scanner<View>(data: view)
 
-        while let _ = scanner.peek() {
+        while case .some = scanner.peek() {
             let line = parseLine(scanner: &scanner)
 
-            if children.isEmpty || !children[children.endIndex - 1].add(line: line) {
-                if !line.kind.isEmpty() {
-                    children.append(line.node())
-                }
+            if
+                case .failure = children.last?.add(line: line) ?? .failure,
+                !line.kind.isEmpty()
+            {
+                children.append(line.node())
             }
             // TODO: handle different line endings than LF
             _ = scanner.pop(Codec.linefeed)

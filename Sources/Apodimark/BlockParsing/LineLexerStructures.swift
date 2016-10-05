@@ -103,7 +103,7 @@ enum IndentKind: Int {
 /// “level” of the indent), as well as its composition.
 /// For example, an indent made up of 2 spaces and 1 tab will have a
 /// level of (2 * 1) + (1 * 4) = 6 and will contain [.space, .space, .tab].
-internal struct Indent {
+struct Indent {
 
     /// The length of the indent (e.g. one space and one tab has a length of 1 + 4 = 5)
     var level: Int = 0
@@ -121,7 +121,7 @@ internal struct Indent {
     ///
     /// - note: if `n` is bigger than the level of `self`, then the returned
     /// Indent will have a negative level.
-    func removingFirst(_ n: Int) -> Indent {
+    mutating func removeFirst(_ n: Int) {
         var levelsRemoved = 0
         var idx = 0
 
@@ -129,9 +129,8 @@ internal struct Indent {
             levelsRemoved += composition[idx].rawValue
             idx += 1
         }
-        let newComposition = Array(composition[idx ..< composition.endIndex])
-
-        return Indent(level: level - n, composition: newComposition)
+        composition.removeFirst(idx)
+        level -= n
     }
 }
 
@@ -146,33 +145,24 @@ struct Line <View: BidirectionalCollection> where
     let kind: LineKind<View>
 
     /// The indent of the line
-    let indent: Indent
+    var indent: Indent
 
     // The scanner containing the text of the line. May or may not contain the indent
-    let scanner: Scanner<View>
+    var scanner: Scanner<View>
 
     init(_ kind: LineKind<View>, _ indent: Indent, _ subview: Scanner<View>) {
         (self.kind, self.indent, self.scanner) = (kind, indent, subview)
     }
 
     /// - returns: a new line equal to `self` with `n` fewer indents
-    func removingFirstIndents(n: Int) -> Line {
-        let newindent = indent.removingFirst(n)
-        return Line(kind, newindent, scanner)
+    mutating func removeFirstIndents(_ n: Int) {
+        indent.removeFirst(n)
     }
 
     // - returns: a new line equal to `self`, except that its scanner contains the tokens making up the indent
     // - precondition: `self.scanner` doesn't contain the tokens making up the indent (precondition not checked at runtime)
-    func restoringIndentInScanner() -> Line {
-
-        let newScanner = Scanner(
-            data: scanner.data,
-            startIndex: scanner.data.index(
-                scanner.startIndex,
-                offsetBy: -View.IndexDistance(IntMax(indent.composition.count))),
-            endIndex: scanner.endIndex)
-
-        return Line(kind, indent, newScanner)
+    mutating func restoreIndentInScanner() {
+        scanner.startIndex = scanner.data.index(scanner.startIndex, offsetBy: -View.IndexDistance(indent.composition.count.toIntMax()))
     }
 }
 
