@@ -227,65 +227,62 @@ extension MarkdownParser {
     fileprivate func makeFinalBlock(from node: BlockNode<View>) -> MarkdownBlock<View>? {
         switch node {
 
-        case let node as ParagraphBlockNode<View>:
-            let block = ParagraphBlock(text: parseInlines(text: node.text).map(makeFinalInlineNode))
+        case let .paragraph(p):
+            let block = ParagraphBlock(text: parseInlines(text: p.text).map(makeFinalInlineNode))
             return .paragraph(block)
 
 
-        case let node as HeaderBlockNode<View>:
+        case let .header(h):
             let block = HeaderBlock(
-                level: Int(node.level.toIntMax()),
-                text: parseInlines(text: [node.text]).map(makeFinalInlineNode),
-                markers: node.markers
+                level: Int(h.level.toIntMax()),
+                text: parseInlines(text: [h.text]).map(makeFinalInlineNode),
+                markers: h.markers
             )
             return .header(block)
 
 
-        case let node as QuoteBlockNode<View>:
+        case let .quote(q):
             
             let block = QuoteBlock(
-                content: node.content.flatMap(makeFinalBlock),
-                markers: node.markers
+                content: q.content.flatMap(makeFinalBlock),
+                markers: q.markers
             )
             
             return .quote(block)
 
 
-        case let node as ListBlockNode<View>:
-            let items = node.items.map {
+        case let .list(l):
+            let items = l.items.map {
                 return MarkdownListItemBlock(
                     marker: $0.markerSpan,
                     content: $0.content.flatMap(makeFinalBlock)
                 )
             }
             
-            let block = ListBlock(kind: MarkdownListKind(kind: node.kind), items: items)
+            let block = ListBlock(kind: MarkdownListKind(kind: l.kind), items: items)
             
             return .list(block)
 
 
-        case let node as CodeBlockNode<View>:
-            return .code(CodeBlock(text: node.text))
+        case let .code(c):
+            return .code(CodeBlock(text: c.text))
 
 
-        case let node as FenceBlockNode<View>:
+        case let .fence(f):
             let block = FenceBlock<View>(
-                name: node.name,
-                text: node.text,
-                markers: node.markers
+                name: f.name,
+                text: f.text,
+                markers: f.markers
             )
             return .fence(block)
             
             
-        case let node as ThematicBreakBlockNode<View>:
-            return .thematicBreak(ThematicBreakBlock(marker: node.span))
+        case let .thematicBreak(t):
+            return .thematicBreak(ThematicBreakBlock(marker: t.span))
             
             
-        case is ReferenceDefinitionBlockNode<View>:
+        case .referenceDefinition:
             return nil
-        
-        default:
-            fatalError()
         }
     }
 }

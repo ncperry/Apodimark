@@ -12,27 +12,74 @@ enum AddLineResult {
     case failure
 }
 
-class BlockNode <View: BidirectionalCollection> where
+enum BlockNode <View: BidirectionalCollection> where
+    View.SubSequence: BidirectionalCollection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
+    case paragraph(ParagraphBlockNode<View>)
+    case header(HeaderBlockNode<View>)
+    case quote(QuoteBlockNode<View>)
+    case list(ListBlockNode<View>)
+    case fence(FenceBlockNode<View>)
+    case code(CodeBlockNode<View>)
+    case thematicBreak(ThematicBreakBlockNode<View>)
+    case referenceDefinition(ReferenceDefinitionBlockNode<View>)
+
+    func add(line: Line<View>) -> AddLineResult {
+        switch self {
+        case .paragraph(let x):
+            return x.add(line: line)
+        case .header(let x):
+            return x.add(line: line)
+        case .quote(let x):
+            return x.add(line: line)
+        case .list(let x):
+            return x.add(line: line)
+        case .fence(let x):
+            return x.add(line: line)
+        case .code(let x):
+            return x.add(line: line)
+        case .thematicBreak(let x):
+            return x.add(line: line)
+        case .referenceDefinition(let x):
+            return x.add(line: line)
+        }
+    }
+    func allowsLazyContinuation() -> Bool {
+        switch self {
+        case .paragraph(let x):
+            return x.allowsLazyContinuation()
+        case .header(let x):
+            return x.allowsLazyContinuation()
+        case .quote(let x):
+            return x.allowsLazyContinuation()
+        case .list(let x):
+            return x.allowsLazyContinuation()
+        case .fence(let x):
+            return x.allowsLazyContinuation()
+        case .code(let x):
+            return x.allowsLazyContinuation()
+        case .thematicBreak(let x):
+            return x.allowsLazyContinuation()
+        case .referenceDefinition(let x):
+            return x.allowsLazyContinuation()
+        }
+    }
+}
+
+final class ParagraphBlockNode <View: BidirectionalCollection> where
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     typealias Indices = Range<View.Index>
     
-    func add(line: Line<View>) -> AddLineResult { fatalError() }
-    func allowsLazyContinuation() -> Bool { fatalError() }
-}
-
-final class ParagraphBlockNode <View: BidirectionalCollection>: BlockNode<View> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
     var text: [Indices]
     var closed: Bool
     init(text: [Indices]) {
         (self.text, self.closed) = (text, false)
     }
     
-    override func add(line: Line<View>) -> AddLineResult {
+    func add(line: Line<View>) -> AddLineResult {
         guard !closed else { return .failure }
         switch line.kind {
         case .text, .reference:
@@ -49,33 +96,37 @@ final class ParagraphBlockNode <View: BidirectionalCollection>: BlockNode<View> 
         }
         return .success
     }
-    override func allowsLazyContinuation() -> Bool {
+    func allowsLazyContinuation() -> Bool {
         return !closed
     }
 }
 
-final class HeaderBlockNode <View: BidirectionalCollection>: BlockNode<View> where
+final class HeaderBlockNode <View: BidirectionalCollection> where
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
+    typealias Indices = Range<View.Index>
+    
     let markers: (Indices, Indices?)
     let text: Indices
     let level: View.IndexDistance
     init(markers: (Indices, Indices?), text: Indices, level: View.IndexDistance) {
         (self.markers, self.text, self.level) = (markers, text, level)
     }
-    override func add(line: Line<View>) -> AddLineResult {
+    func add(line: Line<View>) -> AddLineResult {
         return .failure
     }
-    override func allowsLazyContinuation() -> Bool {
+    func allowsLazyContinuation() -> Bool {
         return false
     }
 }
 
-final class QuoteBlockNode <View: BidirectionalCollection>: BlockNode<View> where
+final class QuoteBlockNode <View: BidirectionalCollection> where
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
+    typealias Indices = Range<View.Index>
+
     var markers: [View.Index]
     var content: [BlockNode<View>]
     
@@ -100,7 +151,7 @@ final class QuoteBlockNode <View: BidirectionalCollection>: BlockNode<View> wher
         }
     }
     
-    override func add(line: Line<View>) -> AddLineResult {
+    func add(line: Line<View>) -> AddLineResult {
         guard !closed else { return .failure }
 
         guard !(line.indent.level >= 4 && _allowsLazyContinuation) else {
@@ -129,12 +180,12 @@ final class QuoteBlockNode <View: BidirectionalCollection>: BlockNode<View> wher
         }
         return .success
     }
-    override func allowsLazyContinuation() -> Bool {
+    func allowsLazyContinuation() -> Bool {
         return _allowsLazyContinuation
     }
 }
 
-final class ListItemBlockNode <View: BidirectionalCollection>: BlockNode<View> where
+final class ListItemBlockNode <View: BidirectionalCollection> where
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
@@ -146,10 +197,12 @@ final class ListItemBlockNode <View: BidirectionalCollection>: BlockNode<View> w
     }
 }
 
-final class ListBlockNode <View: BidirectionalCollection>: BlockNode<View> where
+final class ListBlockNode <View: BidirectionalCollection> where
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
+    typealias Indices = Range<View.Index>
+    
     let kind: ListKind
     var items: [ListItemBlockNode<View>]
     
@@ -208,15 +261,23 @@ final class ListBlockNode <View: BidirectionalCollection>: BlockNode<View> where
             
         case .empty:
             var shallowestNonListChild: BlockNode? = items.last?.content.last
-            while case let nextList as ListBlockNode = shallowestNonListChild {
+            while case .list(let nextList)? = shallowestNonListChild {
                 shallowestNonListChild = nextList.items.last?.content.last
             }
             
+            if self.state != .normal {
+                guard case .fence? = shallowestNonListChild else {
+                    self.state = .closed
+                    _allowsLazyContinuations = false
+                    return
+                }
+            }
+            /*
             guard self.state == .normal || (shallowestNonListChild is FenceBlockNode) else {
                 self.state = .closed
                 _allowsLazyContinuations = false
                 return
-            }
+            }*/
 
             guard let lastItem = items.last, let lastItemContent = lastItem.content.last else {
                 return
@@ -255,7 +316,7 @@ final class ListBlockNode <View: BidirectionalCollection>: BlockNode<View> where
         }
     }
     
-    override func add(line: Line<View>) -> AddLineResult {
+    func add(line: Line<View>) -> AddLineResult {
         guard let line = preparedLine(from: line) else {
             return .failure
         }
@@ -263,16 +324,18 @@ final class ListBlockNode <View: BidirectionalCollection>: BlockNode<View> where
         return .success
     }
     
-    override func allowsLazyContinuation() -> Bool {
+    func allowsLazyContinuation() -> Bool {
         return _allowsLazyContinuations
         //return items.last?.content.last?.allowsLazyContinuation() ?? true
     }
 }
 
-final class FenceBlockNode <View: BidirectionalCollection>: BlockNode<View> where
+final class FenceBlockNode <View: BidirectionalCollection> where
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
+    typealias Indices = Range<View.Index>
+    
     let kind: FenceKind
     var markers: (Indices, Indices?)
     let name: Indices
@@ -285,7 +348,7 @@ final class FenceBlockNode <View: BidirectionalCollection>: BlockNode<View> wher
         (self.kind, self.markers, self.name, self.text, self.level, self.indent, self.closed) = (kind, (startMarker, nil), name, text, level, indent, false)
     }
     
-    override func add(line: Line<View>) -> AddLineResult {
+    func add(line: Line<View>) -> AddLineResult {
         
         guard line.indent.level >= 0 && !closed else {
             return .failure
@@ -305,15 +368,17 @@ final class FenceBlockNode <View: BidirectionalCollection>: BlockNode<View> wher
         }
         return .success
     }
-    override func allowsLazyContinuation() -> Bool {
+    func allowsLazyContinuation() -> Bool {
         return false
     }
 }
 
-final class CodeBlockNode <View: BidirectionalCollection>: BlockNode<View> where
+final class CodeBlockNode <View: BidirectionalCollection> where
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
+    typealias Indices = Range<View.Index>
+    
     var text: [Indices]
     var trailingEmptyLines: [Indices]
     
@@ -321,7 +386,7 @@ final class CodeBlockNode <View: BidirectionalCollection>: BlockNode<View> where
         (self.text, self.trailingEmptyLines) = (text, trailingEmptyLines)
     }
     
-    override func add(line: Line<View>) -> AddLineResult {
+    func add(line: Line<View>) -> AddLineResult {
         switch line.kind {
             
         case .empty:
@@ -344,41 +409,45 @@ final class CodeBlockNode <View: BidirectionalCollection>: BlockNode<View> where
         }
         return .success
     }
-    override func allowsLazyContinuation() -> Bool {
+    func allowsLazyContinuation() -> Bool {
         return false
     }
 }
 
-final class ThematicBreakBlockNode <View: BidirectionalCollection>: BlockNode<View> where
+final class ThematicBreakBlockNode <View: BidirectionalCollection> where
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
+    typealias Indices = Range<View.Index>
+    
     let span: Indices
     init(span: Indices) {
         self.span = span
     }
-    override func add(line: Line<View>) -> AddLineResult {
+    func add(line: Line<View>) -> AddLineResult {
         return .failure
     }
-    override func allowsLazyContinuation() -> Bool {
+    func allowsLazyContinuation() -> Bool {
         return false
     }
 }
 
-final class ReferenceDefinitionBlockNode <View: BidirectionalCollection>: BlockNode<View> where
+final class ReferenceDefinitionBlockNode <View: BidirectionalCollection> where
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
+    typealias Indices = Range<View.Index>
+    
     let title: String
     let definition: ReferenceDefinition
     init(title: String, definition: ReferenceDefinition) {
         (self.title, self.definition) = (title, definition)
     }
     
-    override func add(line: Line<View>) -> AddLineResult {
+    func add(line: Line<View>) -> AddLineResult {
         return .failure
     }
-    override func allowsLazyContinuation() -> Bool {
+    func allowsLazyContinuation() -> Bool {
         return false
     }
 }
@@ -389,13 +458,13 @@ extension Line {
             var newLine = self
             newLine.removeFirstIndents(4)
             newLine.restoreIndentInScanner()
-            return CodeBlockNode(text: [newLine.scanner.indices], trailingEmptyLines: [])
+            return .code(.init(text: [newLine.scanner.indices], trailingEmptyLines: []))
         }
         
         switch kind {
             
         case .text:
-            return ParagraphBlockNode(text: [scanner.indices])
+            return .paragraph(.init(text: [scanner.indices]))
             
         case let .list(kind, rest):
             let state: ListState = rest.kind.isEmpty() ? .followedByEmptyLine : .normal
@@ -409,12 +478,12 @@ extension Line {
             }
             
             let minimumIndent: Int
-            if item.content.last is CodeBlockNode {
+            if case .code? = item.content.last {
                 minimumIndent = indent.level + kind.width + 1
             } else {
                 minimumIndent = indent.level + kind.width + rest.indent.level + 1
             }
-            return ListBlockNode(kind: kind, items: [item], state: state, minimumIndent: minimumIndent)
+            return .list(.init(kind: kind, items: [item], state: state, minimumIndent: minimumIndent))
             
             
         case .header(let text, let level):
@@ -423,23 +492,23 @@ extension Line {
                 let tmp = text.upperBound ..< scanner.endIndex
                 return tmp.isEmpty ? nil : tmp
             }()
-            return HeaderBlockNode(markers: (startHashes, endHashes), text: text, level: level)
+            return .header(.init(markers: (startHashes, endHashes), text: text, level: level))
             
         case .quote(let rest):
-            return QuoteBlockNode(firstMarker: scanner.startIndex, firstNode: rest.node())
+            return .quote(.init(firstMarker: scanner.startIndex, firstNode: rest.node()))
             
         case let .fence(kind, name, level):
             let startMarker = scanner.startIndex ..< scanner.data.index(scanner.startIndex, offsetBy: level)
-            return FenceBlockNode(kind: kind, startMarker: startMarker, name: name, text: [], level: level, indent: indent.level)
+            return .fence(.init(kind: kind, startMarker: startMarker, name: name, text: [], level: level, indent: indent.level))
             
         case .thematicBreak:
-            return ThematicBreakBlockNode(span: scanner.indices)
+            return .thematicBreak(.init(span: scanner.indices))
             
         case .empty:
-            return ParagraphBlockNode(text: [])
+            return .paragraph(.init(text: []))
             
         case let .reference(title, definition):
-            return ReferenceDefinitionBlockNode(title: title, definition: definition)
+            return .referenceDefinition(.init(title: title, definition: definition))
         }
     }
 }
