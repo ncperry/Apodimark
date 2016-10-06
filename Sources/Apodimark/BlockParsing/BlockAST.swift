@@ -273,12 +273,6 @@ final class ListBlockNode <View: BidirectionalCollection> where
                     return
                 }
             }
-            /*
-            guard self.state == .normal || (shallowestNonListChild is FenceBlockNode) else {
-                self.state = .closed
-                _allowsLazyContinuations = false
-                return
-            }*/
 
             guard let lastItem = items.last, let lastItemContent = lastItem.content.last else {
                 return

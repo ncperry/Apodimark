@@ -80,14 +80,6 @@ struct NonTextInlineNode <View: BidirectionalCollection> where
  sorting an array an InlineNode with a closure like `nodes.sort { $0.start < $1.start }` is less efficient
  than making InlineNode conform to Comparabe and use `nodes.sort()`.
  */
-extension TextInlineNode: Comparable {
-    static func <  (lhs: TextInlineNode, rhs: TextInlineNode) -> Bool { return lhs.start <  rhs.start }
-    static func <= (lhs: TextInlineNode, rhs: TextInlineNode) -> Bool { return lhs.start <= rhs.start }
-    static func == (lhs: TextInlineNode, rhs: TextInlineNode) -> Bool { return lhs.start == rhs.start }
-    static func >  (lhs: TextInlineNode, rhs: TextInlineNode) -> Bool { return lhs.start >  rhs.start }
-    static func >= (lhs: TextInlineNode, rhs: TextInlineNode) -> Bool { return lhs.start >= rhs.start }
-}
-
 extension NonTextInlineNode: Comparable {
     static func <  (lhs: NonTextInlineNode, rhs: NonTextInlineNode) -> Bool { return lhs.start <  rhs.start }
     static func <= (lhs: NonTextInlineNode, rhs: NonTextInlineNode) -> Bool { return lhs.start <= rhs.start }
