@@ -5,7 +5,7 @@
 
 extension MarkdownParser {
     
-    func processAllEmphases(_ delimiters: inout DelimiterSlice) -> [NonTextInlineNode<View>] {
+    func processAllEmphases(_ delimiters: inout ArraySlice<Delimiter?>) -> [NonTextInlineNode<View>] {
         var all: [NonTextInlineNode<View>] = []
         var start = delimiters.startIndex
         while let (r, newStart) = processEmphasis(&delimiters[start ..< delimiters.endIndex]) {
@@ -15,7 +15,7 @@ extension MarkdownParser {
         return all
     }
 
-    fileprivate func processEmphasis(_ delimiters: inout DelimiterSlice) -> (NonTextInlineNode<View>, newStart: Int)? {
+    fileprivate func processEmphasis(_ delimiters: inout ArraySlice<Delimiter?>) -> (NonTextInlineNode<View>, newStart: Int)? {
         
         guard let (newStart, openingDelIdx, closingDelIdx) = {
             () -> (Int, Int, Int)? in

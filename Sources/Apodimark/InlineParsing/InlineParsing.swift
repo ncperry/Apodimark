@@ -4,9 +4,7 @@
 //
 
 extension MarkdownParser {
-    
-    typealias DelimiterSlice = ArraySlice<Delimiter?>
-    
+        
     func parseInlines(text: [Range<View.Index>]) -> LinkedList<InlineNode<View>> {
 
         guard !text.isEmpty else { return [] }
