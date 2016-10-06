@@ -10,10 +10,6 @@ let package = Package(
         Target(
             name: "ApodimarkOutput",
             dependencies: [.Target(name: "Apodimark")]
-        ),
-        Target(
-            name: "Profiling",
-            dependencies: [.Target(name: "Apodimark")]
         )
     ]
 )
