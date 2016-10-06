@@ -1,8 +1,8 @@
 # Apodimark
 
-Apodimark is a markdown parser written in pure Swift 3. 
-It is still a work in progress, but it should be stable 
-by the time Swift 3 is officially released.
+Apodimark is a markdown parser written in pure Swift 3. It is fast, flexible,
+easy to use, and works with indices instead of String, which is ideal for 
+syntax highlighting.
 
 ## Contribute
 
@@ -20,36 +20,37 @@ contributing and a description of the parser.
 Parsing a `String.UTF16View` is easy:
 
 ``` swift
-let document = parsedMarkdown(source: string.utf16)
+let ast = parsedMarkdown(source: string.utf16, codec: UTF16MarkdownCodec.self)
 ```
 
-In fact, you can parse any `BidirectionalCollection` whose elements conform 
-to `MarkdownParserToken`. So these can be valid arguments:
-- `UnsafeBufferPointer<UnicodeScalar>`
-- `String.CharacterView`
-- `Data`
+In fact, you can parse any `BidirectionalCollection` whose elements can be 
+interpreted by the `MarkdownParserCodec` given as second argument.
+
 
 ``` swift
-let arr = Array(string.utf16)
-let document = arr.withUnsafeBufferPointer { parsedMarkdown(source: $0) }
+let s = Array(string.unicodeScalars)
+let ast = parsedMarkdown(source: s, codec: UnicodeScalarMarkdownCodec.self)
 ```
 
 However, note that:
-- Only `UInt8` and `UInt16` conform to `MarkdownParserToken` out of the box
 - Performance can vary significantly based on the performance characteristics 
   of the collection and whether the function can be specialized by the compiler.
+  For more details on this, see [performance.md][performance].
 
-  Currently, only `String.UTF16View` provides good performance because it is
-  “manually” specialized in `Apodidown.swift` (when using whole-module-optimization). 
+- Currently, only `String.UTF16View` and `UTF16MarkdownCodec` provide good 
+  performance because they are “manually” specialized in `Apodimark.swift` 
+  (when using whole-module-optimization). 
 
 The return value of the `parsedMarkdown` function is an abstract syntax tree
 of the document represented by an array of `MarkdownBlock`.
 A markdown block can be:
 - paragraph
+- header
 - list
 - quote
-- block of code
-- etc.
+- indented code block
+- fenced code block
+- thematic break
 
 Some markdown blocks (lists, quotes) contain other markdown blocks, 
 and some (headers, paragraphs) contain `MarkdownInline` elements.
@@ -58,14 +59,36 @@ A markdown inline can be:
 - monospaced text
 - plain text
 - reference (link/image)
-- etc.
+- softbreak
+- hardbreak
 
-The leaves of the abstract syntax tree contain the indices of their contents (**not a String**). 
-This should make it easy to provide fast syntax highlighting.
+Each element of the AST stores some relevant indices. For example, an emphasis is
+defined by:
+```swift
+struct EmphasisInline <View: BidirectionalCollection> where
+    View.SubSequence: BidirectionalCollection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
+    let level: Int
+    let content: [MarkdownInline<View>]
+    let markers: (Range<View.Index>, Range<View.Index>)
+}
+```
+
+where `markers` contains the indices to the opening and closing characters of 
+the emphasis.
+
+```
+this is an **emphasis**
+           ^^        ^^
+    markers.0        markers.1
+```
+
+[performance]: internal/performance.md
 
 ## Getting Started
 
-**`TODO`**
+Apodimark is currently only available via the Swift Package Manager.
 
 ## Goals
 
@@ -76,7 +99,8 @@ Apodimark should be fast, robust, and flexible.
 
 It should also be very well tested and well documented. There are currently
 over 400 tests ensuring that Apodimark behaves like Commonmark where it matters.
-The documentation needs some work right now, but it should be 100% documented very soon.  
+The documentation needs some work right now, but it should be 100% documented 
+very soon.
 
 Finally, it should not have any dependencies.
 

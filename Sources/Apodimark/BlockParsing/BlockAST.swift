@@ -12,6 +12,7 @@ enum AddLineResult {
     case failure
 }
 
+// This is an enum because using a protocol is not possible and using a class is too slow.
 enum BlockNode <View: BidirectionalCollection> where
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
