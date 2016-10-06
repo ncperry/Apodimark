@@ -27,7 +27,7 @@ extension MarkdownBlock where View.Iterator.Element: Comparable & Hashable {
         }
     }
 
-    public static func output <Codec: MarkdownParserCodec> (nodes: [MarkdownBlock], source: View, codec: Codec.Type) -> String
+    static func output <Codec: MarkdownParserCodec> (nodes: [MarkdownBlock], source: View, codec: Codec.Type) -> String
         where Codec.CodeUnit == Token
     {
         return nodes.reduce("Document { ", combineNodeOutput(source: source, codec: Codec.self)) + "}"

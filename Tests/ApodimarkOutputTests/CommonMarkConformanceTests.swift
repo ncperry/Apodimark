@@ -1,7 +1,7 @@
 
 import XCTest
 import Apodimark
-import ApodimarkOutput
+@testable import ApodimarkOutput
 
 private let tests = [
       1,   2,   3,   4,   5,   6,   7,   8,   9,  10,
@@ -79,7 +79,6 @@ class CommonMarkConformanceTests : XCTestCase {
 
     func testSpecStringUTF16View() {
         for no in tests {
-            print(no)
             let source = stringForTest(number: no).utf16
             let doc = parsedMarkdown(source: source, codec: UTF16MarkdownCodec.self)
             let desc = MarkdownBlock.output(nodes: doc, source: source, codec: UTF16MarkdownCodec.self)
