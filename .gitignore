@@ -2,5 +2,4 @@
 /Build
 /.build
 /Packages
-*.xcodeproj
 /DerivedData
