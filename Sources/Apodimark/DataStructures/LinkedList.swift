@@ -12,7 +12,7 @@ fileprivate final class LinkedListNode<T> {
 }
 
 /// The index of a node in a LinkedList
-struct LinkedListIndex<T>: Comparable, CustomStringConvertible {
+struct LinkedListIndex<T>/*: Comparable, CustomStringConvertible*/ {
 
     /// Position of the index relative to the head of the list
     fileprivate let position: Int
@@ -23,18 +23,20 @@ struct LinkedListIndex<T>: Comparable, CustomStringConvertible {
     fileprivate init(position: Int, node: LinkedListNode<T>?) {
         (self.position, self.node) = (position, node)
     }
-
+    /*
     var description: String {
         return "ListIndex(\(position))"
     }
+    */
 }
 
 func <  <T> (lhs: LinkedListIndex<T>, rhs: LinkedListIndex<T>) -> Bool { return lhs.position <  rhs.position }
+/*
 func <= <T> (lhs: LinkedListIndex<T>, rhs: LinkedListIndex<T>) -> Bool { return lhs.position <= rhs.position }
 func >  <T> (lhs: LinkedListIndex<T>, rhs: LinkedListIndex<T>) -> Bool { return lhs.position >  rhs.position }
 func >= <T> (lhs: LinkedListIndex<T>, rhs: LinkedListIndex<T>) -> Bool { return lhs.position >= rhs.position }
 func == <T> (lhs: LinkedListIndex<T>, rhs: LinkedListIndex<T>) -> Bool { return lhs.position == rhs.position }
-
+*/
 /**
  A singly linked list conforming to `MutableCollection`.
  
@@ -65,7 +67,7 @@ final class LinkedList<T> {
     init() {
         (self.head, self.count) = (nil, 0)
     }
-
+    /*
     /// Removes the first element of the list.
     ///
     /// - Important: Invalidates every index of the list
@@ -142,6 +144,7 @@ final class LinkedList<T> {
         start.node.next = end.node
         count -= (end.position - start.position) - 1
     }
+    */
 
     /**
      Prepends an element to the list
@@ -189,13 +192,12 @@ final class LinkedList<T> {
      - Parameter x: the element to add
      - Parameter idx: predecessor of the index of the new element, or nil if the new element should be the head of the list
      */
-    func add(_ x: T, after idx: Index?) -> Index { // bad name
-        guard let idx = idx else {
+    func add(_ x: T, after idx: Index?) {
+        if let idx = idx {
+            add(x, after: idx)
+        } else {
             prepend(x)
-            return startIndex
         }
-        add(x, after: idx)
-        return index(after: idx)
     }
 }
 
@@ -205,13 +207,14 @@ extension LinkedList: Sequence {
     }
 }
 
-extension LinkedList: MutableCollection {
+extension LinkedList/*: MutableCollection*/ {
+    
     typealias Element = T
-    typealias Indices = LinkedListIndices<T>
-
+    // typealias Indices = LinkedListIndices<T>
+    
     subscript (idx: Index) -> Element {
         get { return idx.node.data }
-        set { idx.node.data = newValue }
+        // set { idx.node.data = newValue }
     }
 
     var startIndex: Index {
@@ -221,11 +224,11 @@ extension LinkedList: MutableCollection {
     var endIndex: Index {
         return LinkedListIndex(position: count, node: nil)
     }
-
+    /*
     var indices: Indices {
         return LinkedListIndices(startIndex: startIndex, endIndex: endIndex)
     }
-
+    */
     func index(after idx: Index?) -> Index {
         return idx.map { index(after: $0) } ?? startIndex
     }
@@ -241,7 +244,7 @@ extension LinkedList: ExpressibleByArrayLiteral {
         array.reversed().forEach(self.prepend)
     }
 }
-
+/*
 extension LinkedList: CustomStringConvertible {
     var description: String {
         var s = "List["
@@ -250,7 +253,7 @@ extension LinkedList: CustomStringConvertible {
         return s
     }
 }
-
+*/
 struct LinkedListIterator<T>: IteratorProtocol {
 
     fileprivate var cur: LinkedListIndex<T>
@@ -268,6 +271,7 @@ struct LinkedListIterator<T>: IteratorProtocol {
     }
 }
 
+/*
 struct LinkedListIndicesIterator<T>: IteratorProtocol {
 
     typealias Element = LinkedListIndex<T>
@@ -309,5 +313,5 @@ struct LinkedListIndices<T>: Collection {
         return LinkedListIndicesIterator(indices)
     }
 }
-
+*/
 

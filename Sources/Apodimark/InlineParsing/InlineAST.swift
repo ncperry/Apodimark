@@ -73,11 +73,11 @@ extension MarkdownParser {
                    case .nonText(let nextNode) = ast.list[nexti],
                    nextNode.start < node.start
                 {
-                    let i = nextNode.children.add(.text(node), after: nil)
-                    ast = InlineAST(list: nextNode.children, index: i, parent: ast)
+                    nextNode.children.add(.text(node), after: nil)
+                    ast = InlineAST(list: nextNode.children, index: nextNode.children.startIndex, parent: ast)
                 } else {
-                    let i = ast.list.add(.text(node), after: ast.index)
-                    ast = ast.withIndex(i)
+                    ast.list.add(.text(node), after: ast.index)
+                    ast = ast.withIndex(ast.list.index(after: ast.index))
                 }
                 
             case .text:
@@ -137,7 +137,7 @@ extension MarkdownParser {
             
             defer {
                 i = nexti
-                ast.list.formIndex(after: &nexti)
+                nexti = ast.list.index(after: i)
             }
             guard case let .nonText(nextNode) = ast.list[nexti] else { fatalError() }
             
@@ -149,14 +149,15 @@ extension MarkdownParser {
 
             if idx < start {
                 if start <= text.upperBound {
-                    i = ast.list.add(.text(TextInlineNode(kind: .text, start: idx, end: start)), after: i)
+                    ast.list.add(.text(TextInlineNode(kind: .text, start: idx, end: start)), after: i)
                     // nexti invalidated -> recompute it
+                    i = ast.list.index(after: i)
                     nexti = ast.list.index(after: i!)
                 }
                 // add text before node but text ends before start of node
                 else {
-                    let newIndex = ast.list.add(.text(TextInlineNode(kind: .text, start: idx, end: text.upperBound)), after: i)
-                    return ast.withIndex(newIndex)
+                    ast.list.add(.text(TextInlineNode(kind: .text, start: idx, end: text.upperBound)), after: i)
+                    return ast.withIndex(ast.list.index(after: i))
                 }
             }
             idx = max(startC, idx)
@@ -186,7 +187,8 @@ extension MarkdownParser {
             }
         }
         if idx < text.upperBound {
-            i = ast.list.add(.text(TextInlineNode(kind: .text, start: idx, end: text.upperBound)), after: i)
+            ast.list.add(.text(TextInlineNode(kind: .text, start: idx, end: text.upperBound)), after: i)
+            i = ast.list.index(after: i)
         }
         return ast.withIndex(i)
     }
