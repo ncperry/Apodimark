@@ -1,0 +1,4 @@
+language: objective-c
+osx_image: xcode8
+script: xcrun xcodebuild -project Apodimark.xcodeproj -scheme UnitTests test
+after_success: bash <(curl -s https://codecov.io/bash)
