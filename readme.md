@@ -1,8 +1,9 @@
-![logo][logo]
-
-[logo]: apodimark-logo.png
-
 # Apodimark
+
+[![Swift 3.0](https://img.shields.io/badge/Swift-3.0-blue.svg)](https://swift.org) 
+[![license](https://img.shields.io/badge/licence-MIT-blue.svg)](https://github.com/loiclec/Apodimark/blob/master/LICENCE.md)
+[![travis](https://travis-ci.org/loiclec/Apodimark.svg?branch=master)](https://travis-ci.org/loiclec/Apodimark)
+[![codecov](https://codecov.io/gh/loiclec/Apodimark/branch/master/graph/badge.svg)](https://codecov.io/gh/loiclec/Apodimark)
 
 Apodimark is a markdown parser written in pure Swift 3. It is fast, flexible,
 easy to use, and works with indices instead of String, which is ideal for 
