@@ -1,3 +1,7 @@
+![logo][logo]
+
+[logo]: apodimark-logo.png
+
 # Apodimark
 
 Apodimark is a markdown parser written in pure Swift 3. It is fast, flexible,
