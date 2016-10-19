@@ -4,6 +4,17 @@ import Apodimark
 // FUNCTIONS INTENDED ONLY FOR TESTING PURPOSES
 // DO NOT USE “APODIMARK OUTPUT” IF YOU ARE NOT TESTING APODIMARK
 
+extension MarkdownListKind: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .unordered:
+            return "Bullet"
+        case .ordered(startingAt: let n):
+            return "Number(\(n))"
+        }
+    }
+}
+
 extension MarkdownBlock where View.Iterator.Element: Comparable & Hashable {
     typealias Token = View.Iterator.Element
 

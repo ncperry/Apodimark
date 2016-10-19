@@ -132,7 +132,7 @@ public indirect enum MarkdownBlock <View: BidirectionalCollection> where
     case thematicBreak(ThematicBreakBlock<View>)
 }
 
-public enum MarkdownListKind: CustomStringConvertible {
+public enum MarkdownListKind {
 
     case unordered
     case ordered(startingAt: Int)
@@ -143,17 +143,7 @@ public enum MarkdownListKind: CustomStringConvertible {
         case .number(_, let n): self = .ordered(startingAt: n)
         }
     }
-
-    public var description: String {
-        switch self {
-        case .unordered:
-            return "Bullet"
-        case .ordered(startingAt: let n):
-            return "Number(\(n))"
-        }
-    }
 }
-
 
 @_specialize(String.UTF16View, UTF16MarkdownCodec)
 @_specialize(Array<UInt8>, UTF8MarkdownCodec)
@@ -172,7 +162,7 @@ extension MarkdownParser {
 
     /// Parse the collection and return the Abstract Syntax Tree
     /// describing the resulting Markdown document.
-    mutating func finalAST() -> [MarkdownBlock<View>] {
+    fileprivate mutating func finalAST() -> [MarkdownBlock<View>] {
         parseBlocks()
         return blockTree.makeIterator().flatMap(makeFinalBlock(from:children:))
     }
