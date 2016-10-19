@@ -93,7 +93,14 @@ this is an **emphasis**
 
 ## Getting Started
 
-Apodimark is currently only available via the Swift Package Manager.
+Apodimark is available via the the CocoaPods or the Swift Package Manager.
+
+**CocoaPods**:
+
+Add this line to your Podfile:
+```text
+pod 'Apodimark', :git => 'https://github.com/loiclec/Apodimark.git'
+```
 
 ## Goals
 
