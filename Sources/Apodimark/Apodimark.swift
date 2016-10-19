@@ -154,7 +154,9 @@ public enum MarkdownListKind: CustomStringConvertible {
     }
 }
 
+
 @_specialize(String.UTF16View, UTF16MarkdownCodec)
+@_specialize(Array<UInt8>, UTF8MarkdownCodec)
 public func parsedMarkdown <View, Codec> (source: View, codec: Codec.Type) -> [MarkdownBlock<View>] where
     View: BidirectionalCollection,
     Codec: MarkdownParserCodec,
@@ -171,114 +173,59 @@ extension MarkdownParser {
     /// Parse the collection and return the Abstract Syntax Tree
     /// describing the resulting Markdown document.
     mutating func finalAST() -> [MarkdownBlock<View>] {
-        return parseBlocks().flatMap(makeFinalBlock)
-    }
-
-    fileprivate func makeFinalInlineNode(from node: NonTextInlineNode<View>) -> MarkdownInline<View> {
-        switch node.kind {
-
-        case .code(let level):
-            let startMarkers = node.start ..< view.index(node.start, offsetBy: level)
-            let endMarkers = view.index(node.end, offsetBy: -level) ..< node.end
-            
-            let inline = MonospacedTextInline(
-                content: node.children.map(makeFinalInlineNode),
-                markers: (startMarkers, endMarkers)
-            )
-            return .monospacedText(inline)
-
-        case .emphasis(let level):
-            let startMarkers = node.start ..< view.index(node.start, offsetBy: level)
-            let endMarkers = view.index(node.end, offsetBy: -level) ..< node.end
-            
-            let inline = EmphasisInline(
-                level: Int(level.toIntMax()),
-                content: node.children.map(makeFinalInlineNode),
-                markers: (startMarkers, endMarkers)
-            )
-
-            return .emphasis(inline)
-
-        case .reference(let kind, title: let title, definition: let definition):
-            let markers = [node.start ..< title.lowerBound, title.upperBound ..< node.end]
-            
-            let inline = ReferenceInline(
-                kind: kind,
-                title: node.children.map(makeFinalInlineNode),
-                definition: definition,
-                markers: markers
-            )
-            
-            return .reference(inline)
-        }
+        parseBlocks()
+        return blockTree.makeIterator().flatMap(makeFinalBlock(from:children:))
     }
     
-    fileprivate func makeFinalInlineNode(from node: TextInlineNode<View>) -> MarkdownInline<View> {
-        switch node.kind {
-            
-        case .hardbreak:
-            return .hardbreak(BreakInline(span: node.start ..< node.end))
-            
-        case .softbreak:
-            return .softbreak(BreakInline(span: node.start ..< node.end))
-            
-        case .text:
-            return .text(TextInline(span: node.start ..< node.end))
-        }
-    }
-    
-    fileprivate func makeFinalInlineNode(from node: InlineNode<View>) -> MarkdownInline<View> {
-        switch node {
-        case .text(let i): return makeFinalInlineNode(from: i)
-        case .nonText(let i): return makeFinalInlineNode(from: i)
-        }
-    }
-
     /// Return a MarkdownBlock from an instance of the internal BlockNode type.
-    fileprivate func makeFinalBlock(from node: BlockNode<View>) -> MarkdownBlock<View>? {
+    fileprivate func makeFinalBlock(from node: Block<View>, children: TreeIterator<Block<View>>?) -> MarkdownBlock<View>? {
         switch node {
-
+            
         case let .paragraph(p):
-            let block = ParagraphBlock(text: parseInlines(text: p.text).map(makeFinalInlineNode))
+            let inlines = makeFinalInlineNodeTree(from: parseInlines(p.text).makeIterator())
+            let block = ParagraphBlock(text: inlines)
             return .paragraph(block)
-
-
+            
+            
         case let .header(h):
             let block = HeaderBlock(
-                level: Int(h.level.toIntMax()),
-                text: parseInlines(text: [h.text]).map(makeFinalInlineNode),
+                level: numericCast(h.level),
+                text: makeFinalInlineNodeTree(from: parseInlines([h.text]).makeIterator()),
                 markers: h.markers
             )
             return .header(block)
-
-
+            
+            
         case let .quote(q):
             
             let block = QuoteBlock(
-                content: q.content.flatMap(makeFinalBlock),
+                content: children?.flatMap(makeFinalBlock) ?? [],
                 markers: q.markers
             )
             
             return .quote(block)
-
-
+        
+        case .listItem:
+            fatalError()
+        
         case let .list(l):
-            let items = l.items.map {
-                return MarkdownListItemBlock(
-                    marker: $0.markerSpan,
-                    content: $0.content.flatMap(makeFinalBlock)
+            let items = children?.map { (n, c) -> MarkdownListItemBlock<View> in
+                guard case .listItem(let i) = n else { return .init(marker: view.startIndex ..< view.startIndex, content: []) }
+                return MarkdownListItemBlock<View>(
+                    marker: i.markerSpan,
+                    content: c?.flatMap(makeFinalBlock) ?? []
                 )
-            }
+            } ?? []
             
             let block = ListBlock(kind: MarkdownListKind(kind: l.kind), items: items)
             
             return .list(block)
-
-
+            
+            
         case let .code(c):
             return .code(CodeBlock(text: c.text))
-
-
+            
+            
         case let .fence(f):
             let block = FenceBlock<View>(
                 name: f.name,
@@ -296,4 +243,69 @@ extension MarkdownParser {
             return nil
         }
     }
+
 }
+
+extension MarkdownParser {
+    fileprivate func makeFinalInlineNodeTree(from tree: TreeIterator<InlineNode<View>>) -> [MarkdownInline<View>] {
+        
+        var nodes: [MarkdownInline<View>] = []
+        
+        for (node, children) in tree {
+            switch node {
+            case .text(let t):
+                switch t.kind {
+                    
+                case .hardbreak:
+                    nodes.append(.hardbreak(BreakInline(span: t.start ..< t.end)))
+                    
+                case .softbreak:
+                    nodes.append(.softbreak(BreakInline(span: t.start ..< t.end)))
+                    
+                case .text:
+                    nodes.append(.text(TextInline(span: t.start ..< t.end)))
+                }
+    
+            case .nonText(let n):
+                switch n.kind {
+                case .code(let level):
+                    let startMarkers = n.start ..< view.index(n.start, offsetBy: numericCast(level))
+                    let endMarkers = view.index(n.end, offsetBy: numericCast(-level)) ..< n.end
+                    
+                    let inline = MonospacedTextInline(
+                        content: children.map(makeFinalInlineNodeTree) ?? [],
+                        markers: (startMarkers, endMarkers)
+                    )
+                    nodes.append(.monospacedText(inline))
+                    
+                case .emphasis(let level):
+                    let startMarkers = n.start ..< view.index(n.start, offsetBy: numericCast(level))
+                    let endMarkers = view.index(n.end, offsetBy: numericCast(-level)) ..< n.end
+                    
+                    let inline = EmphasisInline(
+                        level: numericCast(level),
+                        content: children.map(makeFinalInlineNodeTree) ?? [],
+                        markers: (startMarkers, endMarkers)
+                    )
+                    
+                    nodes.append(.emphasis(inline))
+                    
+                case .reference(let kind, title: let title, definition: let definition):
+                    let markers = [n.start ..< title.lowerBound, title.upperBound ..< n.end]
+                    
+                    let inline = ReferenceInline(
+                        kind: kind,
+                        title: children.map(makeFinalInlineNodeTree) ?? [],
+                        definition: definition,
+                        markers: markers
+                    )
+                    
+                    nodes.append(.reference(inline))
+                }
+            }
+        }
+        return nodes
+    }
+}
+
+

@@ -59,7 +59,7 @@ extension MarkdownParser {
             }
         }
         
-        switch View.IndexDistance.compare(l1, l2) {
+        switch Int32.compare(l1, l2) {
             
         case .equal:
             delimiters[openingDelIdx] = nil
@@ -67,7 +67,7 @@ extension MarkdownParser {
             return (
                 NonTextInlineNode(
                     kind: .emphasis(l1),
-                    start: view.index(openingDel.idx, offsetBy: -l1),
+                    start: view.index(openingDel.idx, offsetBy: numericCast(-l1)),
                     end: closingDel.idx),
                 newStart
             )
@@ -80,20 +80,20 @@ extension MarkdownParser {
             return (
                 NonTextInlineNode(
                     kind: .emphasis(l1),
-                    start: view.index(openingDel.idx, offsetBy: startOffset),
-                    end: view.index(closingDel.idx, offsetBy: endOffset)),
+                    start: view.index(openingDel.idx, offsetBy: numericCast(startOffset)),
+                    end: view.index(closingDel.idx, offsetBy: numericCast(endOffset))),
                 newStart
             )
             
             
         case .greaterThan:
             delimiters[closingDelIdx] = nil
-            view.formIndex(&delimiters[openingDelIdx]!.idx, offsetBy: -l2)
+            view.formIndex(&delimiters[openingDelIdx]!.idx, offsetBy: numericCast(-l2))
             delimiters[openingDelIdx]!.kind = .emph(kind, state1, l1 - l2)
             return (
                 NonTextInlineNode(
                     kind: .emphasis(l2),
-                    start: view.index(openingDel.idx, offsetBy: -l2),
+                    start: view.index(openingDel.idx, offsetBy: numericCast(-l2)),
                     end: closingDel.idx
                 ),
                 newStart

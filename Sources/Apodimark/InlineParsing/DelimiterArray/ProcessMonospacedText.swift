@@ -18,7 +18,7 @@ extension MarkdownParser {
     func processMonospacedText(_ delimiters: inout ArraySlice<Delimiter?>) -> (NonTextInlineNode<View>, newStart: Int)? {
 
         guard let (openingDelIdx, openingDel, closingDelIdx, closingDel, level) = {
-            () -> (Int, Delimiter, Int, Delimiter, View.IndexDistance)? in
+            () -> (Int, Delimiter, Int, Delimiter, Int32)? in
             
             var ignoring = false
             
@@ -60,10 +60,8 @@ extension MarkdownParser {
             return nil
         }
   
-        let range = openingDelIdx ... closingDelIdx
-        for i in range {
-            guard let kind = delimiters[i]?.kind else { continue }
-            switch kind {
+        for i in openingDelIdx ... closingDelIdx {
+            switch delimiters[i]!.kind {
             case .softbreak, .hardbreak, .start, .end: continue
             default: delimiters[i] = nil
             }
@@ -72,7 +70,7 @@ extension MarkdownParser {
         return (
             NonTextInlineNode(
                 kind: .code(level),
-                start: view.index(openingDel.idx, offsetBy: -level),
+                start: view.index(openingDel.idx, offsetBy: numericCast(-level)),
                 end: closingDel.idx
             ),
             closingDelIdx

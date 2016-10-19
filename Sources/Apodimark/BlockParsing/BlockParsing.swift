@@ -1,55 +1,325 @@
 //
-//  BlockParsing.swift
+//  BlockParsingTree.swift
 //  Apodimark
 //
 
+enum ListState {
+    case normal, followedByEmptyLine, closed
+}
+
+enum AddLineResult {
+    case success
+    case failure
+}
+
+
 extension MarkdownParser {
-
-    mutating func parseBlocks() -> [BlockNode<View>] {
-
-        var children: [BlockNode<View>] = []
-
-        var scanner = Scanner<View>(data: view)
-
+    
+    mutating func parseBlocks() {
+        var scanner = Scanner(data: view)
         while case .some = scanner.peek() {
-            let line = parseLine(scanner: &scanner)
-
-            if
-                case .failure = children.last?.add(line: line) ?? .failure,
-                !line.kind.isEmpty()
-            {
-                children.append(line.node())
-            }
+            _ = add(line: MarkdownParser.parseLine(&scanner))
             // TODO: handle different line endings than LF
+            scanner.popUntil(Codec.linefeed)
             _ = scanner.pop(Codec.linefeed)
         }
+        
+        for case .referenceDefinition(let ref) in blockTree.buffer.lazy.map({ $0.data })
+            where referenceDefinitions[ref.title] == nil
+        {
+            referenceDefinitions[ref.title] = ref.definition
+        }
+    }
+}
 
-        for child in children {
-            addReferenceDefinitions(fromNode: child)
+extension Block {
+    func allowsLazyContinuation() -> Bool {
+        switch self {
+        case .paragraph(let x):
+            return !x.closed
+        case .header:
+            return false
+        case .quote(let x):
+            return x._allowsLazyContinuation
+        case .list(let x):
+            return x._allowsLazyContinuations
+        case .listItem:
+            fatalError()
+        case .fence:
+            return false
+        case .code:
+            return false
+        case .thematicBreak:
+            return false
+        case .referenceDefinition:
+            return false
+        }
+    }
+}
+
+extension MarkdownParser {
+    
+    func add(line: Line<View>) {
+        let last = blockTree.last(depthLevel: .init(0))
+        
+        let addResult = last.map({ add(line: line, to: $0, depthLevel: .init(0)) }) ?? .failure
+        
+        if case .failure = addResult, !line.kind.isEmpty() {
+            _ = blockTree.append(strand: strand(line: line))
+        }
+    }
+    
+    func add(line: Line<View>, to block: Block<View>, depthLevel: DepthLevel) -> AddLineResult {
+        switch block {
+        case .paragraph(let x):
+            return add(line: line, to: x)
+        case .header:
+            return .failure
+        case .quote(let x):
+            return add(line: line, to: x, quoteLevel: depthLevel)
+        case .list(let x):
+            return add(line: line, to: x, listLevel: depthLevel)
+        case .listItem:
+            fatalError()
+        case .fence(let x):
+            return add(line: line, to: x)
+        case .code(let x):
+            return add(line: line, to: x)
+        case .thematicBreak:
+            return .failure
+        case .referenceDefinition:
+            return .failure
+        }
+    }
+}
+
+// PARAGRAPH
+extension MarkdownParser {
+    func add(line: Line<View>, to paragraph: ParagraphNode<View>) -> AddLineResult {
+        
+        guard !paragraph.closed else { return .failure }
+        
+        switch line.kind {
+        case .text, .reference:
+            paragraph.text.append(line.indices)
+            
+        case .empty:
+            paragraph.closed = true
+            
+        default:
+            guard line.indent.level >= 4 else { return .failure }
+            var line = line
+            line.removeFirstIndents(4)
+            paragraph.text.append(line.indices)
+        }
+        return .success
+    }
+}
+
+
+// QUOTE
+extension MarkdownParser {
+    fileprivate func directlyAddLine(line: Line<View>, to quote: QuoteNode<View>, quoteLevel: DepthLevel) {
+        let quoteContentLevel = quoteLevel.incremented()
+
+        let last = blockTree.last(depthLevel: quoteContentLevel)!
+        if case .success = add(line: line, to: last, depthLevel: quoteContentLevel) {
+            quote._allowsLazyContinuation = last.allowsLazyContinuation()
+        } else {
+            guard !line.kind.isEmpty() else { return }
+            _ = blockTree.append(strand: strand(line: line), depthLevel: quoteContentLevel)
+            quote._allowsLazyContinuation = blockTree.last(depthLevel: quoteContentLevel)!.allowsLazyContinuation()
+        }
+    }
+    
+    func add(line: Line<View>, to quote: QuoteNode<View>, quoteLevel: DepthLevel) -> AddLineResult {
+        
+        guard !quote.closed else { return .failure }
+        
+        guard !(line.indent.level >= 4 && quote._allowsLazyContinuation) else {
+            directlyAddLine(line: Line(.text, line.indent, line.indices), to: quote, quoteLevel: quoteLevel)
+            return .success
+        }
+        
+        switch line.kind {
+            
+        case .empty:
+            quote.closed = true
+            quote._allowsLazyContinuation = false
+            
+        case .quote(let rest):
+            quote.markers.append(line.indices.lowerBound)
+            directlyAddLine(line: rest, to: quote, quoteLevel: quoteLevel)
+            
+        case .text:
+            guard quote._allowsLazyContinuation else {
+                return .failure
+            }
+            directlyAddLine(line: line, to: quote, quoteLevel: quoteLevel)
+            
+        default:
+            return .failure
+        }
+        return .success
+    }
+}
+
+
+// LIST
+extension MarkdownParser {
+    
+    fileprivate func preparedLine(from initialLine: Line<View>, for list: ListNode<View>) -> Line<View>? {
+        guard list.state != .closed else {
+            return nil
+        }
+        var line = initialLine
+        guard !initialLine.kind.isEmpty() else {
+            return line
+        }
+        guard !(initialLine.indent.level >= list.minimumIndent + 4 && list._allowsLazyContinuations) else {
+            line.removeFirstIndents(list.minimumIndent)
+            return line
         }
 
-        return children
+        line.removeFirstIndents(list.minimumIndent)
+        let isWellIndented = line.indent.level >= 0
+        
+        switch line.kind {
+            
+        case .text:
+            return isWellIndented || (list.state == .normal && list._allowsLazyContinuations) ? line : nil
+            
+        case let .list(k, _):
+            if isWellIndented {
+                return line
+            }
+            else {
+                return k ~= list.kind ? line : nil
+            }
+            
+        case .quote, .header, .fence, .reference:
+            return isWellIndented ? line : nil
+            
+        default:
+            return nil
+        }
     }
 
-    fileprivate mutating func addReferenceDefinitions(fromNode node: BlockNode<View>) {
-        switch node {
-        case let .referenceDefinition(ref) where referenceDefinitions[ref.title] == nil:
-            referenceDefinitions[ref.title] = ref.definition
-
-        case let .list(l):
-            for item in l.items {
-                for block in item.content {
-                    addReferenceDefinitions(fromNode: block)
+    fileprivate func addPreparedLine(_ preparedLine: Line<View>, to list: ListNode<View>, listLevel: DepthLevel) {
+        switch preparedLine.kind {
+        
+        case .empty:
+            let shallowestNonListChild: Block<View>? = { _ in
+                var curLevel = listLevel.incremented().incremented()
+                var curNode = blockTree.last(depthLevel: curLevel)
+                while case .list? = curNode {
+                    curLevel = curLevel.incremented().incremented()
+                    curNode = blockTree.last(depthLevel: curLevel)
+                }
+                return curNode
+            }()
+            
+            if list.state != .normal {
+                guard case .fence? = shallowestNonListChild else {
+                    list.state = .closed
+                    list._allowsLazyContinuations = false
+                    return
                 }
             }
-
-        case let .quote(q):
-            for block in q.content {
-                addReferenceDefinitions(fromNode: block)
+            
+            let itemContentLevel = listLevel.incremented().incremented()
+            guard let lastItemContent = blockTree.last(depthLevel: itemContentLevel) else {
+                return
             }
-
+            list.state = .followedByEmptyLine
+            _ = add(line: preparedLine, to: lastItemContent, depthLevel: itemContentLevel)
+            list._allowsLazyContinuations = lastItemContent.allowsLazyContinuation()
+        
+        case .list(let kind, let rest) where preparedLine.indent.level < 0:
+            list.state = .normal
+            list.minimumIndent += preparedLine.indent.level + kind.width + 1
+            let idcs = preparedLine.indices
+            let markerSpan = idcs.lowerBound ..< view.index(idcs.lowerBound, offsetBy: numericCast(kind.width))
+            if case .empty = rest.kind {
+                list._allowsLazyContinuations = true
+                _ = blockTree.append(.listItem(.init(markerSpan: markerSpan)), depthLevel: listLevel.incremented())
+            } else {
+                let stran = [.listItem(.init(markerSpan: markerSpan))] + strand(line: rest)
+                list._allowsLazyContinuations = stran[1].allowsLazyContinuation()
+                _ = blockTree.append(strand: stran, depthLevel: listLevel.incremented())
+            }
+            
         default:
-            break
+            list.state = .normal
+            let itemContentLevel = listLevel.incremented().incremented()
+            let lastItemContent = blockTree.last(depthLevel: itemContentLevel)
+            
+            let addResult = lastItemContent.map { add(line: preparedLine, to: $0, depthLevel: itemContentLevel) } ?? .failure
+            
+            if case .failure = addResult {
+                let stran = strand(line: preparedLine)
+                _ = blockTree.append(strand: stran, depthLevel: itemContentLevel)
+                list._allowsLazyContinuations = stran[0].allowsLazyContinuation()
+            }
         }
+    }
+    
+    func add(line: Line<View>, to list: ListNode<View>, listLevel: DepthLevel) -> AddLineResult {
+        guard let line = preparedLine(from: line, for: list) else {
+            return .failure
+        }
+        addPreparedLine(line, to: list, listLevel: listLevel)
+        return .success
+    }
+}
+
+// FENCE
+extension MarkdownParser {
+    func add(line: Line<View>, to fence: FenceNode<View>) -> AddLineResult {
+        
+        guard line.indent.level >= 0 && !fence.closed else {
+            return .failure
+        }
+        var line = line
+        line.removeFirstIndents(fence.indent)
+        restoreIndentInLine(&line)
+        
+        switch line.kind {
+            
+        case .fence(fence.kind, let lineFenceName, let lineFenceLevel) where line.indent.level < 4 && lineFenceName.isEmpty && lineFenceLevel >= fence.level:
+            fence.markers.1 = line.indices
+            fence.closed = true
+            
+        default:
+            fence.text.append(line.indices)
+        }
+        return .success
+    }
+}
+
+// CODE BLOCK
+extension MarkdownParser {
+    func add(line: Line<View>, to code: CodeNode<View>) -> AddLineResult {
+        switch line.kind {
+            
+        case .empty:
+            var line = line
+            line.removeFirstIndents(4)
+            restoreIndentInLine(&line)
+            code.trailingEmptyLines.append(line.indices)
+            
+        case _ where line.indent.level >= 4:
+            var line = line
+            line.removeFirstIndents(4)
+            restoreIndentInLine(&line)
+            
+            code.text.append(contentsOf: code.trailingEmptyLines)
+            code.text.append(line.indices)
+            code.trailingEmptyLines.removeAll()
+            
+        default:
+            return .failure
+        }
+        return .success
     }
 }

@@ -12,14 +12,16 @@ struct MarkdownParser <View: BidirectionalCollection, Codec: MarkdownParserCodec
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
-    typealias Delimiter = (kind: DelimiterKind<View>, idx: View.Index)
+    typealias Delimiter = (idx: View.Index, kind: DelimiterKind<View>)
     
     let view: View
     var referenceDefinitions: [String: ReferenceDefinition]
-    
+    let blockTree: Tree<Block<View>>
+        
     init(view: View) {
         self.referenceDefinitions = [:]
         self.view = view
+        self.blockTree = .init()
     }
 }
 

@@ -27,8 +27,8 @@ enum NonTextInlineNodeKind <View: BidirectionalCollection> where
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     indirect case reference(ReferenceKind, title: Range<View.Index>, definition: ReferenceDefinition)
-    case code(View.IndexDistance)
-    case emphasis(View.IndexDistance)
+    case code(Int32)
+    case emphasis(Int32)
 }
 
 
@@ -43,7 +43,8 @@ struct TextInlineNode <View: BidirectionalCollection> where
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     let kind: TextInlineNodeKind
-    let (start, end): (View.Index, View.Index)
+    var start: View.Index
+    var end: View.Index
 }
 
 struct NonTextInlineNode <View: BidirectionalCollection> where
@@ -52,23 +53,19 @@ struct NonTextInlineNode <View: BidirectionalCollection> where
 {
 
     let kind: NonTextInlineNodeKind<View>
-    let (start, end): (View.Index, View.Index)
+    var start: View.Index
+    var end: View.Index
 
     func contentRange(inView view: View) -> Range<View.Index> {
         switch kind {
-
         case .reference(_, let title, _):
             return title
-
         case .code(let l):
-            return view.index(start, offsetBy: l) ..< view.index(end, offsetBy: -l)
+            return view.index(start, offsetBy: numericCast(l)) ..< view.index(end, offsetBy: numericCast(-l))
         case .emphasis(let l):
-            return view.index(start, offsetBy: l) ..< view.index(end, offsetBy: -l)
-
+            return view.index(start, offsetBy: numericCast(l)) ..< view.index(end, offsetBy: numericCast(-l))
         }
     }
-
-    var children: LinkedList<InlineNode<View>> = []
 
     init(kind: NonTextInlineNodeKind<View>, start: View.Index, end: View.Index) {
         (self.kind, self.start, self.end) = (kind, start, end)

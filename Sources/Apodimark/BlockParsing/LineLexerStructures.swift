@@ -54,15 +54,15 @@ func ~= (lhs: ListKind, rhs: ListKind) -> Bool {
 }
 
 /// The kind of a line
-enum LineKind <View: BidirectionalCollection> where
+indirect enum LineKind <View: BidirectionalCollection> where
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
-    indirect case list(ListKind, Line<View>)
-    indirect case quote(Line<View>)
+    case list(ListKind, Line<View>)
+    case quote(Line<View>)
     case text
-    case header(Range<View.Index>, View.IndexDistance)
-    case fence(FenceKind, Range<View.Index>, View.IndexDistance)
+    case header(Range<View.Index>, Int32)
+    case fence(FenceKind, Range<View.Index>, Int32)
     case thematicBreak
     case empty
     case reference(String, ReferenceDefinition)
@@ -148,21 +148,22 @@ struct Line <View: BidirectionalCollection> where
     var indent: Indent
 
     // The scanner containing the text of the line. May or may not contain the indent
-    var scanner: Scanner<View>
+    var indices: Range<View.Index>
 
-    init(_ kind: LineKind<View>, _ indent: Indent, _ subview: Scanner<View>) {
-        (self.kind, self.indent, self.scanner) = (kind, indent, subview)
+    init(_ kind: LineKind<View>, _ indent: Indent, _ indices: Range<View.Index>) {
+        (self.kind, self.indent, self.indices) = (kind, indent, indices)
     }
 
     /// - returns: a new line equal to `self` with `n` fewer indents
     mutating func removeFirstIndents(_ n: Int) {
         indent.removeFirst(n)
     }
+}
 
-    // - returns: a new line equal to `self`, except that its scanner contains the tokens making up the indent
-    // - precondition: `self.scanner` doesn't contain the tokens making up the indent (precondition not checked at runtime)
-    mutating func restoreIndentInScanner() {
-        scanner.startIndex = scanner.data.index(scanner.startIndex, offsetBy: -View.IndexDistance(indent.composition.count.toIntMax()))
+extension MarkdownParser {
+    func restoreIndentInLine(_ line: inout Line<View>) {
+        let newLowerBound = view.index(line.indices.lowerBound, offsetBy: numericCast(-line.indent.composition.count))
+        line.indices = newLowerBound ..< line.indices.upperBound
     }
 }
 

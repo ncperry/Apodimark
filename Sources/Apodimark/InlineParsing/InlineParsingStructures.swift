@@ -11,9 +11,9 @@ enum DelimiterKind <View: BidirectionalCollection> {
     case start              // start of line (used to ignore leading whitespace)
     case end                // end of line (used to ignore trailing whitespace)
 
-    case emph(EmphasisKind, DelimiterState, View.IndexDistance)  // *
+    case emph(EmphasisKind, DelimiterState, Int32)  // *
 
-    case code(View.IndexDistance)         // `
+    case code(Int32)         // `
 
     case refOpener          // [
     case unwrappedRefOpener // ![

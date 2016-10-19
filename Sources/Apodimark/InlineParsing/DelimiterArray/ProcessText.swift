@@ -14,7 +14,7 @@ extension MarkdownParser {
             return nil
         }()
         else {
-            fatalError()
+            return []
         }
 
         var textNodes = [TextInlineNode<View>]()

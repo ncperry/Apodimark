@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CD048D5E1DB27FF8006D4C1D /* InlineAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD048D5D1DB27FF8006D4C1D /* InlineAST.swift */; };
+		CD048D5F1DB27FF8006D4C1D /* InlineAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD048D5D1DB27FF8006D4C1D /* InlineAST.swift */; };
+		CD048D601DB27FF8006D4C1D /* InlineAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD048D5D1DB27FF8006D4C1D /* InlineAST.swift */; };
+		CD048D611DB27FF8006D4C1D /* InlineAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD048D5D1DB27FF8006D4C1D /* InlineAST.swift */; };
 		CD1CCFA21DA68BCB00D3AEAF /* Apodimark.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD1CCF981DA68BCB00D3AEAF /* Apodimark.framework */; };
 		CD1CD05F1DA693E100D3AEAF /* Apodimark.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD1CCF981DA68BCB00D3AEAF /* Apodimark.framework */; };
 		CD1CD07E1DA6961300D3AEAF /* Apodimark.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD0661DA6961300D3AEAF /* Apodimark.swift */; };
@@ -28,14 +32,6 @@
 		CD1CD0D11DA6968C00D3AEAF /* ApodimarkOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD0CE1DA6968C00D3AEAF /* ApodimarkOutput.swift */; };
 		CD1CD0D21DA6968C00D3AEAF /* CommonMarkConformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD0CF1DA6968C00D3AEAF /* CommonMarkConformanceTests.swift */; };
 		CD1CD0D71DA696A100D3AEAF /* PerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD0D51DA696A100D3AEAF /* PerformanceTests.swift */; };
-		CD1CD13C1DA6CF7A00D3AEAF /* BlockAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1291DA6CF7A00D3AEAF /* BlockAST.swift */; };
-		CD1CD13D1DA6CF7A00D3AEAF /* BlockAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1291DA6CF7A00D3AEAF /* BlockAST.swift */; };
-		CD1CD13E1DA6CF7A00D3AEAF /* BlockAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1291DA6CF7A00D3AEAF /* BlockAST.swift */; };
-		CD1CD13F1DA6CF7A00D3AEAF /* BlockAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1291DA6CF7A00D3AEAF /* BlockAST.swift */; };
-		CD1CD1401DA6CF7A00D3AEAF /* BlockParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD12A1DA6CF7A00D3AEAF /* BlockParsing.swift */; };
-		CD1CD1411DA6CF7A00D3AEAF /* BlockParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD12A1DA6CF7A00D3AEAF /* BlockParsing.swift */; };
-		CD1CD1421DA6CF7A00D3AEAF /* BlockParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD12A1DA6CF7A00D3AEAF /* BlockParsing.swift */; };
-		CD1CD1431DA6CF7A00D3AEAF /* BlockParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD12A1DA6CF7A00D3AEAF /* BlockParsing.swift */; };
 		CD1CD1441DA6CF7A00D3AEAF /* LineLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD12B1DA6CF7A00D3AEAF /* LineLexer.swift */; };
 		CD1CD1451DA6CF7A00D3AEAF /* LineLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD12B1DA6CF7A00D3AEAF /* LineLexer.swift */; };
 		CD1CD1461DA6CF7A00D3AEAF /* LineLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD12B1DA6CF7A00D3AEAF /* LineLexer.swift */; };
@@ -44,10 +40,6 @@
 		CD1CD1491DA6CF7A00D3AEAF /* LineLexerStructures.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD12C1DA6CF7A00D3AEAF /* LineLexerStructures.swift */; };
 		CD1CD14A1DA6CF7A00D3AEAF /* LineLexerStructures.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD12C1DA6CF7A00D3AEAF /* LineLexerStructures.swift */; };
 		CD1CD14B1DA6CF7A00D3AEAF /* LineLexerStructures.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD12C1DA6CF7A00D3AEAF /* LineLexerStructures.swift */; };
-		CD1CD14C1DA6CF7A00D3AEAF /* LinkedList.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD12E1DA6CF7A00D3AEAF /* LinkedList.swift */; };
-		CD1CD14D1DA6CF7A00D3AEAF /* LinkedList.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD12E1DA6CF7A00D3AEAF /* LinkedList.swift */; };
-		CD1CD14E1DA6CF7A00D3AEAF /* LinkedList.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD12E1DA6CF7A00D3AEAF /* LinkedList.swift */; };
-		CD1CD14F1DA6CF7A00D3AEAF /* LinkedList.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD12E1DA6CF7A00D3AEAF /* LinkedList.swift */; };
 		CD1CD1501DA6CF7A00D3AEAF /* Ordering.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD12F1DA6CF7A00D3AEAF /* Ordering.swift */; };
 		CD1CD1511DA6CF7A00D3AEAF /* Ordering.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD12F1DA6CF7A00D3AEAF /* Ordering.swift */; };
 		CD1CD1521DA6CF7A00D3AEAF /* Ordering.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD12F1DA6CF7A00D3AEAF /* Ordering.swift */; };
@@ -56,10 +48,6 @@
 		CD1CD1551DA6CF7A00D3AEAF /* Scanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1301DA6CF7A00D3AEAF /* Scanner.swift */; };
 		CD1CD1561DA6CF7A00D3AEAF /* Scanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1301DA6CF7A00D3AEAF /* Scanner.swift */; };
 		CD1CD1571DA6CF7A00D3AEAF /* Scanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1301DA6CF7A00D3AEAF /* Scanner.swift */; };
-		CD1CD1581DA6CF7A00D3AEAF /* InlineDelimiters.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1331DA6CF7A00D3AEAF /* InlineDelimiters.swift */; };
-		CD1CD1591DA6CF7A00D3AEAF /* InlineDelimiters.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1331DA6CF7A00D3AEAF /* InlineDelimiters.swift */; };
-		CD1CD15A1DA6CF7A00D3AEAF /* InlineDelimiters.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1331DA6CF7A00D3AEAF /* InlineDelimiters.swift */; };
-		CD1CD15B1DA6CF7A00D3AEAF /* InlineDelimiters.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1331DA6CF7A00D3AEAF /* InlineDelimiters.swift */; };
 		CD1CD15C1DA6CF7A00D3AEAF /* ProcessEmphasis.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1341DA6CF7A00D3AEAF /* ProcessEmphasis.swift */; };
 		CD1CD15D1DA6CF7A00D3AEAF /* ProcessEmphasis.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1341DA6CF7A00D3AEAF /* ProcessEmphasis.swift */; };
 		CD1CD15E1DA6CF7A00D3AEAF /* ProcessEmphasis.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1341DA6CF7A00D3AEAF /* ProcessEmphasis.swift */; };
@@ -76,10 +64,6 @@
 		CD1CD1691DA6CF7A00D3AEAF /* ProcessText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1371DA6CF7A00D3AEAF /* ProcessText.swift */; };
 		CD1CD16A1DA6CF7A00D3AEAF /* ProcessText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1371DA6CF7A00D3AEAF /* ProcessText.swift */; };
 		CD1CD16B1DA6CF7A00D3AEAF /* ProcessText.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1371DA6CF7A00D3AEAF /* ProcessText.swift */; };
-		CD1CD16C1DA6CF7A00D3AEAF /* InlineAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1381DA6CF7A00D3AEAF /* InlineAST.swift */; };
-		CD1CD16D1DA6CF7A00D3AEAF /* InlineAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1381DA6CF7A00D3AEAF /* InlineAST.swift */; };
-		CD1CD16E1DA6CF7A00D3AEAF /* InlineAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1381DA6CF7A00D3AEAF /* InlineAST.swift */; };
-		CD1CD16F1DA6CF7A00D3AEAF /* InlineAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1381DA6CF7A00D3AEAF /* InlineAST.swift */; };
 		CD1CD1701DA6CF7A00D3AEAF /* InlineNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1391DA6CF7A00D3AEAF /* InlineNode.swift */; };
 		CD1CD1711DA6CF7A00D3AEAF /* InlineNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1391DA6CF7A00D3AEAF /* InlineNode.swift */; };
 		CD1CD1721DA6CF7A00D3AEAF /* InlineNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD1391DA6CF7A00D3AEAF /* InlineNode.swift */; };
@@ -92,6 +76,18 @@
 		CD1CD1791DA6CF7A00D3AEAF /* InlineParsingStructures.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD13B1DA6CF7A00D3AEAF /* InlineParsingStructures.swift */; };
 		CD1CD17A1DA6CF7A00D3AEAF /* InlineParsingStructures.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD13B1DA6CF7A00D3AEAF /* InlineParsingStructures.swift */; };
 		CD1CD17B1DA6CF7A00D3AEAF /* InlineParsingStructures.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1CD13B1DA6CF7A00D3AEAF /* InlineParsingStructures.swift */; };
+		CD9444B01DA96565007ADE47 /* Tree.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD9444AF1DA96565007ADE47 /* Tree.swift */; };
+		CD9444B11DA96565007ADE47 /* Tree.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD9444AF1DA96565007ADE47 /* Tree.swift */; };
+		CD9444B21DA96565007ADE47 /* Tree.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD9444AF1DA96565007ADE47 /* Tree.swift */; };
+		CD9444B31DA96565007ADE47 /* Tree.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD9444AF1DA96565007ADE47 /* Tree.swift */; };
+		CD9444BA1DAA4D99007ADE47 /* BlockParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD9444B91DAA4D99007ADE47 /* BlockParsing.swift */; };
+		CD9444BB1DAA4D99007ADE47 /* BlockParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD9444B91DAA4D99007ADE47 /* BlockParsing.swift */; };
+		CD9444BC1DAA4D99007ADE47 /* BlockParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD9444B91DAA4D99007ADE47 /* BlockParsing.swift */; };
+		CD9444BD1DAA4D99007ADE47 /* BlockParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD9444B91DAA4D99007ADE47 /* BlockParsing.swift */; };
+		CD9444BF1DAA8443007ADE47 /* BlockAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD9444BE1DAA8443007ADE47 /* BlockAST.swift */; };
+		CD9444C01DAA8443007ADE47 /* BlockAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD9444BE1DAA8443007ADE47 /* BlockAST.swift */; };
+		CD9444C11DAA8443007ADE47 /* BlockAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD9444BE1DAA8443007ADE47 /* BlockAST.swift */; };
+		CD9444C21DAA8443007ADE47 /* BlockAST.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD9444BE1DAA8443007ADE47 /* BlockAST.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -112,6 +108,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CD048D5D1DB27FF8006D4C1D /* InlineAST.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InlineAST.swift; sourceTree = "<group>"; };
 		CD1CCF981DA68BCB00D3AEAF /* Apodimark.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Apodimark.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD1CCFA11DA68BCB00D3AEAF /* UnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD1CCFE31DA68D1700D3AEAF /* Apodimark.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Apodimark.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -127,22 +124,20 @@
 		CD1CD0D01DA6968C00D3AEAF /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = UnitTests/Info.plist; sourceTree = "<group>"; };
 		CD1CD0D41DA696A100D3AEAF /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Tests/PerformanceTests/Info.plist; sourceTree = SOURCE_ROOT; };
 		CD1CD0D51DA696A100D3AEAF /* PerformanceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PerformanceTests.swift; path = Tests/PerformanceTests/PerformanceTests.swift; sourceTree = SOURCE_ROOT; };
-		CD1CD1291DA6CF7A00D3AEAF /* BlockAST.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockAST.swift; sourceTree = "<group>"; };
-		CD1CD12A1DA6CF7A00D3AEAF /* BlockParsing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockParsing.swift; sourceTree = "<group>"; };
 		CD1CD12B1DA6CF7A00D3AEAF /* LineLexer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LineLexer.swift; sourceTree = "<group>"; };
 		CD1CD12C1DA6CF7A00D3AEAF /* LineLexerStructures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LineLexerStructures.swift; sourceTree = "<group>"; };
-		CD1CD12E1DA6CF7A00D3AEAF /* LinkedList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LinkedList.swift; sourceTree = "<group>"; };
 		CD1CD12F1DA6CF7A00D3AEAF /* Ordering.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ordering.swift; sourceTree = "<group>"; };
 		CD1CD1301DA6CF7A00D3AEAF /* Scanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scanner.swift; sourceTree = "<group>"; };
-		CD1CD1331DA6CF7A00D3AEAF /* InlineDelimiters.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InlineDelimiters.swift; sourceTree = "<group>"; };
 		CD1CD1341DA6CF7A00D3AEAF /* ProcessEmphasis.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProcessEmphasis.swift; sourceTree = "<group>"; };
 		CD1CD1351DA6CF7A00D3AEAF /* ProcessMonospacedText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProcessMonospacedText.swift; sourceTree = "<group>"; };
 		CD1CD1361DA6CF7A00D3AEAF /* ProcessReference.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProcessReference.swift; sourceTree = "<group>"; };
 		CD1CD1371DA6CF7A00D3AEAF /* ProcessText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProcessText.swift; sourceTree = "<group>"; };
-		CD1CD1381DA6CF7A00D3AEAF /* InlineAST.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InlineAST.swift; sourceTree = "<group>"; };
 		CD1CD1391DA6CF7A00D3AEAF /* InlineNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InlineNode.swift; sourceTree = "<group>"; };
 		CD1CD13A1DA6CF7A00D3AEAF /* InlineParsing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InlineParsing.swift; sourceTree = "<group>"; };
 		CD1CD13B1DA6CF7A00D3AEAF /* InlineParsingStructures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InlineParsingStructures.swift; sourceTree = "<group>"; };
+		CD9444AF1DA96565007ADE47 /* Tree.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tree.swift; sourceTree = "<group>"; };
+		CD9444B91DAA4D99007ADE47 /* BlockParsing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockParsing.swift; sourceTree = "<group>"; };
+		CD9444BE1DAA8443007ADE47 /* BlockAST.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockAST.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -254,8 +249,8 @@
 		CD1CD1281DA6CF7A00D3AEAF /* BlockParsing */ = {
 			isa = PBXGroup;
 			children = (
-				CD1CD1291DA6CF7A00D3AEAF /* BlockAST.swift */,
-				CD1CD12A1DA6CF7A00D3AEAF /* BlockParsing.swift */,
+				CD9444B91DAA4D99007ADE47 /* BlockParsing.swift */,
+				CD9444BE1DAA8443007ADE47 /* BlockAST.swift */,
 				CD1CD12B1DA6CF7A00D3AEAF /* LineLexer.swift */,
 				CD1CD12C1DA6CF7A00D3AEAF /* LineLexerStructures.swift */,
 			);
@@ -266,7 +261,7 @@
 		CD1CD12D1DA6CF7A00D3AEAF /* DataStructures */ = {
 			isa = PBXGroup;
 			children = (
-				CD1CD12E1DA6CF7A00D3AEAF /* LinkedList.swift */,
+				CD9444AF1DA96565007ADE47 /* Tree.swift */,
 				CD1CD12F1DA6CF7A00D3AEAF /* Ordering.swift */,
 				CD1CD1301DA6CF7A00D3AEAF /* Scanner.swift */,
 			);
@@ -278,7 +273,7 @@
 			isa = PBXGroup;
 			children = (
 				CD1CD1321DA6CF7A00D3AEAF /* DelimiterArray */,
-				CD1CD1381DA6CF7A00D3AEAF /* InlineAST.swift */,
+				CD048D5D1DB27FF8006D4C1D /* InlineAST.swift */,
 				CD1CD1391DA6CF7A00D3AEAF /* InlineNode.swift */,
 				CD1CD13A1DA6CF7A00D3AEAF /* InlineParsing.swift */,
 				CD1CD13B1DA6CF7A00D3AEAF /* InlineParsingStructures.swift */,
@@ -290,7 +285,6 @@
 		CD1CD1321DA6CF7A00D3AEAF /* DelimiterArray */ = {
 			isa = PBXGroup;
 			children = (
-				CD1CD1331DA6CF7A00D3AEAF /* InlineDelimiters.swift */,
 				CD1CD1341DA6CF7A00D3AEAF /* ProcessEmphasis.swift */,
 				CD1CD1351DA6CF7A00D3AEAF /* ProcessMonospacedText.swift */,
 				CD1CD1361DA6CF7A00D3AEAF /* ProcessReference.swift */,
@@ -489,6 +483,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = CD1CCF8E1DA68BCA00D3AEAF;
 			productRefGroup = CD1CCF991DA68BCB00D3AEAF /* Products */;
@@ -559,20 +554,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CD1CD13C1DA6CF7A00D3AEAF /* BlockAST.swift in Sources */,
-				CD1CD16C1DA6CF7A00D3AEAF /* InlineAST.swift in Sources */,
+				CD9444BA1DAA4D99007ADE47 /* BlockParsing.swift in Sources */,
 				CD1CD15C1DA6CF7A00D3AEAF /* ProcessEmphasis.swift in Sources */,
 				CD1CD0C61DA6961300D3AEAF /* MarkdownParser.swift in Sources */,
 				CD1CD0CA1DA6961300D3AEAF /* MarkdownParserCodec.swift in Sources */,
+				CD9444B01DA96565007ADE47 /* Tree.swift in Sources */,
 				CD1CD1741DA6CF7A00D3AEAF /* InlineParsing.swift in Sources */,
 				CD1CD1601DA6CF7A00D3AEAF /* ProcessMonospacedText.swift in Sources */,
 				CD1CD1501DA6CF7A00D3AEAF /* Ordering.swift in Sources */,
-				CD1CD1581DA6CF7A00D3AEAF /* InlineDelimiters.swift in Sources */,
+				CD9444BF1DAA8443007ADE47 /* BlockAST.swift in Sources */,
 				CD1CD1481DA6CF7A00D3AEAF /* LineLexerStructures.swift in Sources */,
-				CD1CD1401DA6CF7A00D3AEAF /* BlockParsing.swift in Sources */,
 				CD1CD1441DA6CF7A00D3AEAF /* LineLexer.swift in Sources */,
+				CD048D5E1DB27FF8006D4C1D /* InlineAST.swift in Sources */,
 				CD1CD1701DA6CF7A00D3AEAF /* InlineNode.swift in Sources */,
-				CD1CD14C1DA6CF7A00D3AEAF /* LinkedList.swift in Sources */,
 				CD1CD1681DA6CF7A00D3AEAF /* ProcessText.swift in Sources */,
 				CD1CD1781DA6CF7A00D3AEAF /* InlineParsingStructures.swift in Sources */,
 				CD1CD1641DA6CF7A00D3AEAF /* ProcessReference.swift in Sources */,
@@ -594,20 +588,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CD1CD13D1DA6CF7A00D3AEAF /* BlockAST.swift in Sources */,
-				CD1CD16D1DA6CF7A00D3AEAF /* InlineAST.swift in Sources */,
+				CD9444BB1DAA4D99007ADE47 /* BlockParsing.swift in Sources */,
 				CD1CD15D1DA6CF7A00D3AEAF /* ProcessEmphasis.swift in Sources */,
 				CD1CD0C71DA6961300D3AEAF /* MarkdownParser.swift in Sources */,
 				CD1CD0CB1DA6961300D3AEAF /* MarkdownParserCodec.swift in Sources */,
+				CD9444B11DA96565007ADE47 /* Tree.swift in Sources */,
 				CD1CD1751DA6CF7A00D3AEAF /* InlineParsing.swift in Sources */,
 				CD1CD1611DA6CF7A00D3AEAF /* ProcessMonospacedText.swift in Sources */,
 				CD1CD1511DA6CF7A00D3AEAF /* Ordering.swift in Sources */,
-				CD1CD1591DA6CF7A00D3AEAF /* InlineDelimiters.swift in Sources */,
+				CD9444C01DAA8443007ADE47 /* BlockAST.swift in Sources */,
 				CD1CD1491DA6CF7A00D3AEAF /* LineLexerStructures.swift in Sources */,
-				CD1CD1411DA6CF7A00D3AEAF /* BlockParsing.swift in Sources */,
 				CD1CD1451DA6CF7A00D3AEAF /* LineLexer.swift in Sources */,
+				CD048D5F1DB27FF8006D4C1D /* InlineAST.swift in Sources */,
 				CD1CD1711DA6CF7A00D3AEAF /* InlineNode.swift in Sources */,
-				CD1CD14D1DA6CF7A00D3AEAF /* LinkedList.swift in Sources */,
 				CD1CD1691DA6CF7A00D3AEAF /* ProcessText.swift in Sources */,
 				CD1CD1791DA6CF7A00D3AEAF /* InlineParsingStructures.swift in Sources */,
 				CD1CD1651DA6CF7A00D3AEAF /* ProcessReference.swift in Sources */,
@@ -620,20 +613,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CD1CD13E1DA6CF7A00D3AEAF /* BlockAST.swift in Sources */,
-				CD1CD16E1DA6CF7A00D3AEAF /* InlineAST.swift in Sources */,
+				CD9444BC1DAA4D99007ADE47 /* BlockParsing.swift in Sources */,
 				CD1CD15E1DA6CF7A00D3AEAF /* ProcessEmphasis.swift in Sources */,
 				CD1CD0C81DA6961300D3AEAF /* MarkdownParser.swift in Sources */,
 				CD1CD0CC1DA6961300D3AEAF /* MarkdownParserCodec.swift in Sources */,
+				CD9444B21DA96565007ADE47 /* Tree.swift in Sources */,
 				CD1CD1761DA6CF7A00D3AEAF /* InlineParsing.swift in Sources */,
 				CD1CD1621DA6CF7A00D3AEAF /* ProcessMonospacedText.swift in Sources */,
 				CD1CD1521DA6CF7A00D3AEAF /* Ordering.swift in Sources */,
-				CD1CD15A1DA6CF7A00D3AEAF /* InlineDelimiters.swift in Sources */,
+				CD9444C11DAA8443007ADE47 /* BlockAST.swift in Sources */,
 				CD1CD14A1DA6CF7A00D3AEAF /* LineLexerStructures.swift in Sources */,
-				CD1CD1421DA6CF7A00D3AEAF /* BlockParsing.swift in Sources */,
 				CD1CD1461DA6CF7A00D3AEAF /* LineLexer.swift in Sources */,
+				CD048D601DB27FF8006D4C1D /* InlineAST.swift in Sources */,
 				CD1CD1721DA6CF7A00D3AEAF /* InlineNode.swift in Sources */,
-				CD1CD14E1DA6CF7A00D3AEAF /* LinkedList.swift in Sources */,
 				CD1CD16A1DA6CF7A00D3AEAF /* ProcessText.swift in Sources */,
 				CD1CD17A1DA6CF7A00D3AEAF /* InlineParsingStructures.swift in Sources */,
 				CD1CD1661DA6CF7A00D3AEAF /* ProcessReference.swift in Sources */,
@@ -646,20 +638,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CD1CD13F1DA6CF7A00D3AEAF /* BlockAST.swift in Sources */,
-				CD1CD16F1DA6CF7A00D3AEAF /* InlineAST.swift in Sources */,
+				CD9444BD1DAA4D99007ADE47 /* BlockParsing.swift in Sources */,
 				CD1CD15F1DA6CF7A00D3AEAF /* ProcessEmphasis.swift in Sources */,
 				CD1CD0C91DA6961300D3AEAF /* MarkdownParser.swift in Sources */,
 				CD1CD0CD1DA6961300D3AEAF /* MarkdownParserCodec.swift in Sources */,
+				CD9444B31DA96565007ADE47 /* Tree.swift in Sources */,
 				CD1CD1771DA6CF7A00D3AEAF /* InlineParsing.swift in Sources */,
 				CD1CD1631DA6CF7A00D3AEAF /* ProcessMonospacedText.swift in Sources */,
 				CD1CD1531DA6CF7A00D3AEAF /* Ordering.swift in Sources */,
-				CD1CD15B1DA6CF7A00D3AEAF /* InlineDelimiters.swift in Sources */,
+				CD9444C21DAA8443007ADE47 /* BlockAST.swift in Sources */,
 				CD1CD14B1DA6CF7A00D3AEAF /* LineLexerStructures.swift in Sources */,
-				CD1CD1431DA6CF7A00D3AEAF /* BlockParsing.swift in Sources */,
 				CD1CD1471DA6CF7A00D3AEAF /* LineLexer.swift in Sources */,
+				CD048D611DB27FF8006D4C1D /* InlineAST.swift in Sources */,
 				CD1CD1731DA6CF7A00D3AEAF /* InlineNode.swift in Sources */,
-				CD1CD14F1DA6CF7A00D3AEAF /* LinkedList.swift in Sources */,
 				CD1CD16B1DA6CF7A00D3AEAF /* ProcessText.swift in Sources */,
 				CD1CD17B1DA6CF7A00D3AEAF /* InlineParsingStructures.swift in Sources */,
 				CD1CD1671DA6CF7A00D3AEAF /* ProcessReference.swift in Sources */,
@@ -793,6 +784,7 @@
 		CD1CCFAD1DA68BCB00D3AEAF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -812,6 +804,7 @@
 		CD1CCFAE1DA68BCB00D3AEAF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
