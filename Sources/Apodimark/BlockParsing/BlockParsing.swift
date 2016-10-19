@@ -32,7 +32,7 @@ extension MarkdownParser {
     }
 }
 
-extension Block {
+extension BlockNode {
     func allowsLazyContinuation() -> Bool {
         switch self {
         case .paragraph(let x):
@@ -69,7 +69,7 @@ extension MarkdownParser {
         }
     }
     
-    func add(line: Line<View>, to block: Block<View>, depthLevel: DepthLevel) -> AddLineResult {
+    func add(line: Line<View>, to block: BlockNode<View>, depthLevel: DepthLevel) -> AddLineResult {
         switch block {
         case .paragraph(let x):
             return add(line: line, to: x)
@@ -209,7 +209,7 @@ extension MarkdownParser {
         switch preparedLine.kind {
         
         case .empty:
-            let shallowestNonListChild: Block<View>? = { _ in
+            let shallowestNonListChild: BlockNode<View>? = { _ in
                 var curLevel = listLevel.incremented().incremented()
                 var curNode = blockTree.last(depthLevel: curLevel)
                 while case .list? = curNode {

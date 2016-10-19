@@ -1,5 +1,5 @@
 
-enum Block <View: BidirectionalCollection> {
+enum BlockNode <View: BidirectionalCollection> {
     case paragraph(ParagraphNode<View>)
     case header(HeaderNode<View>)
     case quote(QuoteNode<View>)
@@ -107,7 +107,7 @@ final class ReferenceDefinitionNode <View: BidirectionalCollection> {
 
 extension MarkdownParser {
     
-    private func strand(line: Line<View>, appendingTo arr: inout [Block<View>]) {
+    private func strand(line: Line<View>, appendingTo arr: inout [BlockNode<View>]) {
         
         guard line.indent.level < 4 else {
             var newLine = line
@@ -172,8 +172,8 @@ extension MarkdownParser {
         }
     }
 
-    func strand(line: Line<View>) -> [Block<View>] {
-        var a: [Block<View>] = []
+    func strand(line: Line<View>) -> [BlockNode<View>] {
+        var a: [BlockNode<View>] = []
         strand(line: line, appendingTo: &a)
         var childAllowsLazyContinuation: Bool = true
         for x in a.reversed() {

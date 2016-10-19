@@ -168,7 +168,7 @@ extension MarkdownParser {
     }
     
     /// Return a MarkdownBlock from an instance of the internal BlockNode type.
-    fileprivate func makeFinalBlock(from node: Block<View>, children: TreeIterator<Block<View>>?) -> MarkdownBlock<View>? {
+    fileprivate func makeFinalBlock(from node: BlockNode<View>, children: TreeIterator<BlockNode<View>>?) -> MarkdownBlock<View>? {
         switch node {
             
         case let .paragraph(p):

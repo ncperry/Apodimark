@@ -16,7 +16,7 @@ struct MarkdownParser <View: BidirectionalCollection, Codec: MarkdownParserCodec
     
     let view: View
     var referenceDefinitions: [String: ReferenceDefinition]
-    let blockTree: Tree<Block<View>>
+    let blockTree: Tree<BlockNode<View>>
         
     init(view: View, referenceDefinitions: [String: ReferenceDefinition]) {
         self.referenceDefinitions = referenceDefinitions
