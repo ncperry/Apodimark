@@ -147,14 +147,14 @@ public enum MarkdownListKind {
 
 @_specialize(String.UTF16View, UTF16MarkdownCodec)
 @_specialize(Array<UInt8>, UTF8MarkdownCodec)
-public func parsedMarkdown <View, Codec> (source: View, codec: Codec.Type) -> [MarkdownBlock<View>] where
+public func parsedMarkdown <View, Codec> (source: View, referenceDefinitions: [String: ReferenceDefinition] = [:], codec: Codec.Type) -> [MarkdownBlock<View>] where
     View: BidirectionalCollection,
     Codec: MarkdownParserCodec,
     View.Iterator.Element == Codec.CodeUnit,
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
-    var parser = MarkdownParser<View, Codec>(view: source)
+    var parser = MarkdownParser<View, Codec>(view: source, referenceDefinitions: referenceDefinitions)
     return parser.finalAST()
 }
 
