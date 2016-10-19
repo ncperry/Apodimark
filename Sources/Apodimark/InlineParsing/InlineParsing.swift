@@ -3,6 +3,10 @@
 //  Apodimark
 //
 
+extension NonTextInlineNode {
+    static func < (lhs: NonTextInlineNode, rhs: NonTextInlineNode) -> Bool { return lhs.start <  rhs.start }
+}
+
 extension MarkdownParser {
     
     func parseInlines(_ text: [Range<View.Index>]) -> Tree<InlineNode<View>> {
@@ -13,7 +17,7 @@ extension MarkdownParser {
         nodes += processAllReferences(&dels[dels.indices])
         nodes += processAllEmphases(&dels[dels.indices])
         
-        nodes.sort()
+        nodes.sort(by: <)
         
         let textNodes = processText(dels)
         

@@ -15,10 +15,6 @@ struct DepthLevel {
     func decremented() -> DepthLevel {
         return .init(_level-1)
     }
-    
-    static func == (lhs: DepthLevel, rhs: DepthLevel) -> Bool {
-        return lhs._level == rhs._level
-    }
 }
 
 struct TreeNode <T> {
@@ -45,11 +41,6 @@ final class Tree <T> {
     }
     
     func append(_ data: T, depthLevel level: DepthLevel = .init(0)) {
-        // if level is 0, then lastStrand is empty
-        guard level._level <= lastStrand.count else {
-            fatalError()
-        }
-        
         // update lastStrand
         lastStrand.removeSubrange(level._level ..< lastStrand.endIndex)
         lastStrand.append(buffer.endIndex)
@@ -66,10 +57,6 @@ final class Tree <T> {
     func append <C: Collection> (strand: C, depthLevel level: DepthLevel = .init(0)) where
         C.Iterator.Element == T
     {
-        guard level._level <= lastStrand.count else {
-            fatalError()
-        }
-        
         let strandLength: Int = numericCast(strand.count)
         
         // update lastStrand

@@ -71,16 +71,3 @@ struct NonTextInlineNode <View: BidirectionalCollection> where
         (self.kind, self.start, self.end) = (kind, start, end)
     }
 }
-
-/*
- This is only used to efficiently sort an array of InlineNode. For reasons I can’t understand, 
- sorting an array an InlineNode with a closure like `nodes.sort { $0.start < $1.start }` is less efficient
- than making InlineNode conform to Comparabe and use `nodes.sort()`.
- */
-extension NonTextInlineNode: Comparable {
-    static func <  (lhs: NonTextInlineNode, rhs: NonTextInlineNode) -> Bool { return lhs.start <  rhs.start }
-    static func <= (lhs: NonTextInlineNode, rhs: NonTextInlineNode) -> Bool { return lhs.start <= rhs.start }
-    static func == (lhs: NonTextInlineNode, rhs: NonTextInlineNode) -> Bool { return lhs.start == rhs.start }
-    static func >  (lhs: NonTextInlineNode, rhs: NonTextInlineNode) -> Bool { return lhs.start >  rhs.start }
-    static func >= (lhs: NonTextInlineNode, rhs: NonTextInlineNode) -> Bool { return lhs.start >= rhs.start }
-}

@@ -70,7 +70,7 @@ struct DelimiterState: OptionSet {
             if isLeftFlanking  && (!isRightFlanking || next == .punctuation) { state.formUnion(.opening) }
 
         default:
-            fatalError("trying to create emphasis delimiter with character other than asterisk or underscore")
+            fatalError()
         }
 
         self = state

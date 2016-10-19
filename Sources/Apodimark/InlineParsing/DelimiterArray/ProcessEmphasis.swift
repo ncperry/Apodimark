@@ -48,7 +48,7 @@ extension MarkdownParser {
             case .emph(let kind, let state1, let l1) = openingDel.kind,
             case .emph(kind, let state2, let l2) = closingDel.kind
         else {
-            fatalError("This should never happen.")
+            fatalError()
         }
         
         defer {

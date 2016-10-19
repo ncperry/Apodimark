@@ -108,16 +108,6 @@ extension Scanner {
     }
 }
 
-extension Scanner {
-
-    /// Returns a new scanner equal to `self` except `endIndex` is equal to `end`.
-    /// - precondition: `startIndex <= end && end <= endIndex`
-    /// - parameter end: the `endIndex` of the new `Scanner`
-    func prefix(upTo end: Data.Index) -> Scanner {
-        precondition(startIndex <= end && end <= endIndex)
-        return Scanner(data: data, startIndex: startIndex, endIndex: end)
-    }
-}
 extension Scanner where Data.Iterator.Element: Equatable {
 
     /// Pop elements from the scanner until reaching an element equal to `x`.
