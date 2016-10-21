@@ -7,7 +7,7 @@
  A MarkdownParser holds the necessary data and type information to parse
  a collection representing some text.
 */
-struct MarkdownParser <View: BidirectionalCollection, Codec: MarkdownParserCodec> where
+final class MarkdownParser <View: BidirectionalCollection, Codec: MarkdownParserCodec> where
     View.Iterator.Element == Codec.CodeUnit,
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element

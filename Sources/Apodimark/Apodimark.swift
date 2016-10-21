@@ -154,7 +154,7 @@ public func parsedMarkdown <View, Codec> (source: View, referenceDefinitions: [S
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
-    var parser = MarkdownParser<View, Codec>(view: source, referenceDefinitions: referenceDefinitions)
+    let parser = MarkdownParser<View, Codec>(view: source, referenceDefinitions: referenceDefinitions)
     return parser.finalAST()
 }
 
@@ -162,7 +162,7 @@ extension MarkdownParser {
 
     /// Parse the collection and return the Abstract Syntax Tree
     /// describing the resulting Markdown document.
-    fileprivate mutating func finalAST() -> [MarkdownBlock<View>] {
+    fileprivate func finalAST() -> [MarkdownBlock<View>] {
         parseBlocks()
         return blockTree.makeIterator().flatMap(makeFinalBlock(from:children:))
     }

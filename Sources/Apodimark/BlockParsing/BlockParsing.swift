@@ -15,7 +15,7 @@ enum AddLineResult {
 
 extension MarkdownParser {
     
-    mutating func parseBlocks() {
+    func parseBlocks() {
         var scanner = Scanner(data: view)
         while case .some = scanner.peek() {
             _ = add(line: MarkdownParser.parseLine(&scanner))
