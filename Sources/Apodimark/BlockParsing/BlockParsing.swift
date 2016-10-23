@@ -208,24 +208,19 @@ extension MarkdownParser {
         switch preparedLine.kind {
         
         case .empty:
-            let shallowestNonListChild: BlockNode<View>? = { _ in
-                var curLevel = listLevel.incremented().incremented()
-                var curNode = blockTree.last(depthLevel: curLevel)
-                while case .list? = curNode {
-                    curLevel = curLevel.incremented().incremented()
-                    curNode = blockTree.last(depthLevel: curLevel)
-                }
-                return curNode
-            }()
             
-            if list.state != .normal {
-                guard case .fence? = shallowestNonListChild else {
+            guard case .normal = list.state else {
+                guard case let lastLeaf = blockTree.buffer.last!.data,
+                      case let .fence(fenceNode) = lastLeaf
+                else {
                     list.state = .closed
                     list._allowsLazyContinuations = false
                     return
                 }
+                _ = add(line: preparedLine, to: fenceNode)
+                return
             }
-            
+
             let itemContentLevel = listLevel.incremented().incremented()
             guard let lastItemContent = blockTree.last(depthLevel: itemContentLevel) else {
                 return
