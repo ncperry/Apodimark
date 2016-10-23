@@ -42,7 +42,7 @@ fileprivate struct InlineTreeBuilder <View: BidirectionalCollection> {
     var (texts, nonTexts): (Array<Text>.Iterator, Array<NonText>.Iterator)
     
     let tree: Tree<InlineNode<View>>
-    var tryLevel = DepthLevel(0)
+    var tryLevel = DepthLevel.root
     let view: View
     
     init(_ s1: [Text], _ s2: [NonText], _ view: View, _ tree: Tree<Node>) {

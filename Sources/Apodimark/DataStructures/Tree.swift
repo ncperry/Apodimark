@@ -4,7 +4,11 @@
 struct DepthLevel {
     fileprivate var _level: Int
     
-    init(_ level: Int) {
+    static var root: DepthLevel {
+        return .init(0)
+    }
+    
+    private init(_ level: Int) {
         self._level = level
     }
     
@@ -40,7 +44,7 @@ final class Tree <T> {
         return buffer[lastStrand[depthLevel._level]].data
     }
     
-    func append(_ data: T, depthLevel level: DepthLevel = .init(0)) {
+    func append(_ data: T, depthLevel level: DepthLevel = .root) {
         buffer.append(TreeNode(data: data, end: buffer.endIndex-1))
         repairStructure(addedStrandLength: 1, level: level)
     }
@@ -54,7 +58,7 @@ final class Tree <T> {
         }
     }
     
-    func append <S: Sequence> (strand: S, depthLevel level: DepthLevel = .init(0)) where
+    func append <S: Sequence> (strand: S, depthLevel level: DepthLevel = .root) where
         S.Iterator.Element == T
     {
         let initialCount = buffer.count

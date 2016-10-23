@@ -59,12 +59,12 @@ extension BlockNode {
 extension MarkdownParser {
     
     fileprivate func add(line: Line<View>) {
-        let last = blockTree.last(depthLevel: .init(0))
+        let last = blockTree.last(depthLevel: .root)
         
-        let addResult = last.map({ add(line: line, to: $0, depthLevel: .init(0)) }) ?? .failure
+        let addResult = last.map({ add(line: line, to: $0, depthLevel: .root) }) ?? .failure
         
         if case .failure = addResult, !line.kind.isEmpty() {
-            _ = appendStrand(from: line, level: .init(0))
+            _ = appendStrand(from: line, level: .root)
         }
     }
     
