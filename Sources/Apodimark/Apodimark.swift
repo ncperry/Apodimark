@@ -9,15 +9,18 @@ extension String: ReferenceDefinition { }
 public struct ParagraphBlock <View: BidirectionalCollection> {
     public let text: [MarkdownInline<View>]
 }
+
 public struct HeaderBlock <View: BidirectionalCollection> {
     public let level: Int
     public let text: [MarkdownInline<View>]
     public let markers: (Range<View.Index>, Range<View.Index>?)
 }
+
 public struct QuoteBlock <View: BidirectionalCollection> {
     public let content: [MarkdownBlock<View>]
     public let markers: [View.Index]
 }
+
 public struct MarkdownListItemBlock <View: BidirectionalCollection> {
     public let marker: Range<View.Index>
     public let content: [MarkdownBlock<View>]
