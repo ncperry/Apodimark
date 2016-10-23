@@ -54,10 +54,7 @@ func ~= (lhs: ListKind, rhs: ListKind) -> Bool {
 }
 
 /// The kind of a line
-indirect enum LineKind <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+indirect enum LineKind <View: BidirectionalCollection> {
     case list(ListKind, Line<View>)
     case quote(Line<View>)
     case text
@@ -137,10 +134,7 @@ struct Indent {
 /// Structure representing a single line of the original document.
 /// It contains the kind of the line (empty, potential list, simply text, etc.)
 /// as well as its indent and a scanner on the text of the line.
-struct Line <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+struct Line <View: BidirectionalCollection> {
     /// The kind of the line (quote, list, header, etc.)
     let kind: LineKind<View>
 

@@ -14,18 +14,12 @@ public enum ReferenceKind {
     }
 }
 
-enum InlineNode <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+enum InlineNode <View: BidirectionalCollection> {
     case text(TextInlineNode<View>)
     case nonText(NonTextInlineNode<View>)
 }
 
-enum NonTextInlineNodeKind <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+enum NonTextInlineNodeKind <View: BidirectionalCollection> {
     indirect case reference(ReferenceKind, title: Range<View.Index>, definition: ReferenceDefinition)
     case code(Int32)
     case emphasis(Int32)
@@ -38,19 +32,13 @@ enum TextInlineNodeKind {
     case hardbreak
 }
 
-struct TextInlineNode <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+struct TextInlineNode <View: BidirectionalCollection> {
     let kind: TextInlineNodeKind
     var start: View.Index
     var end: View.Index
 }
 
-struct NonTextInlineNode <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+struct NonTextInlineNode <View: BidirectionalCollection> {
 
     let kind: NonTextInlineNodeKind<View>
     var start: View.Index

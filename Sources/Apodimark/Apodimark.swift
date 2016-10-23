@@ -6,111 +6,69 @@
 public protocol ReferenceDefinition { }
 extension String: ReferenceDefinition { }
 
-public struct ParagraphBlock <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+public struct ParagraphBlock <View: BidirectionalCollection> {
     public let text: [MarkdownInline<View>]
 }
-public struct HeaderBlock <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+public struct HeaderBlock <View: BidirectionalCollection> {
     public let level: Int
     public let text: [MarkdownInline<View>]
     public let markers: (Range<View.Index>, Range<View.Index>?)
 }
-public struct QuoteBlock <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+public struct QuoteBlock <View: BidirectionalCollection> {
     public let content: [MarkdownBlock<View>]
     public let markers: [View.Index]
 }
-public struct MarkdownListItemBlock <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+public struct MarkdownListItemBlock <View: BidirectionalCollection> {
     public let marker: Range<View.Index>
     public let content: [MarkdownBlock<View>]
 }
 
-public struct ListBlock <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+public struct ListBlock <View: BidirectionalCollection> {
     public let kind: MarkdownListKind
     public let items: [MarkdownListItemBlock<View>]
 }
 
-public struct FenceBlock <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+public struct FenceBlock <View: BidirectionalCollection> {
     public let name: Range<View.Index>
     public let text: [Range<View.Index>]
     public let markers: (Range<View.Index>, Range<View.Index>?)
 }
 
-public struct CodeBlock <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+public struct CodeBlock <View: BidirectionalCollection> {
     public let text: [Range<View.Index>]
 }
 
-public struct ThematicBreakBlock <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+public struct ThematicBreakBlock <View: BidirectionalCollection> {
     public let marker: Range<View.Index>
 }
 
-public struct TextInline <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+public struct TextInline <View: BidirectionalCollection> {
     public let span: Range<View.Index>
 }
 
-public struct BreakInline <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+public struct BreakInline <View: BidirectionalCollection> {
     public let span: Range<View.Index>
 }
 
-public struct ReferenceInline <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+public struct ReferenceInline <View: BidirectionalCollection> {
     public let kind: ReferenceKind
     public let title: [MarkdownInline<View>]
     public let definition: ReferenceDefinition
     public let markers: [Range<View.Index>]
 }
 
-public struct EmphasisInline <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+public struct EmphasisInline <View: BidirectionalCollection> {
     public let level: Int
     public let content: [MarkdownInline<View>]
     public let markers: (Range<View.Index>, Range<View.Index>)
 }
 
-public struct MonospacedTextInline <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+public struct MonospacedTextInline <View: BidirectionalCollection> {
     public let content: [MarkdownInline<View>]
     public let markers: (Range<View.Index>, Range<View.Index>)
 }
 
-public indirect enum MarkdownInline <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+public indirect enum MarkdownInline <View: BidirectionalCollection> {
     case text(TextInline<View>)
     case reference(ReferenceInline<View>)
     case emphasis(EmphasisInline<View>)
@@ -119,10 +77,7 @@ public indirect enum MarkdownInline <View: BidirectionalCollection> where
     case hardbreak(BreakInline<View>)
 }
 
-public indirect enum MarkdownBlock <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+public indirect enum MarkdownBlock <View: BidirectionalCollection> {
     case paragraph(ParagraphBlock<View>)
     case header(HeaderBlock<View>)
     case quote(QuoteBlock<View>)
