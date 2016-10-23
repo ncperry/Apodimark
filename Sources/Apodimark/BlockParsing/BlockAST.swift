@@ -114,7 +114,7 @@ extension MarkdownParser {
         
         guard line.indent.level < 4 else {
             var newLine = line
-            newLine.removeFirstIndents(4)
+            newLine.indent.level -= 4
             restoreIndentInLine(&newLine)
             append(.code(.init(text: [newLine.indices], trailingEmptyLines: [])))
             return

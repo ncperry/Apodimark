@@ -95,39 +95,13 @@ enum IndentKind: Int {
     }
 }
 
-/// An Indent is a serie of spaces or tabs.
-/// This structure keeps both the total value of the indents (called the
-/// “level” of the indent), as well as its composition.
-/// For example, an indent made up of 2 spaces and 1 tab will have a
-/// level of (2 * 1) + (1 * 4) = 6 and will contain [.space, .space, .tab].
 struct Indent {
-
     /// The length of the indent (e.g. one space and one tab has a length of 1 + 4 = 5)
     var level: Int = 0
 
-    /// An array of the characters making up the indent
-    var composition: [IndentKind] = []
-
-    /// Adds a character to the indent, changing its level and its composition
+    /// Adds a character to the indent
     mutating func add(_ kind: IndentKind) {
-        composition.append(kind)
         level += kind.rawValue
-    }
-
-    /// - returns: a new indent created by removing `n` level from `self`
-    ///
-    /// - note: if `n` is bigger than the level of `self`, then the returned
-    /// Indent will have a negative level.
-    mutating func removeFirst(_ n: Int) {
-        var levelsRemoved = 0
-        var idx = 0
-
-        while idx < composition.endIndex && levelsRemoved < n {
-            levelsRemoved += composition[idx].rawValue
-            idx += 1
-        }
-        composition.removeFirst(idx)
-        level -= n
     }
 }
 
@@ -147,17 +121,18 @@ struct Line <View: BidirectionalCollection> {
     init(_ kind: LineKind<View>, _ indent: Indent, _ indices: Range<View.Index>) {
         (self.kind, self.indent, self.indices) = (kind, indent, indices)
     }
-
-    /// - returns: a new line equal to `self` with `n` fewer indents
-    mutating func removeFirstIndents(_ n: Int) {
-        indent.removeFirst(n)
-    }
 }
 
 extension MarkdownParser {
     func restoreIndentInLine(_ line: inout Line<View>) {
-        let newLowerBound = view.index(line.indices.lowerBound, offsetBy: numericCast(-line.indent.composition.count))
-        line.indices = newLowerBound ..< line.indices.upperBound
+        var indent = line.indent.level
+        var i = line.indices.lowerBound
+        while indent > 0 {
+            view.formIndex(before: &i)
+            let kind = IndentKind(view[i], codec: Codec.self)!
+            indent -= kind.rawValue
+        }
+        line.indices = i ..< line.indices.upperBound
     }
 }
 

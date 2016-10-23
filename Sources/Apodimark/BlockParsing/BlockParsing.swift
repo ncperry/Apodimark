@@ -108,7 +108,7 @@ extension MarkdownParser {
         default:
             guard line.indent.level >= 4 else { return .failure }
             var line = line
-            line.removeFirstIndents(4)
+            line.indent.level -= 4
             paragraph.text.append(line.indices)
         }
         return .success
@@ -176,11 +176,11 @@ extension MarkdownParser {
             return line
         }
         guard !(initialLine.indent.level >= list.minimumIndent + 4 && list._allowsLazyContinuations) else {
-            line.removeFirstIndents(list.minimumIndent)
+            line.indent.level -= list.minimumIndent
             return line
         }
 
-        line.removeFirstIndents(list.minimumIndent)
+        line.indent.level -= list.minimumIndent
         let isWellIndented = line.indent.level >= 0
         
         switch line.kind {
@@ -282,7 +282,7 @@ extension MarkdownParser {
             return .failure
         }
         var line = line
-        line.removeFirstIndents(fence.indent)
+        line.indent.level -= fence.indent
         restoreIndentInLine(&line)
         
         switch line.kind {
@@ -305,13 +305,13 @@ extension MarkdownParser {
             
         case .empty:
             var line = line
-            line.removeFirstIndents(4)
+            line.indent.level -= 4
             restoreIndentInLine(&line)
             code.trailingEmptyLines.append(line.indices)
             
         case _ where line.indent.level >= 4:
             var line = line
-            line.removeFirstIndents(4)
+            line.indent.level -= 4
             restoreIndentInLine(&line)
             
             code.text.append(contentsOf: code.trailingEmptyLines)
