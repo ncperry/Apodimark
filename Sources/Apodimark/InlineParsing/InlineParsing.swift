@@ -40,7 +40,7 @@ extension MarkdownParser {
             delimiters.append((scanner.startIndex, .start))
             
             while let token = scanner.pop() {
-                let curTokenKind = tokenKind(token)
+                let curTokenKind = MarkdownParser.tokenKind(token)
                 defer { prevTokenKind = curTokenKind }
                 
                 if token == Codec.space {
@@ -60,7 +60,7 @@ extension MarkdownParser {
                 case Codec.underscore, Codec.asterisk:
                     let idxBeforeRun = view.index(before: scanner.startIndex)
                     scanner.popWhile(token)
-                    let nextTokenKind = scanner.peek().flatMap(tokenKind) ?? .whitespace
+                    let nextTokenKind = scanner.peek().flatMap(MarkdownParser.tokenKind) ?? .whitespace
                     
                     let delimiterState = DelimiterState(token: token, prev: prevTokenKind, next: nextTokenKind, codec: Codec.self)
                     let lvl = view.distance(from: idxBeforeRun, to: scanner.startIndex)

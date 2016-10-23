@@ -60,7 +60,7 @@ extension MarkdownParser {
             switch token {
 
             case Codec.fullstop, Codec.rightparen:
-                return false // e.g. 1234|)| -> hurray! confirm and stop now
+                return .stop // e.g. 1234|)| -> hurray! confirm and stop now
 
             case Codec.zero...Codec.nine:
                 guard length < 9 else {
@@ -68,7 +68,7 @@ extension MarkdownParser {
                 }
                 length += 1
                 value = value * 10 + Codec.digit(representedByToken: token)
-                return true // e.g. 12|3| -> ok, keep reading
+                return .pop // e.g. 12|3| -> ok, keep reading
 
             case _:
                 throw ListParsingError.notAListMarker // e.g. 12|a| -> not a list marker
@@ -206,10 +206,10 @@ extension MarkdownParser {
 
                 case Codec.hash where level < 6:
                     level = level + 1
-                    return true
+                    return .pop
 
                 case Codec.space:
-                    return false
+                    return .stop
 
                 case Codec.linefeed:
                     throw HeaderParsingError.emptyHeader(level)
@@ -324,7 +324,7 @@ extension MarkdownParser {
 
                 case firstLetter:
                     level = level + 1
-                    return true
+                    return .pop
 
                 case Codec.linefeed:
                     guard level >= 3 else {
@@ -336,7 +336,7 @@ extension MarkdownParser {
                     guard level >= 3 else {
                         throw FenceParsingError.notAFence
                     }
-                    return false
+                    return .stop
                 }
             }
             // ```   name
@@ -401,17 +401,17 @@ extension MarkdownParser {
                 guard level >= 3 else {
                     throw NotAThematicBreakError() // e.g. * * -> not enough stars -> not a thematic break
                 }
-                return false // e.g. *  *  * * -> hurray! confirm and stop now
+                return .stop // e.g. *  *  * * -> hurray! confirm and stop now
             }
 
             switch token {
 
             case firstToken: // e.g. * * |*| -> ok, keep reading
                 level += 1
-                return true
+                return .pop
 
             case Codec.space, Codec.tab: // e.g. * * | | -> ok, keep reading
-                return true
+                return .pop
 
             default:
                 throw NotAThematicBreakError() // e.g. * * |g| -> not a thematic break!
@@ -445,7 +445,7 @@ extension MarkdownParser {
         let idxBeforeTitle = scanner.startIndex
 
         var escapeNext = false
-        try scanner.popWhile { (token: Codec.CodeUnit?) throws -> Bool in
+        try scanner.popWhile { (token: Codec.CodeUnit?) throws -> PopOrStop in
 
             guard let token = token, token != Codec.linefeed else {
                 throw NotAReferenceDefinitionError()
@@ -453,7 +453,7 @@ extension MarkdownParser {
 
             guard !escapeNext else {
                 escapeNext = false
-                return true
+                return .pop
             }
 
             guard token != Codec.leftsqbck else {
@@ -461,11 +461,11 @@ extension MarkdownParser {
             }
 
             guard token != Codec.rightsqbck else {
-                return false
+                return .stop
             }
 
             escapeNext = (token == Codec.backslash)
-            return true
+            return .pop
         }
 
         let idxAfterTitle = scanner.startIndex
@@ -502,18 +502,18 @@ extension MarkdownParser {
         // |_<--- (start of line)
 
         var indent = Indent()
-        scanner.popWhile { (token: Codec.CodeUnit?) -> Bool in
+        scanner.popWhile { (token: Codec.CodeUnit?) -> PopOrStop in
 
             guard let token = token else {
-                return false
+                return .stop
             }
 
             guard let indentKind = IndentKind(token, codec: Codec.self) else {
-                return false
+                return .stop
             }
 
             indent.add(indentKind)
-            return true
+            return .pop
         }
         let indexAfterIndent = scanner.startIndex
         //       xxxx

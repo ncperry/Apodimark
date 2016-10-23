@@ -58,7 +58,7 @@ extension BlockNode {
 
 extension MarkdownParser {
     
-    func add(line: Line<View>) {
+    fileprivate func add(line: Line<View>) {
         let last = blockTree.last(depthLevel: .init(0))
         
         let addResult = last.map({ add(line: line, to: $0, depthLevel: .init(0)) }) ?? .failure
@@ -68,7 +68,7 @@ extension MarkdownParser {
         }
     }
     
-    func add(line: Line<View>, to block: BlockNode<View>, depthLevel: DepthLevel) -> AddLineResult {
+    fileprivate func add(line: Line<View>, to block: BlockNode<View>, depthLevel: DepthLevel) -> AddLineResult {
         switch block {
         case .paragraph(let x):
             return add(line: line, to: x)
@@ -94,7 +94,7 @@ extension MarkdownParser {
 
 // PARAGRAPH
 extension MarkdownParser {
-    func add(line: Line<View>, to paragraph: ParagraphNode<View>) -> AddLineResult {
+    fileprivate func add(line: Line<View>, to paragraph: ParagraphNode<View>) -> AddLineResult {
         
         guard !paragraph.closed else { return .failure }
         
@@ -131,7 +131,7 @@ extension MarkdownParser {
         }
     }
     
-    func add(line: Line<View>, to quote: QuoteNode<View>, quoteLevel: DepthLevel) -> AddLineResult {
+    fileprivate func add(line: Line<View>, to quote: QuoteNode<View>, quoteLevel: DepthLevel) -> AddLineResult {
         
         guard !quote.closed else { return .failure }
         
@@ -265,7 +265,7 @@ extension MarkdownParser {
         }
     }
     
-    func add(line: Line<View>, to list: ListNode<View>, listLevel: DepthLevel) -> AddLineResult {
+    fileprivate func add(line: Line<View>, to list: ListNode<View>, listLevel: DepthLevel) -> AddLineResult {
         guard let line = preparedLine(from: line, for: list) else {
             return .failure
         }
@@ -276,7 +276,7 @@ extension MarkdownParser {
 
 // FENCE
 extension MarkdownParser {
-    func add(line: Line<View>, to fence: FenceNode<View>) -> AddLineResult {
+    fileprivate func add(line: Line<View>, to fence: FenceNode<View>) -> AddLineResult {
         
         guard line.indent.level >= 0 && !fence.closed else {
             return .failure
@@ -300,7 +300,7 @@ extension MarkdownParser {
 
 // CODE BLOCK
 extension MarkdownParser {
-    func add(line: Line<View>, to code: CodeNode<View>) -> AddLineResult {
+    fileprivate func add(line: Line<View>, to code: CodeNode<View>) -> AddLineResult {
         switch line.kind {
             
         case .empty:

@@ -33,10 +33,7 @@ fileprivate func map <T, U> (_ x: (T, T?), _ f: (T) -> U) -> (U, U?) {
     return (f(x.0), x.1.map(f))
 }
 
-fileprivate struct InlineTreeBuilder <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
+fileprivate struct InlineTreeBuilder <View: BidirectionalCollection> {
     typealias Node = InlineNode<View>
     typealias Text = TextInlineNode<View>
     typealias NonText = NonTextInlineNode<View>
@@ -66,7 +63,7 @@ fileprivate struct InlineTreeBuilder <View: BidirectionalCollection> where
         
         (e1, e2) = (e1 ?? texts.next(), e2 ?? nonTexts.next())
         
-        guard case let (n?, ne1, ne2, lvl) = { () -> (Node?, Text?, NonText?, DepthLevel) in
+        guard case let (node?, newE1, newE2, insertLevel) = { () -> (Node?, Text?, NonText?, DepthLevel) in
             
             guard var t = e1 else {
                 return (e2.map(Node.nonText), e1, nil, tryLevel)
@@ -111,13 +108,13 @@ fileprivate struct InlineTreeBuilder <View: BidirectionalCollection> where
             return nil
         }
         
-        switch n {
-        case .text   : tryLevel = lvl
-        case .nonText: tryLevel = lvl.incremented()
+        switch node {
+        case .text   : tryLevel = insertLevel
+        case .nonText: tryLevel = insertLevel.incremented()
         }
         
-        (e1, e2) = (ne1, ne2)
+        (e1, e2) = (newE1, newE2)
         
-        return (n, lvl)
+        return (node, insertLevel)
     }
 }

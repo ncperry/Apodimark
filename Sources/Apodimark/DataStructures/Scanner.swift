@@ -60,6 +60,11 @@ struct Scanner <Data: BidirectionalCollection> {
     }
 }
 
+enum PopOrStop {
+    case stop
+    case pop
+}
+
 extension Scanner {
 
     /// Convenience property for `startIndex ..< endIndex`
@@ -74,10 +79,10 @@ extension Scanner {
      If every element of the scanner is read, then `predicate(nil)` is
      called, giving the opportunity to throw an error to cancel the operation.
      */
-    mutating func popWhile(_ predicate: (Data.Iterator.Element?) throws -> Bool) rethrows {
+    mutating func popWhile(_ predicate: (Data.Iterator.Element?) throws -> PopOrStop) rethrows {
 
         var curIndex = startIndex
-        while try curIndex != endIndex && predicate(data[curIndex]) {
+        while curIndex != endIndex, case .pop = try predicate(data[curIndex]) {
             curIndex = data.index(after: curIndex)
         }
 

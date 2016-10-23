@@ -183,7 +183,7 @@ extension MarkdownParser {
         fixLazyContinuationsInBlockTree(fromLevel: level)
     }
     
-    func fixLazyContinuationsInBlockTree(fromLevel level: DepthLevel) {
+    private func fixLazyContinuationsInBlockTree(fromLevel level: DepthLevel) {
         var childAllowsLazyContinuation = true
         for i in blockTree.lastStrand.reversed() {
             let n = blockTree.buffer[i].data

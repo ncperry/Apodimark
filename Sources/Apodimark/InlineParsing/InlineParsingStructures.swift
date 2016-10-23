@@ -85,7 +85,7 @@ enum TokenKind {
 
 extension MarkdownParser {
 
-    func tokenKind(_ token: Codec.CodeUnit) -> TokenKind {
+    static func tokenKind(_ token: Codec.CodeUnit) -> TokenKind {
         switch token {
 
         case Codec.space, Codec.linefeed:

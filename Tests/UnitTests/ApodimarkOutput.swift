@@ -15,7 +15,11 @@ extension MarkdownListKind: CustomStringConvertible {
     }
 }
 
-extension MarkdownBlock where View.Iterator.Element: Comparable & Hashable {
+extension MarkdownBlock where
+    View.Iterator.Element: Comparable & Hashable,
+    View.SubSequence: Collection,
+    View.SubSequence.Iterator.Element == View.Iterator.Element
+{
     typealias Token = View.Iterator.Element
 
     static func combineNodeOutput <Codec: MarkdownParserCodec> (source: View, codec: Codec.Type) -> (String, MarkdownBlock) -> String
