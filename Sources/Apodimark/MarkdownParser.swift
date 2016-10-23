@@ -3,6 +3,8 @@
 //  Apodimark
 //
 
+let TAB_INDENT = 4
+
 /**
  A MarkdownParser holds the necessary data and type information to parse
  a collection representing some text.

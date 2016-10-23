@@ -75,11 +75,18 @@ indirect enum LineKind <View: BidirectionalCollection> {
 ///
 /// The `rawValue` of the enum is the value of an indent of that kind.
 /// e.g. a space adds a value of 1 while a tab adds a value of 4
-enum IndentKind: Int {
+enum IndentKind {
 
-    case space = 1
-    case tab = 4
+    case space
+    case tab
 
+    var width: Int {
+        switch self {
+        case .space: return 1
+        case .tab: return TAB_INDENT
+        }
+    }
+    
     init? <Codec: MarkdownParserCodec> (_ token: Codec.CodeUnit, codec: Codec.Type) {
         switch token {
 
@@ -101,7 +108,7 @@ struct Indent {
 
     /// Adds a character to the indent
     mutating func add(_ kind: IndentKind) {
-        level += kind.rawValue
+        level += kind.width
     }
 }
 
@@ -130,7 +137,7 @@ extension MarkdownParser {
         while indent > 0 {
             view.formIndex(before: &i)
             let kind = IndentKind(view[i], codec: Codec.self)!
-            indent -= kind.rawValue
+            indent -= kind.width
         }
         line.indices = i ..< line.indices.upperBound
     }

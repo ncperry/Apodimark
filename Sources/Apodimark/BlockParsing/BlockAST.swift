@@ -112,9 +112,9 @@ extension MarkdownParser {
             blockTree.buffer.append(.init(data: block, end: previousEnd))
         }
         
-        guard line.indent.level < 4 else {
+        guard line.indent.level < TAB_INDENT else {
             var newLine = line
-            newLine.indent.level -= 4
+            newLine.indent.level -= TAB_INDENT
             restoreIndentInLine(&newLine)
             append(.code(.init(text: [newLine.indices], trailingEmptyLines: [])))
             return

@@ -106,9 +106,9 @@ extension MarkdownParser {
             paragraph.closed = true
             
         default:
-            guard line.indent.level >= 4 else { return .failure }
+            guard line.indent.level >= TAB_INDENT else { return .failure }
             var line = line
-            line.indent.level -= 4
+            line.indent.level -= TAB_INDENT
             paragraph.text.append(line.indices)
         }
         return .success
@@ -135,7 +135,7 @@ extension MarkdownParser {
         
         guard !quote.closed else { return .failure }
         
-        guard !(line.indent.level >= 4 && quote._allowsLazyContinuation) else {
+        guard !(line.indent.level >= TAB_INDENT && quote._allowsLazyContinuation) else {
             directlyAddLine(line: Line(.text, line.indent, line.indices), to: quote, quoteLevel: quoteLevel)
             return .success
         }
@@ -175,7 +175,7 @@ extension MarkdownParser {
         guard !initialLine.kind.isEmpty() else {
             return line
         }
-        guard !(initialLine.indent.level >= list.minimumIndent + 4 && list._allowsLazyContinuations) else {
+        guard !(initialLine.indent.level >= list.minimumIndent + TAB_INDENT && list._allowsLazyContinuations) else {
             line.indent.level -= list.minimumIndent
             return line
         }
@@ -287,7 +287,7 @@ extension MarkdownParser {
         
         switch line.kind {
             
-        case .fence(fence.kind, let lineFenceName, let lineFenceLevel) where line.indent.level < 4 && lineFenceName.isEmpty && lineFenceLevel >= fence.level:
+        case .fence(fence.kind, let lineFenceName, let lineFenceLevel) where line.indent.level < TAB_INDENT && lineFenceName.isEmpty && lineFenceLevel >= fence.level:
             fence.markers.1 = line.indices
             fence.closed = true
             
@@ -305,13 +305,13 @@ extension MarkdownParser {
             
         case .empty:
             var line = line
-            line.indent.level -= 4
+            line.indent.level -= TAB_INDENT
             restoreIndentInLine(&line)
             code.trailingEmptyLines.append(line.indices)
             
-        case _ where line.indent.level >= 4:
+        case _ where line.indent.level >= TAB_INDENT:
             var line = line
-            line.indent.level -= 4
+            line.indent.level -= TAB_INDENT
             restoreIndentInLine(&line)
             
             code.text.append(contentsOf: code.trailingEmptyLines)
