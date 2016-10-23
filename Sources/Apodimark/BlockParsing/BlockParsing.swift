@@ -12,7 +12,6 @@ enum AddLineResult {
     case failure
 }
 
-
 extension MarkdownParser {
     
     func parseBlocks() {
@@ -65,7 +64,7 @@ extension MarkdownParser {
         let addResult = last.map({ add(line: line, to: $0, depthLevel: .init(0)) }) ?? .failure
         
         if case .failure = addResult, !line.kind.isEmpty() {
-            _ = blockTree.append(strand: strand(line: line))
+            _ = appendStrand(from: line, level: .init(0))
         }
     }
     
@@ -127,7 +126,7 @@ extension MarkdownParser {
             quote._allowsLazyContinuation = last.allowsLazyContinuation()
         } else {
             guard !line.kind.isEmpty() else { return }
-            _ = blockTree.append(strand: strand(line: line), depthLevel: quoteContentLevel)
+            appendStrand(from: line, level: quoteContentLevel)
             quote._allowsLazyContinuation = blockTree.last(depthLevel: quoteContentLevel)!.allowsLazyContinuation()
         }
     }
@@ -244,9 +243,11 @@ extension MarkdownParser {
                 list._allowsLazyContinuations = true
                 _ = blockTree.append(.listItem(.init(markerSpan: markerSpan)), depthLevel: listLevel.incremented())
             } else {
-                let stran = [.listItem(.init(markerSpan: markerSpan))] + strand(line: rest)
-                list._allowsLazyContinuations = stran[1].allowsLazyContinuation()
-                _ = blockTree.append(strand: stran, depthLevel: listLevel.incremented())
+                let listItemLevel = listLevel.incremented()
+                let itemChildIdx = blockTree.buffer.endIndex+1
+                blockTree.append(.listItem(.init(markerSpan: markerSpan)), depthLevel: listItemLevel)
+                appendStrand(from: rest, level: listItemLevel.incremented())
+                list._allowsLazyContinuations = blockTree.buffer[itemChildIdx].data.allowsLazyContinuation()
             }
             
         default:
@@ -257,9 +258,9 @@ extension MarkdownParser {
             let addResult = lastItemContent.map { add(line: preparedLine, to: $0, depthLevel: itemContentLevel) } ?? .failure
             
             if case .failure = addResult {
-                let stran = strand(line: preparedLine)
-                _ = blockTree.append(strand: stran, depthLevel: itemContentLevel)
-                list._allowsLazyContinuations = stran[0].allowsLazyContinuation()
+                let itemContentIdx = blockTree.buffer.endIndex
+                appendStrand(from: preparedLine, level: itemContentLevel)
+                list._allowsLazyContinuations = blockTree.buffer[itemContentIdx].data.allowsLazyContinuation()
             }
         }
     }

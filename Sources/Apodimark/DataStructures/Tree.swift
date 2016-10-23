@@ -41,37 +41,30 @@ final class Tree <T> {
     }
     
     func append(_ data: T, depthLevel level: DepthLevel = .init(0)) {
-        // update lastStrand
-        lastStrand.removeSubrange(level._level ..< lastStrand.endIndex)
-        lastStrand.append(buffer.endIndex)
-        
-        // update range of parents
-        for parentIndex in lastStrand.prefix(upTo: level._level) {
-            buffer[parentIndex].end += 1
-        }
-        
-        // append node
-        buffer.append(TreeNode(data: data, end: buffer.endIndex))
+        buffer.append(TreeNode(data: data, end: buffer.endIndex-1))
+        repairStructure(addedStrandLength: 1, level: level)
     }
 
-    func append <C: Collection> (strand: C, depthLevel level: DepthLevel = .init(0)) where
-        C.Iterator.Element == T
+    func repairStructure(addedStrandLength: Int, level: DepthLevel) {
+        lastStrand.removeSubrange(level._level ..< lastStrand.endIndex)
+        lastStrand.append(contentsOf: (buffer.endIndex - addedStrandLength) ..< buffer.endIndex)
+        
+        for i in lastStrand {
+            buffer[i].end += addedStrandLength
+        }
+    }
+    
+    func append <S: Sequence> (strand: S, depthLevel level: DepthLevel = .init(0)) where
+        S.Iterator.Element == T
     {
-        let strandLength: Int = numericCast(strand.count)
-        
-        // update lastStrand
-        lastStrand.removeSubrange(level._level ..< lastStrand.endIndex)
-        lastStrand.append(contentsOf: buffer.endIndex ..< buffer.endIndex + strandLength)
-        
-        // update range of parents
-        for parentIndex in lastStrand.prefix(upTo: level._level) {
-            buffer[parentIndex].end += strandLength
-        }
-        
-        // append nodes
-        buffer.append(contentsOf: strand.map { TreeNode(data: $0, end: buffer.endIndex + strandLength-1) })
+        let initialCount = buffer.count
+        let c = strand.lazy.map { TreeNode(data: $0, end: initialCount-1) }
+        buffer.append(contentsOf: c)
+        let endCount = buffer.count
+        let strandLength = initialCount.distance(to: endCount)
+        repairStructure(addedStrandLength: strandLength, level: level)
     }
-
+    
     func makeIterator() -> TreeIterator<T> {
         return TreeIterator(self)
     }
@@ -132,5 +125,3 @@ struct TreeIterator <T>: IteratorProtocol, Sequence {
         return self
     }
 }
-
-

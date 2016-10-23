@@ -104,26 +104,29 @@ final class ReferenceDefinitionNode <View: BidirectionalCollection> {
     }
 }
 
-
 extension MarkdownParser {
     
-    private func strand(line: Line<View>, appendingTo arr: inout [BlockNode<View>]) {
+    private func appendStrand(line: Line<View>, previousEnd: Int) {
+        
+        func append(_ block: BlockNode<View>) {
+            blockTree.buffer.append(.init(data: block, end: previousEnd))
+        }
         
         guard line.indent.level < 4 else {
             var newLine = line
             newLine.removeFirstIndents(4)
             restoreIndentInLine(&newLine)
-            arr.append(.code(.init(text: [newLine.indices], trailingEmptyLines: [])))
+            append(.code(.init(text: [newLine.indices], trailingEmptyLines: [])))
             return
         }
         
         switch line.kind {
         case .quote(let rest):
-            arr.append(.quote(.init(firstMarker: line.indices.lowerBound)))
-            strand(line: rest, appendingTo: &arr)
+            append(.quote(.init(firstMarker: line.indices.lowerBound)))
+            appendStrand(line: rest, previousEnd: previousEnd)
         
         case .text:
-            arr.append(.paragraph(.init(text: [line.indices])))
+            append(.paragraph(.init(text: [line.indices])))
         
         case .header(let text, let level):
             let startHashes = line.indices.lowerBound ..< view.index(line.indices.lowerBound, offsetBy: numericCast(level))
@@ -131,7 +134,7 @@ extension MarkdownParser {
                 let tmp = text.upperBound ..< line.indices.upperBound
                 return tmp.isEmpty ? nil : tmp
             }()
-            arr.append(.header(.init(markers: (startHashes, endHashes), text: text, level: level)))
+            append(.header(.init(markers: (startHashes, endHashes), text: text, level: level)))
         
         case let .list(kind, rest):
             let state: ListState = rest.kind.isEmpty() ? .followedByEmptyLine : .normal
@@ -141,8 +144,8 @@ extension MarkdownParser {
             let list = ListNode<View>(kind: kind, state: state)
             let item = ListItemNode<View>(markerSpan: markerSpan)
             
-            arr.append(.list(list))
-            arr.append(.listItem(item))
+            append(.list(list))
+            append(.listItem(item))
 
             list.minimumIndent = line.indent.level + kind.width + rest.indent.level + 1
             
@@ -150,34 +153,41 @@ extension MarkdownParser {
                 return
             }
             
-            let idx = arr.endIndex
-            strand(line: rest, appendingTo: &arr)
+            let nextNodeIdx = blockTree.buffer.endIndex
+            appendStrand(line: rest, previousEnd: previousEnd)
 
-            if case .code = arr[idx] {
+            if case .code = blockTree.buffer[nextNodeIdx].data {
                 list.minimumIndent = line.indent.level + kind.width + 1
             }
             
         case let .fence(kind, name, level):
             let startMarker = line.indices.lowerBound ..< view.index(line.indices.lowerBound, offsetBy: numericCast(level))
-            arr.append(.fence(.init(kind: kind, startMarker: startMarker, name: name, text: [], level: level, indent: line.indent.level)))
+            append(.fence(.init(kind: kind, startMarker: startMarker, name: name, text: [], level: level, indent: line.indent.level)))
 
         case .thematicBreak:
-            arr.append(.thematicBreak(.init(span: line.indices)))
+            append(.thematicBreak(.init(span: line.indices)))
             
         case .empty:
-            arr.append(.paragraph(.init(text: [])))
+            append(.paragraph(.init(text: [])))
             
         case let .reference(title, definition):
-            arr.append(.referenceDefinition(.init(title: title, definition: definition)))
+            append(.referenceDefinition(.init(title: title, definition: definition)))
         }
     }
 
-    func strand(line: Line<View>) -> [BlockNode<View>] {
-        var a: [BlockNode<View>] = []
-        strand(line: line, appendingTo: &a)
-        var childAllowsLazyContinuation: Bool = true
-        for x in a.reversed() {
-            switch x {
+    func appendStrand(from line: Line<View>, level: DepthLevel) {
+        let prevCount = blockTree.buffer.count
+        appendStrand(line: line, previousEnd: prevCount-1)
+        let curCount = blockTree.buffer.count
+        blockTree.repairStructure(addedStrandLength: prevCount.distance(to: curCount), level: level)
+        fixLazyContinuationsInBlockTree(fromLevel: level)
+    }
+    
+    func fixLazyContinuationsInBlockTree(fromLevel level: DepthLevel) {
+        var childAllowsLazyContinuation = true
+        for i in blockTree.lastStrand.reversed() {
+            let n = blockTree.buffer[i].data
+            switch n {
             case .list(let l):
                 l._allowsLazyContinuations = childAllowsLazyContinuation
             case .listItem:
@@ -185,10 +195,10 @@ extension MarkdownParser {
             case .quote(let q):
                 q._allowsLazyContinuation = childAllowsLazyContinuation
             default:
-                childAllowsLazyContinuation = x.allowsLazyContinuation()
+                childAllowsLazyContinuation = n.allowsLazyContinuation()
             }
         }
-        return a
     }
 }
+
 
