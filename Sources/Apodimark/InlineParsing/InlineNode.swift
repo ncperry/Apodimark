@@ -54,8 +54,4 @@ struct NonTextInlineNode <View: BidirectionalCollection> {
             return view.index(start, offsetBy: numericCast(l)) ..< view.index(end, offsetBy: numericCast(-l))
         }
     }
-
-    init(kind: NonTextInlineNodeKind<View>, start: View.Index, end: View.Index) {
-        (self.kind, self.start, self.end) = (kind, start, end)
-    }
 }
