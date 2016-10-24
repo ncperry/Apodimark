@@ -35,6 +35,10 @@ final class Tree <T> {
     var buffer: Array<TreeNode<T>>
     var lastStrand: [Array<T>.Index]
     
+    var lastLeaf: T {
+        return buffer[buffer.endIndex-1].data
+    }
+    
     init() {
         (self.buffer, self.lastStrand) = ([], [])
     }

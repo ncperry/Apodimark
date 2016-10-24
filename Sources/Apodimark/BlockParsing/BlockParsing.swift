@@ -31,26 +31,12 @@ extension MarkdownParser {
     }
 }
 
+
 extension BlockNode {
     func allowsLazyContinuation() -> Bool {
-        switch self {
-        case .paragraph(let x):
-            return !x.closed
-        case .header:
-            return false
-        case .quote(let x):
-            return x._allowsLazyContinuation
-        case .list(let x):
-            return x._allowsLazyContinuations
-        case .listItem:
-            fatalError()
-        case .fence:
-            return false
-        case .code:
-            return false
-        case .thematicBreak:
-            return false
-        case .referenceDefinition:
+        if case .paragraph(let p) = self , !p.closed {
+            return true
+        } else {
             return false
         }
     }
@@ -78,8 +64,6 @@ extension MarkdownParser {
             return add(line: line, to: x, quoteLevel: depthLevel)
         case .list(let x):
             return add(line: line, to: x, listLevel: depthLevel)
-        case .listItem:
-            fatalError()
         case .fence(let x):
             return add(line: line, to: x)
         case .code(let x):
@@ -88,6 +72,8 @@ extension MarkdownParser {
             return .failure
         case .referenceDefinition:
             return .failure
+        case .listItem:
+            fatalError()
         }
     }
 }
@@ -122,20 +108,20 @@ extension MarkdownParser {
         let quoteContentLevel = quoteLevel.incremented()
 
         let last = blockTree.last(depthLevel: quoteContentLevel)!
-        if case .success = add(line: line, to: last, depthLevel: quoteContentLevel) {
-            quote._allowsLazyContinuation = last.allowsLazyContinuation()
-        } else {
+        
+        if case .failure = add(line: line, to: last, depthLevel: quoteContentLevel) {
             guard !line.kind.isEmpty() else { return }
             appendStrand(from: line, level: quoteContentLevel)
-            quote._allowsLazyContinuation = blockTree.last(depthLevel: quoteContentLevel)!.allowsLazyContinuation()
         }
     }
     
     fileprivate func add(line: Line<View>, to quote: QuoteNode<View>, quoteLevel: DepthLevel) -> AddLineResult {
         
         guard !quote.closed else { return .failure }
+
+        let lastLeafAllowsLazyContinuation = blockTree.lastLeaf.allowsLazyContinuation()
         
-        guard !(line.indent.level >= TAB_INDENT && quote._allowsLazyContinuation) else {
+        guard !(line.indent.level >= TAB_INDENT && lastLeafAllowsLazyContinuation) else {
             directlyAddLine(line: Line(.text, line.indent, line.indices), to: quote, quoteLevel: quoteLevel)
             return .success
         }
@@ -144,14 +130,13 @@ extension MarkdownParser {
             
         case .empty:
             quote.closed = true
-            quote._allowsLazyContinuation = false
             
         case .quote(let rest):
             quote.markers.append(line.indices.lowerBound)
             directlyAddLine(line: rest, to: quote, quoteLevel: quoteLevel)
             
         case .text:
-            guard quote._allowsLazyContinuation else {
+            guard lastLeafAllowsLazyContinuation else {
                 return .failure
             }
             directlyAddLine(line: line, to: quote, quoteLevel: quoteLevel)
@@ -175,7 +160,8 @@ extension MarkdownParser {
         guard list.state != .closed else {
             return nil
         }
-        guard !(initialLine.indent.level >= list.minimumIndent + TAB_INDENT && list._allowsLazyContinuations) else {
+        let lastLeafAllowsLazyContinuation = blockTree.lastLeaf.allowsLazyContinuation()
+        guard !(initialLine.indent.level >= list.minimumIndent + TAB_INDENT && lastLeafAllowsLazyContinuation) else {
             line.indent.level -= list.minimumIndent
             return line
         }
@@ -186,7 +172,7 @@ extension MarkdownParser {
         switch line.kind {
             
         case .text:
-            return isWellIndented || (list.state == .normal && list._allowsLazyContinuations) ? line : nil
+            return isWellIndented || (list.state == .normal && lastLeafAllowsLazyContinuation) ? line : nil
             
         case let .list(k, _):
             if isWellIndented {
@@ -205,11 +191,10 @@ extension MarkdownParser {
     }
 
     fileprivate func addPreparedLine(_ preparedLine: Line<View>, to list: ListNode<View>, listLevel: DepthLevel) {
+        
         switch preparedLine.kind {
         
         case .empty:
-            list._allowsLazyContinuations = false
-
             switch list.state {
 
             case .lastLeafIsCodeBlock:
@@ -227,7 +212,6 @@ extension MarkdownParser {
                 let lastItemContent = blockTree.last(depthLevel: itemContentLevel)
                 
                 let result = lastItemContent.map { add(line: preparedLine, to: $0, depthLevel: itemContentLevel) } ?? .failure
-                list._allowsLazyContinuations = false
                 
                 let lastLeaf = blockTree.buffer.last!.data
                 switch lastLeaf {
@@ -252,14 +236,11 @@ extension MarkdownParser {
             let idcs = preparedLine.indices
             let markerSpan = idcs.lowerBound ..< view.index(idcs.lowerBound, offsetBy: numericCast(kind.width))
             if case .empty = rest.kind {
-                list._allowsLazyContinuations = true
                 _ = blockTree.append(.listItem(.init(markerSpan: markerSpan)), depthLevel: listLevel.incremented())
             } else {
                 let listItemLevel = listLevel.incremented()
-                let itemChildIdx = blockTree.buffer.endIndex+1
                 blockTree.append(.listItem(.init(markerSpan: markerSpan)), depthLevel: listItemLevel)
                 appendStrand(from: rest, level: listItemLevel.incremented())
-                list._allowsLazyContinuations = blockTree.buffer[itemChildIdx].data.allowsLazyContinuation()
             }
             
         default:
@@ -270,9 +251,7 @@ extension MarkdownParser {
             let addResult = lastItemContent.map { add(line: preparedLine, to: $0, depthLevel: itemContentLevel) } ?? .failure
             
             if case .failure = addResult {
-                let itemContentIdx = blockTree.buffer.endIndex
                 appendStrand(from: preparedLine, level: itemContentLevel)
-                list._allowsLazyContinuations = blockTree.buffer[itemContentIdx].data.allowsLazyContinuation()
             }
         }
     }

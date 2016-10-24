@@ -31,11 +31,10 @@ final class HeaderNode <View: BidirectionalCollection> {
 
 final class QuoteNode <View: BidirectionalCollection> {
     var markers: [View.Index]
-    var _allowsLazyContinuation: Bool
     var closed: Bool
 
     init(firstMarker: View.Index) {
-        (self.markers, self.closed, self._allowsLazyContinuation) = ([firstMarker], false, false)
+        (self.markers, self.closed) = ([firstMarker], false)
     }
 }
 
@@ -49,8 +48,6 @@ final class ListItemNode <View: BidirectionalCollection> {
 
 final class ListNode <View: BidirectionalCollection> {
     let kind: ListKind
-    var _allowsLazyContinuations: Bool
-    
     var state: ListState
     var minimumIndent: Int
     
@@ -58,7 +55,6 @@ final class ListNode <View: BidirectionalCollection> {
         self.kind = kind
         self.state = state
         self.minimumIndent = 0
-        self._allowsLazyContinuations = false
     }
 }
 
@@ -180,24 +176,6 @@ extension MarkdownParser {
         appendStrand(line: line, previousEnd: prevCount-1)
         let curCount = blockTree.buffer.count
         blockTree.repairStructure(addedStrandLength: prevCount.distance(to: curCount), level: level)
-        fixLazyContinuationsInBlockTree(fromLevel: level)
-    }
-    
-    private func fixLazyContinuationsInBlockTree(fromLevel level: DepthLevel) {
-        var childAllowsLazyContinuation = true
-        for i in blockTree.lastStrand.reversed() {
-            let n = blockTree.buffer[i].data
-            switch n {
-            case .list(let l):
-                l._allowsLazyContinuations = childAllowsLazyContinuation
-            case .listItem:
-                break
-            case .quote(let q):
-                q._allowsLazyContinuation = childAllowsLazyContinuation
-            default:
-                childAllowsLazyContinuation = n.allowsLazyContinuation()
-            }
-        }
     }
 }
 
