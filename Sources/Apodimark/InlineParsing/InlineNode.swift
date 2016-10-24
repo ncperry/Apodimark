@@ -23,6 +23,7 @@ enum NonTextInlineNodeKind <View: BidirectionalCollection> {
     indirect case reference(ReferenceKind, title: Range<View.Index>, definition: ReferenceDefinition)
     case code(Int32)
     case emphasis(Int32)
+    case escapingBackslash
 }
 
 
@@ -52,6 +53,8 @@ struct NonTextInlineNode <View: BidirectionalCollection> {
             return view.index(start, offsetBy: numericCast(l)) ..< view.index(end, offsetBy: numericCast(-l))
         case .emphasis(let l):
             return view.index(start, offsetBy: numericCast(l)) ..< view.index(end, offsetBy: numericCast(-l))
+        case .escapingBackslash:
+            return start ..< start
         }
     }
 }

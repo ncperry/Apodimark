@@ -11,33 +11,39 @@ extension MarkdownParser {
     
     func parseInlines(_ text: [Range<View.Index>]) -> Tree<InlineNode<View>> {
         
-        var dels = delimiters(in: text)
+        var (nonTextDels, textDels) = delimiters(in: text)
+        guard !textDels.isEmpty else { return .init() }
         
-        var nodes = processAllMonospacedText(&dels[dels.indices])
-        nodes += processAllReferences(&dels[dels.indices])
-        nodes += processAllEmphases(&dels[dels.indices])
+        var nodes: [NonTextInlineNode<View>] = []
+        processAllMonospacedText(&nonTextDels, appendingTo: &nodes)
+        processAllReferences(&nonTextDels, appendingTo: &nodes)
+        processAllEmphases(&nonTextDels, indices: nonTextDels.indices, appendingTo: &nodes)
+        processAllEscapingBackslashes(nonTextDels, appendingTo: &nodes)
         
         nodes.sort(by: <)
         
-        let textNodes = processText(dels)
+        let textNodes = TextInlineNodeIterator(view: view, delimiters: textDels)
         
         return makeAST(text: textNodes, nonText: nodes)
     }
 
-    private func delimiters(in text: [Range<View.Index>]) -> [Delimiter?] {
+    private func delimiters(in text: [Range<View.Index>]) -> ([NonTextDelimiter?], [TextDelimiter]) {
         
-        var delimiters: [Delimiter?] = []
+        var nonTextDels: [NonTextDelimiter?] = []
+        var textDels: [TextDelimiter] = []
+
+        var scanner = Scanner(data: view)
         
         for (idx, range) in zip(text.indices, text) {
-    
-            var scanner = Scanner(data: view, startIndex: range.lowerBound, endIndex: range.upperBound)
+            
+            (scanner.startIndex, scanner.endIndex) = (range.lowerBound, range.upperBound)
             
             var numberOfPreviousSpaces = 0
             var potentialBackslashHardbreak = false
             
             var prevTokenKind = TokenKind.whitespace
             
-            delimiters.append((scanner.startIndex, .start))
+            textDels.append((scanner.startIndex, .start))
             
             while let token = scanner.pop() {
                 let curTokenKind = MarkdownParser.tokenKind(token)
@@ -65,33 +71,33 @@ extension MarkdownParser {
                     let delimiterState = DelimiterState(token: token, prev: prevTokenKind, next: nextTokenKind, codec: Codec.self)
                     let lvl = view.distance(from: idxBeforeRun, to: scanner.startIndex)
                     let kind: EmphasisKind = token == Codec.underscore ? .underscore : .asterisk
-                    delimiters.append((scanner.startIndex, .emph(kind, delimiterState, numericCast(lvl))))
+                    nonTextDels.append((scanner.startIndex, .emph(kind, delimiterState, numericCast(lvl))))
                     
                 case Codec.backtick:
                     let idxBeforeRun = view.index(before: scanner.startIndex)
                     scanner.popWhile(Codec.backtick)
                     let lvl = view.distance(from: idxBeforeRun, to: scanner.startIndex)
-                    delimiters.append((scanner.startIndex, .code(numericCast(lvl))))
+                    nonTextDels.append((scanner.startIndex, .code(numericCast(lvl))))
                     
                 case Codec.exclammark:
                     if scanner.pop(Codec.leftsqbck) {
-                        delimiters.append((scanner.startIndex, .unwrappedRefOpener))
+                        nonTextDels.append((scanner.startIndex, .unwrappedRefOpener))
                     }
                     
                 case Codec.leftsqbck:
-                    delimiters.append((scanner.startIndex, .refOpener))
+                    nonTextDels.append((scanner.startIndex, .refOpener))
                     
                 case Codec.rightsqbck:
-                    delimiters.append((scanner.startIndex, .refCloser))
+                    nonTextDels.append((scanner.startIndex, .refCloser))
                     if scanner.pop(Codec.leftparen) {
-                        delimiters.append((scanner.startIndex, .refValueOpener))
+                        nonTextDels.append((scanner.startIndex, .refValueOpener))
                     }
                     
                 case Codec.leftparen:
-                    delimiters.append((scanner.startIndex, .leftParen))
+                    nonTextDels.append((scanner.startIndex, .leftParen))
                     
                 case Codec.rightparen:
-                    delimiters.append((scanner.startIndex, .rightParen))
+                    nonTextDels.append((scanner.startIndex, .rightParen))
                     
                 case Codec.backslash:
                     guard let el = scanner.peek() else {
@@ -99,7 +105,7 @@ extension MarkdownParser {
                         break
                     }
                     if Codec.isPunctuation(el) {
-                        delimiters.append((scanner.startIndex, .ignored))
+                        nonTextDels.append((scanner.startIndex, .ignored))
                         if el != Codec.backtick { _ = scanner.pop() }
                     }
                     
@@ -111,19 +117,19 @@ extension MarkdownParser {
             let isLastText = idx+1 < text.endIndex
             let offset = -(numberOfPreviousSpaces + ((potentialBackslashHardbreak && isLastText) ? 1 : 0))
             let lastIndex = view.index(scanner.startIndex, offsetBy: numericCast(offset))
-            delimiters.append((lastIndex, .end))
+            textDels.append((lastIndex, .end))
             
             if isLastText { // linefeed
                 if potentialBackslashHardbreak || numberOfPreviousSpaces >= 2 {
-                    delimiters.append((view.index(after: scanner.startIndex), .hardbreak))
+                    textDels.append((view.index(after: scanner.startIndex), .hardbreak))
                 }
                 else {
-                    delimiters.append((view.index(after: scanner.startIndex), .softbreak))
+                    textDels.append((view.index(after: scanner.startIndex), .softbreak))
                 }
             }
         }
         
-        return delimiters
+        return (nonTextDels, textDels)
     }
 }
 

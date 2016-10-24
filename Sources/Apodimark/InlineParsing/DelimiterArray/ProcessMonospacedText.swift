@@ -5,42 +5,48 @@
 
 extension MarkdownParser {
 
-    func processAllMonospacedText(_ delimiters: inout ArraySlice<Delimiter?>) -> [NonTextInlineNode<View>] {
-        var all: [NonTextInlineNode<View>] = []
+    func processAllMonospacedText(_ delimiters: inout [NonTextDelimiter?], appendingTo nodes: inout [NonTextInlineNode<View>]) {
         var start = delimiters.startIndex
-        while let (r, newStart) = processMonospacedText(&delimiters[start ..< delimiters.endIndex]) {
-            all.append(r)
+        while let (r, newStart) = processMonospacedText(&delimiters, indices: start ..< delimiters.endIndex) {
+            nodes.append(r)
             start = newStart
         }
-        return all
     }
 
-    func processMonospacedText(_ delimiters: inout ArraySlice<Delimiter?>) -> (NonTextInlineNode<View>, newStart: Int)? {
+    func processMonospacedText(_ delimiters: inout [NonTextDelimiter?], indices: CountableRange<Int>) -> (NonTextInlineNode<View>, newStart: Int)? {
 
         guard let (openingDelIdx, openingDel, closingDelIdx, closingDel, level) = {
-            () -> (Int, Delimiter, Int, Delimiter, Int32)? in
+            () -> (Int, NonTextDelimiter, Int, NonTextDelimiter, Int32)? in
             
-            var ignoring = false
-            
-            for i in delimiters.indices {
-                guard ignoring == false else {
-                    ignoring = false
-                    continue
-                }
+            var escaping: View.Index? = nil
+
+            for i in indices {
                 
                 guard let del = delimiters[i] else {
+                    escaping = nil
                     continue
                 }
                 
                 switch del.kind {
                 case .ignored:
-                    ignoring = true
+                    escaping = del.idx
                     
                 case .code(let level):
+                    defer { escaping = nil }
+                    var level = level
+                    if let escapingIdx = escaping, escapingIdx == view.index(before: del.idx) {
+                        level -= 1
+                        view.formIndex(after: &delimiters[i]!.idx)
+                    }
+                    guard level > 0 else {
+                        delimiters[i] = nil
+                        break
+                    }
                     guard let closingDelIdx = { () -> Int? in
-                        for j in i+1 ..< delimiters.endIndex {
-                            guard case .code(level)? = delimiters[j]?.kind else { continue }
-                            return j
+                        for j in i+1 ..< indices.upperBound {
+                            if case .code(level)? = delimiters[j]?.kind {
+                                return j
+                            }
                         }
                         return nil
                     }()
@@ -51,7 +57,7 @@ extension MarkdownParser {
                     return (i, delimiters[i]!, closingDelIdx, delimiters[closingDelIdx]!, level)
                     
                 default:
-                    break
+                    escaping = nil
                 }
             }
             return nil
@@ -61,10 +67,7 @@ extension MarkdownParser {
         }
   
         for i in openingDelIdx ... closingDelIdx {
-            switch delimiters[i]!.kind {
-            case .softbreak, .hardbreak, .start, .end: continue
-            default: delimiters[i] = nil
-            }
+            delimiters[i] = nil
         }
         
         return (

@@ -5,17 +5,15 @@
 
 extension MarkdownParser {
     
-    func processAllEmphases(_ delimiters: inout ArraySlice<Delimiter?>) -> [NonTextInlineNode<View>] {
-        var all: [NonTextInlineNode<View>] = []
-        var start = delimiters.startIndex
-        while let (r, newStart) = processEmphasis(&delimiters[start ..< delimiters.endIndex]) {
-            all.append(r)
+    func processAllEmphases(_ delimiters: inout [NonTextDelimiter?], indices: CountableRange<Int>, appendingTo nodes: inout Array<NonTextInlineNode<View>>) {
+        var start = indices.lowerBound
+        while let (r, newStart) = processEmphasis(&delimiters, indices: start ..< indices.upperBound) {
+            nodes.append(r)
             start = newStart
         }
-        return all
     }
 
-    fileprivate func processEmphasis(_ delimiters: inout ArraySlice<Delimiter?>) -> (NonTextInlineNode<View>, newStart: Int)? {
+    fileprivate func processEmphasis(_ delimiters: inout [NonTextDelimiter?], indices: CountableRange<Int>) -> (NonTextInlineNode<View>, newStart: Int)? {
         
         guard let (newStart, openingDelIdx, closingDelIdx) = {
             () -> (Int, Int, Int)? in
@@ -24,7 +22,7 @@ extension MarkdownParser {
             
             var firstOpeningEmph: Int? = nil
             
-            for i in delimiters.indices {
+            for i in indices {
                 guard let del = delimiters[i], case let .emph(kind, state, lvl) = del.kind else {
                     continue
                 }
@@ -52,7 +50,7 @@ extension MarkdownParser {
         }
         
         defer {
-            for idx in delimiters[openingDelIdx+1 ..< closingDelIdx].indices {
+            for idx in openingDelIdx+1 ..< closingDelIdx {
                 if case .emph? = delimiters[idx]?.kind {
                     delimiters[idx] = nil
                 }

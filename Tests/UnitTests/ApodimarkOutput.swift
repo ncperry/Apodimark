@@ -85,6 +85,8 @@ extension MarkdownBlock where
 
         case .softbreak:
             return "[softbreak]"
+        case .escapingBackslash:
+            return ""
         }
     }
 

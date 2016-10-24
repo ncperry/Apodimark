@@ -3,51 +3,47 @@
 //  Apodimark
 //
 
-extension MarkdownParser {
+struct TextInlineNodeIterator <View: BidirectionalCollection> : IteratorProtocol {
+    
+    typealias Delimiter = (idx: View.Index, kind: TextDelimiterKind)
+    
+    let view: View
+    let delimiters: [Delimiter?]
 
-
-    func processText(_ delimiters: [Delimiter?]) -> [TextInlineNode<View>] {
-        guard let first: Delimiter = {
-            for case let del? in delimiters {
-                return del
-            }
-            return nil
-        }()
-        else {
-            return []
-        }
-
-        var textNodes = [TextInlineNode<View>]()
-        var startViewIndex = first.idx
-
-        for case let del? in delimiters {
+    var startViewIndex: View.Index
+    var i: Int
+    
+    init(view: View, delimiters: [Delimiter?]) {
+        self.view = view
+        self.delimiters = delimiters
+        self.i = delimiters.startIndex
+        
+        self.startViewIndex = view.startIndex // invalid, but does not matter
+    }
+    
+    mutating func next() -> TextInlineNode<View>? {
+        
+        while i < delimiters.endIndex {
+            defer { i += 1 }
+            guard case let del? = delimiters[i] else { continue }
 
             switch del.kind {
             case .start:
                 startViewIndex = del.idx
                 
             case .end:
-                textNodes.append(TextInlineNode(kind: .text, start: startViewIndex, end: del.idx))
-                startViewIndex = del.idx
+                defer { startViewIndex = del.idx }
+                return TextInlineNode(kind: .text, start: startViewIndex, end: del.idx)
                 
             case .softbreak:
-                textNodes.append(TextInlineNode(kind: .softbreak, start: startViewIndex, end: del.idx))
-                startViewIndex = del.idx
+                defer { startViewIndex = del.idx }
+                return TextInlineNode(kind: .softbreak, start: startViewIndex, end: del.idx)
                 
             case .hardbreak:
-                textNodes.append(TextInlineNode(kind: .hardbreak, start: startViewIndex, end: del.idx))
-                startViewIndex = del.idx
-                
-            case .ignored:
-                textNodes.append(TextInlineNode(kind: .text, start: startViewIndex, end: view.index(before: del.idx)))
-                startViewIndex = del.idx
-                
-            default:
-                break
+                defer { startViewIndex = del.idx }
+                return TextInlineNode(kind: .hardbreak, start: startViewIndex, end: del.idx)
             }
         }
-
-        return textNodes
+        return nil
     }
 }
-

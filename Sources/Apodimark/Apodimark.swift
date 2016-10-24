@@ -71,11 +71,16 @@ public struct MonospacedTextInline <View: BidirectionalCollection> {
     public let markers: (Range<View.Index>, Range<View.Index>)
 }
 
+public struct EscapingBackslashInline <View: BidirectionalCollection> {
+    let index: View.Index
+}
+
 public indirect enum MarkdownInline <View: BidirectionalCollection> {
     case text(TextInline<View>)
     case reference(ReferenceInline<View>)
     case emphasis(EmphasisInline<View>)
     case monospacedText(MonospacedTextInline<View>)
+    case escapingBackslash(EscapingBackslashInline<View>)
     case softbreak(BreakInline<View>)
     case hardbreak(BreakInline<View>)
 }
@@ -249,6 +254,9 @@ extension MarkdownParser {
                     )
                     
                     nodes.append(.reference(inline))
+                
+                case .escapingBackslash:
+                    nodes.append(.escapingBackslash(.init(index: n.start)))
                 }
             }
         }

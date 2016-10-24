@@ -7,12 +7,17 @@ enum EmphasisKind {
     case asterisk, underscore
 }
 
-enum DelimiterKind <View: BidirectionalCollection> {
+enum TextDelimiterKind {
     case start              // start of line (used to ignore leading whitespace)
     case end                // end of line (used to ignore trailing whitespace)
 
-    case emph(EmphasisKind, DelimiterState, Int32)  // *
+    case softbreak
+    case hardbreak
+}
 
+enum NonTextDelimiterKind {
+    case emph(EmphasisKind, DelimiterState, Int32)  // *
+    
     case code(Int32)         // `
 
     case refOpener          // [
@@ -25,9 +30,6 @@ enum DelimiterKind <View: BidirectionalCollection> {
     case rightParen         // ) used to close a direct reference value definition
 
     case ignored            // (used for backslash escaping)
-
-    case softbreak
-    case hardbreak
 }
 
 

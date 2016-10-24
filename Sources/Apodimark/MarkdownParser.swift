@@ -14,7 +14,8 @@ final class MarkdownParser <View: BidirectionalCollection, Codec: MarkdownParser
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
-    typealias Delimiter = (idx: View.Index, kind: DelimiterKind<View>)
+    typealias TextDelimiter = (idx: View.Index, kind: TextDelimiterKind)
+    typealias NonTextDelimiter = (idx: View.Index, kind: NonTextDelimiterKind)
     
     let view: View
     var referenceDefinitions: [String: ReferenceDefinition]
