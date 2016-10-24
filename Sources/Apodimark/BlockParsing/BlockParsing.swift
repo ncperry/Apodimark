@@ -4,7 +4,7 @@
 //
 
 enum ListState {
-    case normal, followedByEmptyLine, closed
+    case normal, followedByEmptyLine, closed, lastLeafIsCodeBlock
 }
 
 enum AddLineResult {
@@ -17,7 +17,7 @@ extension MarkdownParser {
     func parseBlocks() {
         var scanner = Scanner(data: view)
         while case .some = scanner.peek() {
-            _ = add(line: MarkdownParser.parseLine(&scanner))
+            _ = add(line: MarkdownParser.parseLine(&scanner, context: .default))
             // TODO: handle different line endings than LF
             scanner.popUntil(Codec.linefeed)
             _ = scanner.pop(Codec.linefeed)
@@ -168,12 +168,12 @@ extension MarkdownParser {
 extension MarkdownParser {
     
     fileprivate func preparedLine(from initialLine: Line<View>, for list: ListNode<View>) -> Line<View>? {
-        guard list.state != .closed else {
-            return nil
-        }
         var line = initialLine
         guard !initialLine.kind.isEmpty() else {
             return line
+        }
+        guard list.state != .closed else {
+            return nil
         }
         guard !(initialLine.indent.level >= list.minimumIndent + TAB_INDENT && list._allowsLazyContinuations) else {
             line.indent.level -= list.minimumIndent
@@ -208,27 +208,44 @@ extension MarkdownParser {
         switch preparedLine.kind {
         
         case .empty:
-            
-            guard case .normal = list.state else {
-                guard case let lastLeaf = blockTree.buffer.last!.data,
-                      case let .fence(fenceNode) = lastLeaf
-                else {
-                    list.state = .closed
-                    list._allowsLazyContinuations = false
-                    return
-                }
-                _ = add(line: preparedLine, to: fenceNode)
-                return
-            }
+            list._allowsLazyContinuations = false
 
-            let itemContentLevel = listLevel.incremented().incremented()
-            guard let lastItemContent = blockTree.last(depthLevel: itemContentLevel) else {
-                return
+            switch list.state {
+
+            case .lastLeafIsCodeBlock:
+                // optimization to avoid deeply nested list + fence + empty lines worst case scenario
+                let lastLeaf = blockTree.buffer.last!.data
+                switch lastLeaf {
+                case .code(let c) : _ = add(line: preparedLine, to: c)
+                case .fence(let f): _ = add(line: preparedLine, to: f)
+                default:
+                    fatalError()
+                }
+
+            case .normal:
+                let itemContentLevel = listLevel.incremented().incremented()
+                let lastItemContent = blockTree.last(depthLevel: itemContentLevel)
+                
+                let result = lastItemContent.map { add(line: preparedLine, to: $0, depthLevel: itemContentLevel) } ?? .failure
+                list._allowsLazyContinuations = false
+                
+                let lastLeaf = blockTree.buffer.last!.data
+                switch lastLeaf {
+                case .fence, .code:
+                    list.state = .lastLeafIsCodeBlock
+                default:
+                    switch result {
+                    case .success: list.state = list.state == .normal ? .followedByEmptyLine : .closed
+                    case .failure: list.state = .closed
+                    }
+                }
+
+            case .followedByEmptyLine:
+                list.state = .closed
+            case .closed:
+                break
             }
-            list.state = .followedByEmptyLine
-            _ = add(line: preparedLine, to: lastItemContent, depthLevel: itemContentLevel)
-            list._allowsLazyContinuations = lastItemContent.allowsLazyContinuation()
-        
+            
         case .list(let kind, let rest) where preparedLine.indent.level < 0:
             list.state = .normal
             list.minimumIndent += preparedLine.indent.level + kind.width + 1

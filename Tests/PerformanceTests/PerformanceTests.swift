@@ -10,7 +10,7 @@ private func baseStringForTest(_ name: String, result: Bool = false) -> String {
 }
 
 private func testString(size: Int) -> String {
-    let base = baseStringForTest("mixed1")
+    let base = baseStringForTest("deeply-nested-lists")
     var s = ""
     while s.utf16.count < size {
         s += base

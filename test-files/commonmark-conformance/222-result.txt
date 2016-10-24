@@ -1,1 +1,4 @@
-Document { List[Bullet] { Item { Paragraph(Foo), Code[bar], }, }, Code[  baz], }
+Document { List[Bullet] { Item { Paragraph(Foo), Code[bar
+
+
+baz], }, }, }

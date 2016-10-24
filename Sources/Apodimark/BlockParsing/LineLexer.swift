@@ -88,7 +88,7 @@ extension MarkdownParser {
     /// - parameter scanner: a scanner whose `startIndex` points to the start of potential List line
     /// - parameter indent: the indent of the line being parsed
     /// - return: the parsed Line
-    fileprivate static func parseList(_ scanner: inout Scanner<View>, indent: Indent) -> Line<View> {
+    fileprivate static func parseList(_ scanner: inout Scanner<View>, indent: Indent, context: LineLexerContext<Codec>) -> Line<View> {
 
         let indexBeforeList = scanner.startIndex
         // let initialSubView = scanner
@@ -109,7 +109,7 @@ extension MarkdownParser {
             //  1234)
             //       |_<---
 
-            let rest = parseLine(&scanner)
+            let rest = parseLine(&scanner, context: context)
             return Line(.list(kind, rest), indent, indexBeforeList ..< scanner.startIndex)
         }
         catch ListParsingError.notAListMarker {
@@ -496,8 +496,19 @@ extension MarkdownParser {
 
         return Line(.reference(title, definition), indent, indexBeforeRefDef ..< scanner.startIndex)
     }
+}
 
-    static func parseLine(_ scanner: inout Scanner<View>) -> Line<View> {
+
+struct LineLexerContext <C: MarkdownParserCodec> {
+    var listKindBeingRead: C.CodeUnit?
+
+    static var `default`: LineLexerContext {
+        return .init(listKindBeingRead: nil)
+    }
+}
+
+extension MarkdownParser {
+    static func parseLine(_ scanner: inout Scanner<View>, context: LineLexerContext<Codec>) -> Line<View> {
         //      xxxxx
         // |_<--- (start of line)
 
@@ -527,7 +538,7 @@ extension MarkdownParser {
 
         case Codec.quote:
             _ = scanner.pop()!
-            let rest = parseLine(&scanner)
+            let rest = parseLine(&scanner, context: .default)
             return Line(.quote(rest), indent, indexAfterIndent ..< scanner.startIndex)
 
 
@@ -540,15 +551,17 @@ extension MarkdownParser {
 
 
         case Codec.hyphen, Codec.asterisk:
-            if case .some = try? readThematicBreak(&scanner, firstToken: firstToken) {
+            if firstToken != context.listKindBeingRead, case .some = try? readThematicBreak(&scanner, firstToken: firstToken) {
                 return Line(.thematicBreak, indent, indexAfterIndent ..< scanner.startIndex)
             } else {
-                return parseList(&scanner, indent: indent)
+                var context = context
+                context.listKindBeingRead = firstToken
+                return parseList(&scanner, indent: indent, context: context)
             }
 
 
         case Codec.plus, Codec.zero...Codec.nine:
-            return parseList(&scanner, indent: indent)
+            return parseList(&scanner, indent: indent, context: context)
 
 
         case Codec.hash:
