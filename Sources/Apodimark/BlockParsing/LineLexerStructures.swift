@@ -114,7 +114,7 @@ struct Indent {
 
 /// Structure representing a single line of the original document.
 /// It contains the kind of the line (empty, potential list, simply text, etc.)
-/// as well as its indent and a scanner on the text of the line.
+/// as well as its indent and its indices in the original collection.
 struct Line <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
     /// The kind of the line (quote, list, header, etc.)
     let kind: LineKind<View, RefDef>
@@ -122,7 +122,7 @@ struct Line <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol>
     /// The indent of the line
     var indent: Indent
 
-    // The scanner containing the text of the line. May or may not contain the indent
+    // The indices of the line in the original collection. May or may not contain the indent.
     var indices: Range<View.Index>
 
     init(_ kind: LineKind<View, RefDef>, _ indent: Indent, _ indices: Range<View.Index>) {

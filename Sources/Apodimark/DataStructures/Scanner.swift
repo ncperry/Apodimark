@@ -18,7 +18,7 @@
 
  As elements are read from the scanner, its `startIndex` advances.
  ```
- scanner.popWhile { $0 != 3 }
+ scanner.popWhile { $0 != 3 ? .pop : .stop }
  
  [1, 2, 4, 3, 0, 8, 9, 7, 2, 1]
           |_______|
@@ -47,16 +47,9 @@ struct Scanner <Data: BidirectionalCollection> {
     ///   * `startIndex` and `endIndex` are between `data.startIndex` and `data.endIndex` (included)
     ///   * `startIndex <= endIndex`
     init(data: Data, startIndex: Data.Index? = nil, endIndex: Data.Index? = nil) {
-        let startIndex = startIndex ?? data.startIndex
-        let endIndex = endIndex ?? data.endIndex
-
-        precondition(data.startIndex <= startIndex && startIndex <= data.endIndex)
-        precondition(data.startIndex <= endIndex && endIndex <= data.endIndex)
-        precondition(startIndex <= endIndex)
-
         self.data = data
-        self.startIndex = startIndex
-        self.endIndex = endIndex
+        self.startIndex = startIndex ?? data.startIndex
+        self.endIndex = endIndex ?? data.endIndex
     }
 }
 
@@ -71,8 +64,8 @@ extension Scanner {
     var indices: Range<Data.Index> { return startIndex ..< endIndex }
 
     /**
-     Read elements from the scanner while `predicate(element) == true`.
-     Does not pop the element for which `predicate` is `false`.
+     Read elements from the scanner while `predicate(element) == .pop`.
+     Does not pop the element for which `predicate` is `.stop`.
      
      If `predicate` throws an error, then the scanner is not modified.
      

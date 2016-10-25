@@ -16,9 +16,9 @@ enum TextDelKind {
 }
 
 enum NonTextDelKind {
-    case emph(EmphasisKind, DelimiterState, Int32)  // *
+    case emph(EmphasisKind, DelimiterState, Int32)  // run of * or _
     
-    case code(Int32)         // `
+    case code(Int32)         // run of `
 
     case refOpener          // [
     case unwrappedRefOpener // ![

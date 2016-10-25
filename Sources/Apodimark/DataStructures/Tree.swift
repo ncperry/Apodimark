@@ -23,7 +23,7 @@ fileprivate struct TreeNode <T> {
     let data: T
     var end: Int
     
-    init(data: T, end: Array<T>.Index) {
+    init(data: T, end: Tree<T>.Buffer.Index) {
         (self.data, self.end) = (data, end)
     }
 }
@@ -61,7 +61,7 @@ fileprivate struct TreeNode <T> {
  ```
  a-b-c-d-e-f-g-h-i-j-k-l-m-n-o
  ```
- This is the order by which the nodes were added to the tree.
+ This is always the order by which the nodes are added to the tree.
  
  The next node, `p`, can only be added to nodes in the
  last strand.
@@ -108,11 +108,13 @@ fileprivate struct TreeNode <T> {
  */
 final class Tree <T> {
     
+    fileprivate typealias Buffer = ContiguousArray<TreeNode<T>>
+    
     /// The underlying storage for the tree nodes.
-    fileprivate var buffer: [TreeNode<T>]
+    fileprivate var buffer: Buffer
     
     /// The indices of the nodes in the last strand
-    fileprivate var lastStrand: [Array<T>.Index]
+    fileprivate var lastStrand: [Buffer.Index]
     
     /// The last leaf of the tree
     var lastLeaf: T {
@@ -185,14 +187,16 @@ final class Tree <T> {
  */
 struct TreeBreadthFirstIterator <T>: IteratorProtocol, Sequence {
     
+    private typealias Buffer = Tree<T>.Buffer
+    
     /// The tree being traversed
     private let tree: Tree<T>
     
     /// The index past the last node of the level being visited
-    private let endIndex: Array<T>.Index
+    private let endIndex: Buffer.Index
     
     /// The index of the next node
-    private var index: Array<T>.Index
+    private var index: Buffer.Index
     
     fileprivate init(_ tree: Tree<T>) {
         (self.tree, self.endIndex) = (tree, tree.buffer.endIndex)
@@ -204,7 +208,7 @@ struct TreeBreadthFirstIterator <T>: IteratorProtocol, Sequence {
     /// - parameter tree:       the tree to traverse
     /// - parameter startIndex: the index of the first node to visit
     /// - parameter endIndex:   the index past the last node to visit
-    private init(_ tree: Tree<T>, startIndex: Array<T>.Index, endIndex: Array<T>.Index) {
+    private init(_ tree: Tree<T>, startIndex: Buffer.Index, endIndex: Buffer.Index) {
         (self.tree, self.endIndex) = (tree, endIndex)
         self.index = startIndex
     }
@@ -248,7 +252,7 @@ struct TreeBreadthFirstIterator <T>: IteratorProtocol, Sequence {
 // This should be an extension of Tree<MarkdownParser.Block> but Swift isn’t ready for this
 extension MarkdownParser {
     
-    private func appendStrand(line: Line, previousEnd: Int) {
+    private func appendStrand(line: Line, previousEnd: Tree<Block>.Buffer.Index) {
         
         func append(_ block: Block) {
             blockTree.buffer.append(.init(data: block, end: previousEnd))
