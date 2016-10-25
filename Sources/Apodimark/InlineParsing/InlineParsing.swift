@@ -11,7 +11,10 @@ extension MarkdownParser {
     
     func parseInlines(_ text: [Range<View.Index>]) -> Tree<InlineNode<View>> {
         
-        var (nonTextDels, textDels) = delimiters(in: text)
+        let textDels: [TextDelimiter]
+        var nonTextDels: [NonTextDelimiter?]
+        (nonTextDels, textDels) = delimiters(in: text)
+        
         guard !textDels.isEmpty else { return .init() }
         
         var nodes: [NonTextInlineNode<View>] = []
@@ -45,7 +48,7 @@ extension MarkdownParser {
             
             textDels.append((scanner.startIndex, .start))
             
-            while let token = scanner.pop() {
+            while case let token? = scanner.pop() {
                 let curTokenKind = MarkdownParser.tokenKind(token)
                 defer { prevTokenKind = curTokenKind }
                 
@@ -56,7 +59,7 @@ extension MarkdownParser {
                     defer { numberOfPreviousSpaces = 0 }
                 }
                 
-                // TODO evaluate if necessary, this is a micro-optimization
+                // avoid going into the switch if token is not punctuation (optimization)
                 guard case .punctuation = curTokenKind else {
                     continue
                 }
@@ -100,12 +103,12 @@ extension MarkdownParser {
                     nonTextDels.append((scanner.startIndex, .rightParen))
                     
                 case Codec.backslash:
-                    guard let el = scanner.peek() else {
+                    guard case let el? = scanner.peek() else {
                         potentialBackslashHardbreak = true
                         break
                     }
                     if Codec.isPunctuation(el) {
-                        nonTextDels.append((scanner.startIndex, .ignored))
+                        nonTextDels.append((scanner.startIndex, .escapingBackslash))
                         if el != Codec.backtick { _ = scanner.pop() }
                     }
                     

@@ -33,7 +33,7 @@ extension MarkdownParser {
     /// - returns: the kind of the list marker
     fileprivate static func readListMarker(_ scanner: inout Scanner<View>) throws -> ListKind {
 
-        guard let firstToken = scanner.pop() else {
+        guard case let firstToken? = scanner.pop() else {
             preconditionFailure()
         }
 
@@ -53,7 +53,7 @@ extension MarkdownParser {
         var length = 1
         try scanner.popWhile { token in
 
-            guard let token = token, token != Codec.linefeed else {
+            guard case let token? = token, token != Codec.linefeed else {
                 throw ListParsingError.notAListMarker // e.g. 1234 followed by end of line / end of string
             }
 
@@ -100,7 +100,7 @@ extension MarkdownParser {
             //  1234)
             //      |_<---
 
-            guard let token = scanner.pop(ifNot: Codec.linefeed) else {
+            guard case let token? = scanner.pop(ifNot: Codec.linefeed) else {
                 throw ListParsingError.emptyListItem(kind)
             }
             guard token == Codec.space else {
@@ -148,7 +148,7 @@ extension MarkdownParser {
         var state = HeaderTextReadingState.textSpaces
         var end = scanner.startIndex
 
-        while let token = scanner.pop(ifNot: Codec.linefeed) {
+        while case let token? = scanner.pop(ifNot: Codec.linefeed) {
             switch state {
 
             case .text:
@@ -198,7 +198,7 @@ extension MarkdownParser {
             var level: Int32 = 0
             try scanner.popWhile { token in
 
-                guard let token = token else {
+                guard case let token? = token else {
                     throw HeaderParsingError.emptyHeader(level)
                 }
 
@@ -273,7 +273,7 @@ extension MarkdownParser {
         //     |_<---
         var end = scanner.startIndex
 
-        while let token = scanner.pop(ifNot: Codec.linefeed) {
+        while case let token? = scanner.pop(ifNot: Codec.linefeed) {
             switch token {
 
             case Codec.space:
@@ -316,7 +316,7 @@ extension MarkdownParser {
             var level: Int32 = 1
             try scanner.popWhile { token in
 
-                guard let token = token else {
+                guard case let token? = token else {
                     throw FenceParsingError.emptyFence(kind, level)
                 }
 
@@ -397,7 +397,7 @@ extension MarkdownParser {
         var level = 0
         try scanner.popWhile { token in
 
-            guard let token = token, token != Codec.linefeed else {
+            guard case let token? = token, token != Codec.linefeed else {
                 guard level >= 3 else {
                     throw NotAThematicBreakError() // e.g. * * -> not enough stars -> not a thematic break
                 }
@@ -447,7 +447,7 @@ extension MarkdownParser {
         var escapeNext = false
         try scanner.popWhile { (token: Codec.CodeUnit?) throws -> PopOrStop in
 
-            guard let token = token, token != Codec.linefeed else {
+            guard case let token? = token, token != Codec.linefeed else {
                 throw NotAReferenceDefinitionError()
             }
 
@@ -515,11 +515,11 @@ extension MarkdownParser {
         var indent = Indent()
         scanner.popWhile { (token: Codec.CodeUnit?) -> PopOrStop in
 
-            guard let token = token else {
+            guard case let token? = token else {
                 return .stop
             }
 
-            guard let indentKind = IndentKind(token, codec: Codec.self) else {
+            guard case let indentKind? = IndentKind(token, codec: Codec.self) else {
                 return .stop
             }
 
@@ -530,7 +530,7 @@ extension MarkdownParser {
         //       xxxx
         //      |_<--- (after indent)
 
-        guard let firstToken = scanner.peek() else {
+        guard case let firstToken? = scanner.peek() else {
             return Line(.empty, Indent(), scanner.indices)
         }
 
@@ -543,7 +543,7 @@ extension MarkdownParser {
 
 
         case Codec.underscore:
-            guard let _ = try? readThematicBreak(&scanner, firstToken: firstToken) else {
+            guard case .some = try? readThematicBreak(&scanner, firstToken: firstToken) else {
                 scanner.popUntil(Codec.linefeed)
                 return Line(.text, indent, indexAfterIndent ..< scanner.startIndex)
             }
@@ -577,7 +577,7 @@ extension MarkdownParser {
 
 
         case Codec.leftsqbck:
-            guard let line = try? parseReferenceDefinition(&scanner, indent: indent) else {
+            guard case let line? = try? parseReferenceDefinition(&scanner, indent: indent) else {
                 scanner.popUntil(Codec.linefeed)
                 return Line(.text, indent, indexAfterIndent ..< scanner.startIndex)
             }

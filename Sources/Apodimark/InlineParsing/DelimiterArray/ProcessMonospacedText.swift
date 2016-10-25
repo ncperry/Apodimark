@@ -22,19 +22,19 @@ extension MarkdownParser {
 
             for i in indices {
                 
-                guard let del = delimiters[i] else {
+                guard case let del? = delimiters[i] else {
                     escaping = nil
                     continue
                 }
                 
                 switch del.kind {
-                case .ignored:
+                case .escapingBackslash:
                     escaping = del.idx
                     
                 case .code(let level):
                     defer { escaping = nil }
                     var level = level
-                    if let escapingIdx = escaping, escapingIdx == view.index(before: del.idx) {
+                    if case let escapingIdx? = escaping, escapingIdx == view.index(before: del.idx) {
                         level -= 1
                         view.formIndex(after: &delimiters[i]!.idx)
                     }

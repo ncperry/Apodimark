@@ -5,7 +5,7 @@ extension MarkdownParser {
         let tree = Tree<InlineNode<View>>()
        
         var builder = InlineTreeBuilder(text, nonText, view, tree)
-        while let (n, level) = builder.next() {
+        while case let (n, level)? = builder.next() {
             tree.append(n, depthLevel: level)
         }
         

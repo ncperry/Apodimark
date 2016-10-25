@@ -29,7 +29,7 @@ enum NonTextDelimiterKind {
     case leftParen          // ( used to allow pair of brackets in direct reference value definition. e.g. [link]((here))
     case rightParen         // ) used to close a direct reference value definition
 
-    case ignored            // (used for backslash escaping)
+    case escapingBackslash  // \ followed by punctuation
 }
 
 

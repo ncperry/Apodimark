@@ -21,11 +21,11 @@ extension MarkdownParser {
             var opener: (index: Int, del: NonTextDelimiter, kind: ReferenceKind)?
             
             for i in indices {
-                guard let del = delimiters[i] else { continue }
+                guard case let del? = delimiters[i] else { continue }
     
                 switch del.kind {
                 case .refCloser:
-                    if let o = opener {
+                    if case let o? = opener {
                         return (firstOpeningReferenceIdx!, o.index, o.del, i, del, o.kind)
                     }
                     
@@ -63,8 +63,9 @@ extension MarkdownParser {
                 delimiters[nextDelIdx] = nil
                 guard let (valueCloserDelIdx, valueCloserDel) = { () -> (Int, NonTextDelimiter)? in
                     for i in nextDelIdx ..< indices.upperBound {
-                        guard let del = delimiters[i] else { continue }
-                        if case .rightParen = del.kind { return (i, del) }
+                        if case let del? = delimiters[i], case .rightParen = del.kind {
+                            return (i, del)
+                        }
                     }
                     return nil
                 }() else {
@@ -86,8 +87,9 @@ extension MarkdownParser {
                 delimiters[nextDelIdx] = nil
                 guard let (aliasCloserIdx, aliasCloserDel) = { () -> (Int, NonTextDelimiter)? in
                     for i in nextDelIdx ..< indices.upperBound {
-                        guard let del = delimiters[i] else { continue }
-                        if case .refCloser = del.kind { return (i, del) }
+                        if case let del? = delimiters[i], case .refCloser = del.kind {
+                            return (i, del)
+                        }
                     }
                     return nil
                 }()
@@ -96,7 +98,7 @@ extension MarkdownParser {
                 }
                 
                 let s = Codec.string(fromTokens: view[nextDel!.idx ..< view.index(before: aliasCloserDel.idx)]).lowercased()
-                guard let definition = referenceDefinitions[s] else {
+                guard case let definition? = referenceDefinitions[s] else {
                     var newNextDel = nextDel!
                     newNextDel.kind = .refOpener
                     delimiters[nextDelIdx] = newNextDel
@@ -113,7 +115,7 @@ extension MarkdownParser {
                 
             default:
                 let s = Codec.string(fromTokens: view[openingTitleDel.idx ..< view.index(before: closingTitleDel.idx)]).lowercased()
-                guard let definition = referenceDefinitions[s] else {
+                guard case let definition? = referenceDefinitions[s] else {
                     return nil
                 }
                 
@@ -141,9 +143,9 @@ extension MarkdownParser {
         let delimiterRangeForSpan = openingTitleDelIdx ... spanEndDelIdx
         
         for i in delimiterRangeForTitle {
-            guard let del = delimiters[i] else { continue }
+            guard case let del? = delimiters[i] else { continue }
             switch del.kind {
-            case .ignored: continue
+            case .escapingBackslash: continue
             default: delimiters[i] = nil
             }
         }

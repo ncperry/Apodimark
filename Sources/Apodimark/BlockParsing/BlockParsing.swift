@@ -199,7 +199,7 @@ extension MarkdownParser {
 
             case .lastLeafIsCodeBlock:
                 // optimization to avoid deeply nested list + fence + empty lines worst case scenario
-                let lastLeaf = blockTree.buffer.last!.data
+                let lastLeaf = blockTree.lastLeaf
                 switch lastLeaf {
                 case .code(let c) : _ = add(line: preparedLine, to: c)
                 case .fence(let f): _ = add(line: preparedLine, to: f)
@@ -213,7 +213,7 @@ extension MarkdownParser {
                 
                 let result = lastItemContent.map { add(line: preparedLine, to: $0, depthLevel: itemContentLevel) } ?? .failure
                 
-                let lastLeaf = blockTree.buffer.last!.data
+                let lastLeaf = blockTree.lastLeaf
                 switch lastLeaf {
                 case .fence, .code:
                     list.state = .lastLeafIsCodeBlock
@@ -257,7 +257,7 @@ extension MarkdownParser {
     }
     
     fileprivate func add(line: Line<View>, to list: ListNode<View>, listLevel: DepthLevel) -> AddLineResult {
-        guard let line = preparedLine(from: line, for: list) else {
+        guard case let line? = preparedLine(from: line, for: list) else {
             return .failure
         }
         addPreparedLine(line, to: list, listLevel: listLevel)

@@ -23,7 +23,7 @@ extension MarkdownParser {
             var firstOpeningEmph: Int? = nil
             
             for i in indices {
-                guard let del = delimiters[i], case let .emph(kind, state, lvl) = del.kind else {
+                guard case let .emph(kind, state, level)? = delimiters[i]?.kind else {
                     continue
                 }
                 if state.contains(.closing), let fstDelIdx = (kind == .underscore ? openingEmph.underscore : openingEmph.asterisk) {
