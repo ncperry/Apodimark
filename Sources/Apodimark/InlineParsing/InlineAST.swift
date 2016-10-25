@@ -52,14 +52,6 @@ fileprivate struct InlineTreeBuilder <View: BidirectionalCollection, RefDef: Ref
 
     mutating func next() -> (Node, DepthLevel)? {
 
-        let parents = sequence(state: tryLevel) { [tree] (lvl: inout DepthLevel) -> (NonText, DepthLevel)? in
-            guard case let .nonText(parent)? = tree.last(depthLevel: lvl.decremented()) else {
-                return nil
-            }
-            defer { lvl = lvl.decremented() }
-            return (parent, lvl)
-        }
-        
         (e1, e2) = (e1 ?? texts.next(), e2 ?? nonTexts.next())
         
         guard case let (node?, newE1, newE2, insertLevel) = { () -> (Node?, Text?, NonText?, DepthLevel) in
@@ -69,6 +61,13 @@ fileprivate struct InlineTreeBuilder <View: BidirectionalCollection, RefDef: Ref
             }
 
             var insertionLevel = tryLevel
+            let parents = sequence(state: tryLevel) { [tree] (lvl: inout DepthLevel) -> (NonText, DepthLevel)? in
+                guard case let .nonText(parent)? = tree.last(depthLevel: lvl.decremented()) else {
+                    return nil
+                }
+                defer { lvl = lvl.decremented() }
+                return (parent, lvl)
+            }
             for (parent, level) in parents {
                 let parentContent = parent.contentRange(inView: view)
                 
