@@ -7,13 +7,12 @@ extension MarkdownParser {
     
     func processAllEmphases(_ delimiters: inout [NonTextDel?], indices: CountableRange<Int>, appendingTo nodes: inout [NonTextInline]) {
         var start = indices.lowerBound
-        while let (r, newStart) = processEmphasis(&delimiters, indices: start ..< indices.upperBound) {
-            nodes.append(r)
+        while case let newStart? = processEmphasis(&delimiters, indices: start ..< indices.upperBound, appendingTo: &nodes) {
             start = newStart
         }
     }
 
-    fileprivate func processEmphasis(_ delimiters: inout [NonTextDel?], indices: CountableRange<Int>) -> (NonTextInline, newStart: Int)? {
+    fileprivate func processEmphasis(_ delimiters: inout [NonTextDel?], indices: CountableRange<Int>, appendingTo nodes: inout [NonTextInline]) -> Int? {
         
         guard let (newStart, openingDelIdx, closingDelIdx) = {
             () -> (Int, Int, Int)? in
@@ -62,40 +61,38 @@ extension MarkdownParser {
         case .equal:
             delimiters[openingDelIdx] = nil
             delimiters[closingDelIdx] = nil
-            return (
-                NonTextInlineNode(
-                    kind: .emphasis(l1),
-                    start: view.index(openingDel.idx, offsetBy: numericCast(-l1)),
-                    end: closingDel.idx),
-                newStart
-            )
+            nodes.append(.init(
+                kind: .emphasis(l1),
+                start: view.index(openingDel.idx, offsetBy: numericCast(-l1)),
+                end: closingDel.idx
+            ))
+            return newStart
             
         case .lessThan:
             delimiters[openingDelIdx] = nil
             delimiters[closingDelIdx]!.kind = .emph(kind, state2, l2 - l1)
             let startOffset = -l1
             let endOffset = -(l2 - l1)
-            return (
-                NonTextInlineNode(
-                    kind: .emphasis(l1),
-                    start: view.index(openingDel.idx, offsetBy: numericCast(startOffset)),
-                    end: view.index(closingDel.idx, offsetBy: numericCast(endOffset))),
-                newStart
-            )
+            
+            nodes.append(.init(
+                kind: .emphasis(l1),
+                start: view.index(openingDel.idx, offsetBy: numericCast(startOffset)),
+                end: view.index(closingDel.idx, offsetBy: numericCast(endOffset))
+            ))
+            return newStart
             
             
         case .greaterThan:
             delimiters[closingDelIdx] = nil
             view.formIndex(&delimiters[openingDelIdx]!.idx, offsetBy: numericCast(-l2))
             delimiters[openingDelIdx]!.kind = .emph(kind, state1, l1 - l2)
-            return (
-                NonTextInlineNode(
-                    kind: .emphasis(l2),
-                    start: view.index(openingDel.idx, offsetBy: numericCast(-l2)),
-                    end: closingDel.idx
-                ),
-                newStart
-            )
+            
+            nodes.append(.init(
+                kind: .emphasis(l2),
+                start: view.index(openingDel.idx, offsetBy: numericCast(-l2)),
+                end: closingDel.idx
+            ))
+            return newStart
         }
     }
 }
