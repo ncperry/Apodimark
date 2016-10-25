@@ -18,7 +18,8 @@ extension MarkdownListKind: CustomStringConvertible {
 extension MarkdownBlock where
     View.Iterator.Element: Comparable & Hashable,
     View.SubSequence: Collection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
+    View.SubSequence.Iterator.Element == View.Iterator.Element,
+    RefDef: CustomStringConvertible
 {
     typealias Token = View.Iterator.Element
 
@@ -32,10 +33,10 @@ extension MarkdownBlock where
         }
     }
 
-    static func combineNodeOutput <Codec: MarkdownParserCodec> (source: View, codec: Codec.Type) -> (String, MarkdownInline<View>) -> String
+    static func combineNodeOutput <Codec: MarkdownParserCodec> (source: View, codec: Codec.Type) -> (String, MarkdownInline<View, RefDef>) -> String
         where Codec.CodeUnit == Token
     {
-        return { (acc: String, cur: MarkdownInline<View>) -> String in
+        return { (acc: String, cur: MarkdownInline<View, RefDef>) -> String in
             let appending = output(node: cur, source: source, codec: Codec.self)
             guard !appending.isEmpty else { return acc }
             return acc + appending
@@ -47,13 +48,13 @@ extension MarkdownBlock where
     {
         return nodes.reduce("Document { ", combineNodeOutput(source: source, codec: Codec.self)) + "}"
     }
-    static func output <Codec: MarkdownParserCodec> (nodes: [MarkdownInline<View>], source: View, codec: Codec.Type) -> String
+    static func output <Codec: MarkdownParserCodec> (nodes: [MarkdownInline<View, RefDef>], source: View, codec: Codec.Type) -> String
         where Codec.CodeUnit == Token
     {
         return nodes.reduce("", combineNodeOutput(source: source, codec: Codec.self))
     }
 
-    static func output <Codec: MarkdownParserCodec> (node: MarkdownInline<View>, source: View, codec: Codec.Type) -> String
+    static func output <Codec: MarkdownParserCodec> (node: MarkdownInline<View, RefDef>, source: View, codec: Codec.Type) -> String
         where Codec.CodeUnit == Token
     {
         switch node {

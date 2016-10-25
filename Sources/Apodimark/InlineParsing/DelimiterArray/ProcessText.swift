@@ -5,7 +5,7 @@
 
 struct TextInlineNodeIterator <View: BidirectionalCollection> : IteratorProtocol {
     
-    typealias Delimiter = (idx: View.Index, kind: TextDelimiterKind)
+    typealias Delimiter = (idx: View.Index, kind: TextDelKind)
     
     let view: View
     let delimiters: [Delimiter?]

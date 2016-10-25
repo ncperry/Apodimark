@@ -5,7 +5,7 @@
 
 extension MarkdownParser {
     
-    func processAllEmphases(_ delimiters: inout [NonTextDelimiter?], indices: CountableRange<Int>, appendingTo nodes: inout Array<NonTextInlineNode<View>>) {
+    func processAllEmphases(_ delimiters: inout [NonTextDel?], indices: CountableRange<Int>, appendingTo nodes: inout [NonTextInline]) {
         var start = indices.lowerBound
         while let (r, newStart) = processEmphasis(&delimiters, indices: start ..< indices.upperBound) {
             nodes.append(r)
@@ -13,7 +13,7 @@ extension MarkdownParser {
         }
     }
 
-    fileprivate func processEmphasis(_ delimiters: inout [NonTextDelimiter?], indices: CountableRange<Int>) -> (NonTextInlineNode<View>, newStart: Int)? {
+    fileprivate func processEmphasis(_ delimiters: inout [NonTextDel?], indices: CountableRange<Int>) -> (NonTextInline, newStart: Int)? {
         
         guard let (newStart, openingDelIdx, closingDelIdx) = {
             () -> (Int, Int, Int)? in

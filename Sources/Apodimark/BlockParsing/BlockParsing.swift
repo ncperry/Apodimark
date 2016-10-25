@@ -23,10 +23,8 @@ extension MarkdownParser {
             _ = scanner.pop(Codec.linefeed)
         }
         
-        for case .referenceDefinition(let ref) in blockTree.buffer.lazy.map({ $0.data })
-            where referenceDefinitions[ref.title] == nil
-        {
-            referenceDefinitions[ref.title] = ref.definition
+        for case .referenceDefinition(let ref) in blockTree.buffer.lazy.map({ $0.data }) {
+            referenceDefinitions.add(key: ref.title, value: ref.definition)
         }
     }
 }
@@ -44,7 +42,7 @@ extension BlockNode {
 
 extension MarkdownParser {
     
-    fileprivate func add(line: Line<View>) {
+    fileprivate func add(line: Line) {
         let last = blockTree.last(depthLevel: .root)
         
         let addResult = last.map({ add(line: line, to: $0, depthLevel: .root) }) ?? .failure
@@ -54,7 +52,7 @@ extension MarkdownParser {
         }
     }
     
-    fileprivate func add(line: Line<View>, to block: BlockNode<View>, depthLevel: DepthLevel) -> AddLineResult {
+    fileprivate func add(line: Line, to block: Block, depthLevel: DepthLevel) -> AddLineResult {
         switch block {
         case .paragraph(let x):
             return add(line: line, to: x)
@@ -80,7 +78,7 @@ extension MarkdownParser {
 
 // PARAGRAPH
 extension MarkdownParser {
-    fileprivate func add(line: Line<View>, to paragraph: ParagraphNode<View>) -> AddLineResult {
+    fileprivate func add(line: Line, to paragraph: ParagraphNode<View>) -> AddLineResult {
         
         guard !paragraph.closed else { return .failure }
         
@@ -104,7 +102,7 @@ extension MarkdownParser {
 
 // QUOTE
 extension MarkdownParser {
-    fileprivate func directlyAddLine(line: Line<View>, to quote: QuoteNode<View>, quoteLevel: DepthLevel) {
+    fileprivate func directlyAddLine(line: Line, to quote: QuoteNode<View>, quoteLevel: DepthLevel) {
         let quoteContentLevel = quoteLevel.incremented()
 
         let last = blockTree.last(depthLevel: quoteContentLevel)!
@@ -115,7 +113,7 @@ extension MarkdownParser {
         }
     }
     
-    fileprivate func add(line: Line<View>, to quote: QuoteNode<View>, quoteLevel: DepthLevel) -> AddLineResult {
+    fileprivate func add(line: Line, to quote: QuoteNode<View>, quoteLevel: DepthLevel) -> AddLineResult {
         
         guard !quote.closed else { return .failure }
 
@@ -152,7 +150,7 @@ extension MarkdownParser {
 // LIST
 extension MarkdownParser {
     
-    fileprivate func preparedLine(from initialLine: Line<View>, for list: ListNode<View>) -> Line<View>? {
+    fileprivate func preparedLine(from initialLine: Line, for list: ListNode<View>) -> Line? {
         var line = initialLine
         guard !initialLine.kind.isEmpty() else {
             return line
@@ -190,7 +188,7 @@ extension MarkdownParser {
         }
     }
 
-    fileprivate func addPreparedLine(_ preparedLine: Line<View>, to list: ListNode<View>, listLevel: DepthLevel) {
+    fileprivate func addPreparedLine(_ preparedLine: Line, to list: ListNode<View>, listLevel: DepthLevel) {
         
         switch preparedLine.kind {
         
@@ -256,7 +254,7 @@ extension MarkdownParser {
         }
     }
     
-    fileprivate func add(line: Line<View>, to list: ListNode<View>, listLevel: DepthLevel) -> AddLineResult {
+    fileprivate func add(line: Line, to list: ListNode<View>, listLevel: DepthLevel) -> AddLineResult {
         guard case let line? = preparedLine(from: line, for: list) else {
             return .failure
         }
@@ -267,7 +265,7 @@ extension MarkdownParser {
 
 // FENCE
 extension MarkdownParser {
-    fileprivate func add(line: Line<View>, to fence: FenceNode<View>) -> AddLineResult {
+    fileprivate func add(line: Line, to fence: FenceNode<View>) -> AddLineResult {
         
         guard line.indent.level >= 0 && !fence.closed else {
             return .failure
@@ -291,7 +289,7 @@ extension MarkdownParser {
 
 // CODE BLOCK
 extension MarkdownParser {
-    fileprivate func add(line: Line<View>, to code: CodeNode<View>) -> AddLineResult {
+    fileprivate func add(line: Line, to code: CodeNode<View>) -> AddLineResult {
         switch line.kind {
             
         case .empty:

@@ -5,7 +5,7 @@
 
 extension MarkdownParser {
 
-    func processAllEscapingBackslashes(_ delimiters: [NonTextDelimiter?], appendingTo nodes: inout [NonTextInlineNode<View>]) {
+    func processAllEscapingBackslashes(_ delimiters: [NonTextDel?], appendingTo nodes: inout [NonTextInline]) {
         for case (let idx, .escapingBackslash)? in delimiters {
             nodes.append(.init(
                 kind: .escapingBackslash,

@@ -9,15 +9,15 @@ extension NonTextInlineNode {
 
 extension MarkdownParser {
     
-    func parseInlines(_ text: [Range<View.Index>]) -> Tree<InlineNode<View>> {
+    func parseInlines(_ text: [Range<View.Index>]) -> Tree<Inline> {
         
-        let textDels: [TextDelimiter]
-        var nonTextDels: [NonTextDelimiter?]
+        let textDels: [TextDel]
+        var nonTextDels: [NonTextDel?]
         (nonTextDels, textDels) = delimiters(in: text)
         
         guard !textDels.isEmpty else { return .init() }
         
-        var nodes: [NonTextInlineNode<View>] = []
+        var nodes: [NonTextInline] = []
         processAllMonospacedText(&nonTextDels, appendingTo: &nodes)
         processAllReferences(&nonTextDels, appendingTo: &nodes)
         processAllEmphases(&nonTextDels, indices: nonTextDels.indices, appendingTo: &nodes)
@@ -30,10 +30,10 @@ extension MarkdownParser {
         return makeAST(text: textNodes, nonText: nodes)
     }
 
-    private func delimiters(in text: [Range<View.Index>]) -> ([NonTextDelimiter?], [TextDelimiter]) {
+    private func delimiters(in text: [Range<View.Index>]) -> ([NonTextDel?], [TextDel]) {
         
-        var nonTextDels: [NonTextDelimiter?] = []
-        var textDels: [TextDelimiter] = []
+        var nonTextDels: [NonTextDel?] = []
+        var textDels: [TextDel] = []
 
         var scanner = Scanner(data: view)
         

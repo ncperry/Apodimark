@@ -14,13 +14,13 @@ public enum ReferenceKind {
     }
 }
 
-enum InlineNode <View: BidirectionalCollection> {
+enum InlineNode <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
     case text(TextInlineNode<View>)
-    case nonText(NonTextInlineNode<View>)
+    case nonText(NonTextInlineNode<View, RefDef>)
 }
 
-enum NonTextInlineNodeKind <View: BidirectionalCollection> {
-    indirect case reference(ReferenceKind, title: Range<View.Index>, definition: ReferenceDefinition)
+enum NonTextInlineNodeKind <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+    indirect case reference(ReferenceKind, title: Range<View.Index>, definition: RefDef)
     case code(Int32)
     case emphasis(Int32)
     case escapingBackslash
@@ -39,9 +39,9 @@ struct TextInlineNode <View: BidirectionalCollection> {
     var end: View.Index
 }
 
-struct NonTextInlineNode <View: BidirectionalCollection> {
+struct NonTextInlineNode <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
 
-    let kind: NonTextInlineNodeKind<View>
+    let kind: NonTextInlineNodeKind<View, RefDef>
     var start: View.Index
     var end: View.Index
 

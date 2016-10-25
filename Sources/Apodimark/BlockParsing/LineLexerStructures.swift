@@ -54,15 +54,15 @@ func ~= (lhs: ListKind, rhs: ListKind) -> Bool {
 }
 
 /// The kind of a line
-indirect enum LineKind <View: BidirectionalCollection> {
-    case list(ListKind, Line<View>)
-    case quote(Line<View>)
+indirect enum LineKind <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+    case list(ListKind, Line<View, RefDef>)
+    case quote(Line<View, RefDef>)
     case text
     case header(Range<View.Index>, Int32)
     case fence(FenceKind, Range<View.Index>, Int32)
     case thematicBreak
     case empty
-    case reference(String, ReferenceDefinition)
+    case reference(String, RefDef)
 
     /// Return true iff `self` is equal to .empty
     func isEmpty() -> Bool {
@@ -115,9 +115,9 @@ struct Indent {
 /// Structure representing a single line of the original document.
 /// It contains the kind of the line (empty, potential list, simply text, etc.)
 /// as well as its indent and a scanner on the text of the line.
-struct Line <View: BidirectionalCollection> {
+struct Line <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
     /// The kind of the line (quote, list, header, etc.)
-    let kind: LineKind<View>
+    let kind: LineKind<View, RefDef>
 
     /// The indent of the line
     var indent: Indent
@@ -125,13 +125,13 @@ struct Line <View: BidirectionalCollection> {
     // The scanner containing the text of the line. May or may not contain the indent
     var indices: Range<View.Index>
 
-    init(_ kind: LineKind<View>, _ indent: Indent, _ indices: Range<View.Index>) {
+    init(_ kind: LineKind<View, RefDef>, _ indent: Indent, _ indices: Range<View.Index>) {
         (self.kind, self.indent, self.indices) = (kind, indent, indices)
     }
 }
 
 extension MarkdownParser {
-    func restoreIndentInLine(_ line: inout Line<View>) {
+    func restoreIndentInLine(_ line: inout Line) {
         var indent = line.indent.level
         var i = line.indices.lowerBound
         while indent > 0 {

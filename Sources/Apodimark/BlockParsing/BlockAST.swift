@@ -1,5 +1,5 @@
 
-enum BlockNode <View: BidirectionalCollection> {
+enum BlockNode <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
     case paragraph(ParagraphNode<View>)
     case header(HeaderNode<View>)
     case quote(QuoteNode<View>)
@@ -8,7 +8,7 @@ enum BlockNode <View: BidirectionalCollection> {
     case fence(FenceNode<View>)
     case code(CodeNode<View>)
     case thematicBreak(ThematicBreakNode<View>)
-    case referenceDefinition(ReferenceDefinitionNode<View>)
+    case referenceDefinition(ReferenceDefinitionNode<View, RefDef>)
 }
 
 final class ParagraphNode <View: BidirectionalCollection> {
@@ -91,20 +91,20 @@ final class ThematicBreakNode <View: BidirectionalCollection> {
     }
 }
 
-final class ReferenceDefinitionNode <View: BidirectionalCollection> {
+final class ReferenceDefinitionNode <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
     let title: String
-    let definition: ReferenceDefinition
+    let definition: RefDef
     
-    init(title: String, definition: ReferenceDefinition) {
+    init(title: String, definition: RefDef) {
         (self.title, self.definition) = (title, definition)
     }
 }
 
 extension MarkdownParser {
     
-    private func appendStrand(line: Line<View>, previousEnd: Int) {
+    private func appendStrand(line: Line, previousEnd: Int) {
         
-        func append(_ block: BlockNode<View>) {
+        func append(_ block: Block) {
             blockTree.buffer.append(.init(data: block, end: previousEnd))
         }
         
@@ -171,7 +171,7 @@ extension MarkdownParser {
         }
     }
 
-    func appendStrand(from line: Line<View>, level: DepthLevel) {
+    func appendStrand(from line: Line, level: DepthLevel) {
         let prevCount = blockTree.buffer.count
         appendStrand(line: line, previousEnd: prevCount-1)
         let curCount = blockTree.buffer.count

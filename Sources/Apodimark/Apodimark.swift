@@ -3,32 +3,59 @@
 //  Apodimark
 //
 
-public protocol ReferenceDefinition { }
-extension String: ReferenceDefinition { }
-
-public struct ParagraphBlock <View: BidirectionalCollection> {
-    public let text: [MarkdownInline<View>]
+public protocol ReferenceDefinitionsManager {
+    associatedtype Definition: ReferenceDefinitionProtocol
+    mutating func add(key: String, value: Definition)
+    func definition(for key: String) -> Definition?
 }
 
-public struct HeaderBlock <View: BidirectionalCollection> {
+public struct DefaultReferenceDefinitionsManager: ReferenceDefinitionsManager {
+    public typealias Definition = String
+    
+    var _dic: [String: String] = [:]
+    
+    public init() {}
+    
+    public mutating func add(key: String, value: Definition) {
+        if _dic[key] == nil {
+            _dic[key] = value
+        }
+    }
+    public func definition(for key: String) -> String? {
+        return _dic[key]
+    }
+}
+
+public protocol ReferenceDefinitionProtocol {
+    init(string: String)
+}
+extension String: ReferenceDefinitionProtocol {
+    public init(string: String) { self = string }
+}
+
+public struct ParagraphBlock <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+    public let text: [MarkdownInline<View, RefDef>]
+}
+
+public struct HeaderBlock <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
     public let level: Int
-    public let text: [MarkdownInline<View>]
+    public let text: [MarkdownInline<View, RefDef>]
     public let markers: (Range<View.Index>, Range<View.Index>?)
 }
 
-public struct QuoteBlock <View: BidirectionalCollection> {
-    public let content: [MarkdownBlock<View>]
+public struct QuoteBlock <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+    public let content: [MarkdownBlock<View, RefDef>]
     public let markers: [View.Index]
 }
 
-public struct MarkdownListItemBlock <View: BidirectionalCollection> {
+public struct MarkdownListItemBlock <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
     public let marker: Range<View.Index>
-    public let content: [MarkdownBlock<View>]
+    public let content: [MarkdownBlock<View, RefDef>]
 }
 
-public struct ListBlock <View: BidirectionalCollection> {
+public struct ListBlock <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
     public let kind: MarkdownListKind
-    public let items: [MarkdownListItemBlock<View>]
+    public let items: [MarkdownListItemBlock<View, RefDef>]
 }
 
 public struct FenceBlock <View: BidirectionalCollection> {
@@ -53,21 +80,21 @@ public struct BreakInline <View: BidirectionalCollection> {
     public let span: Range<View.Index>
 }
 
-public struct ReferenceInline <View: BidirectionalCollection> {
+public struct ReferenceInline <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
     public let kind: ReferenceKind
-    public let title: [MarkdownInline<View>]
-    public let definition: ReferenceDefinition
+    public let title: [MarkdownInline<View, RefDef>]
+    public let definition: RefDef
     public let markers: [Range<View.Index>]
 }
 
-public struct EmphasisInline <View: BidirectionalCollection> {
+public struct EmphasisInline <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
     public let level: Int
-    public let content: [MarkdownInline<View>]
+    public let content: [MarkdownInline<View, RefDef>]
     public let markers: (Range<View.Index>, Range<View.Index>)
 }
 
-public struct MonospacedTextInline <View: BidirectionalCollection> {
-    public let content: [MarkdownInline<View>]
+public struct MonospacedTextInline <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+    public let content: [MarkdownInline<View, RefDef>]
     public let markers: (Range<View.Index>, Range<View.Index>)
 }
 
@@ -75,21 +102,21 @@ public struct EscapingBackslashInline <View: BidirectionalCollection> {
     let index: View.Index
 }
 
-public indirect enum MarkdownInline <View: BidirectionalCollection> {
+public indirect enum MarkdownInline <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
     case text(TextInline<View>)
-    case reference(ReferenceInline<View>)
-    case emphasis(EmphasisInline<View>)
-    case monospacedText(MonospacedTextInline<View>)
+    case reference(ReferenceInline<View, RefDef>)
+    case emphasis(EmphasisInline<View, RefDef>)
+    case monospacedText(MonospacedTextInline<View, RefDef>)
     case escapingBackslash(EscapingBackslashInline<View>)
     case softbreak(BreakInline<View>)
     case hardbreak(BreakInline<View>)
 }
 
-public indirect enum MarkdownBlock <View: BidirectionalCollection> {
-    case paragraph(ParagraphBlock<View>)
-    case header(HeaderBlock<View>)
-    case quote(QuoteBlock<View>)
-    case list(ListBlock<View>)
+public indirect enum MarkdownBlock <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+    case paragraph(ParagraphBlock<View, RefDef>)
+    case header(HeaderBlock<View, RefDef>)
+    case quote(QuoteBlock<View, RefDef>)
+    case list(ListBlock<View, RefDef>)
     case fence(FenceBlock<View>)
     case code(CodeBlock<View>)
     case thematicBreak(ThematicBreakBlock<View>)
@@ -108,16 +135,17 @@ public enum MarkdownListKind {
     }
 }
 
-@_specialize(String.UTF16View, UTF16MarkdownCodec)
-@_specialize(Array<UInt8>, UTF8MarkdownCodec)
-public func parsedMarkdown <View, Codec> (source: View, referenceDefinitions: [String: ReferenceDefinition] = [:], codec: Codec.Type) -> [MarkdownBlock<View>] where
+@_specialize(String.UTF16View, DefaultReferenceDefinitionsManager, UTF16MarkdownCodec)
+@_specialize(Array<UInt8>, DefaultReferenceDefinitionsManager, UTF8MarkdownCodec)
+public func parsedMarkdown <View, RefDefs, Codec> (source: View, referenceDefinitions: RefDefs, codec: Codec.Type) -> [MarkdownBlock<View, RefDefs.Definition>] where
     View: BidirectionalCollection,
+    RefDefs: ReferenceDefinitionsManager,
     Codec: MarkdownParserCodec,
     View.Iterator.Element == Codec.CodeUnit,
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
-    let parser = MarkdownParser<View, Codec>(view: source, referenceDefinitions: referenceDefinitions)
+    let parser = MarkdownParser<View, Codec, RefDefs>(view: source, referenceDefinitions: referenceDefinitions)
     return parser.finalAST()
 }
 
@@ -125,13 +153,13 @@ extension MarkdownParser {
 
     /// Parse the collection and return the Abstract Syntax Tree
     /// describing the resulting Markdown document.
-    fileprivate func finalAST() -> [MarkdownBlock<View>] {
+    fileprivate func finalAST() -> [MarkdownBlock<View, RefDef>] {
         parseBlocks()
         return blockTree.makeIterator().flatMap(makeFinalBlock(from:children:))
     }
     
     /// Return a MarkdownBlock from an instance of the internal BlockNode type.
-    fileprivate func makeFinalBlock(from node: BlockNode<View>, children: TreeIterator<BlockNode<View>>?) -> MarkdownBlock<View>? {
+    fileprivate func makeFinalBlock(from node: Block, children: TreeIterator<Block>?) -> MarkdownBlock<View, RefDef>? {
         switch node {
             
         case let .paragraph(p):
@@ -162,9 +190,9 @@ extension MarkdownParser {
             fatalError()
         
         case let .list(l):
-            let items = children?.map { (n, c) -> MarkdownListItemBlock<View> in
+            let items = children?.map { (n, c) -> MarkdownListItemBlock<View, RefDef> in
                 guard case .listItem(let i) = n else { return .init(marker: view.startIndex ..< view.startIndex, content: []) }
-                return MarkdownListItemBlock<View>(
+                return MarkdownListItemBlock<View, RefDef>(
                     marker: i.markerSpan,
                     content: c?.flatMap(makeFinalBlock) ?? []
                 )
@@ -200,9 +228,9 @@ extension MarkdownParser {
 }
 
 extension MarkdownParser {
-    fileprivate func makeFinalInlineNodeTree(from tree: TreeIterator<InlineNode<View>>) -> [MarkdownInline<View>] {
+    fileprivate func makeFinalInlineNodeTree(from tree: TreeIterator<Inline>) -> [MarkdownInline<View, RefDef>] {
         
-        var nodes: [MarkdownInline<View>] = []
+        var nodes: [MarkdownInline<View, RefDef>] = []
         
         for (node, children) in tree {
             switch node {
@@ -216,7 +244,7 @@ extension MarkdownParser {
                     nodes.append(.softbreak(BreakInline(span: t.start ..< t.end)))
                     
                 case .text:
-                    nodes.append(.text(TextInline(span: t.start ..< t.end)))
+                    nodes.append(.text(Apodimark.TextInline(span: t.start ..< t.end)))
                 }
     
             case .nonText(let n):

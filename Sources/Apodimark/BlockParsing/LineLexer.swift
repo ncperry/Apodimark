@@ -88,7 +88,7 @@ extension MarkdownParser {
     /// - parameter scanner: a scanner whose `startIndex` points to the start of potential List line
     /// - parameter indent: the indent of the line being parsed
     /// - return: the parsed Line
-    fileprivate static func parseList(_ scanner: inout Scanner<View>, indent: Indent, context: LineLexerContext<Codec>) -> Line<View> {
+    fileprivate static func parseList(_ scanner: inout Scanner<View>, indent: Indent, context: LineLexerContext<Codec>) -> Line {
 
         let indexBeforeList = scanner.startIndex
         // let initialSubView = scanner
@@ -122,7 +122,7 @@ extension MarkdownParser {
             // 1234)\n
             //     |__<---
             let finalIndices = indexBeforeList ..< scanner.startIndex
-            let rest = Line<View>(.empty, indent, finalIndices)
+            let rest = Line(.empty, indent, finalIndices)
             return Line(.list(kind, rest), indent, finalIndices)
         }
         catch {
@@ -188,7 +188,7 @@ extension MarkdownParser {
     /// - parameter scanner: a scanner whose `startIndex` points the start of a potential Header line
     /// - parameter indent: the indent of the line being parsed
     /// - return: the parsed Line
-    fileprivate static func parseHeader(_ scanner: inout Scanner<View>, indent: Indent) -> Line<View> {
+    fileprivate static func parseHeader(_ scanner: inout Scanner<View>, indent: Indent) -> Line {
 
         let indexBeforeHeader = scanner.startIndex
         //  xxxxxx
@@ -232,7 +232,7 @@ extension MarkdownParser {
             //    |_         |_
             //    start    end
 
-            let headerkind = LineKind<View>.header(start ..< end, level)
+            let headerkind = LineKind.header(start ..< end, level)
             return Line(headerkind, indent, indexBeforeHeader ..< scanner.startIndex)
         }
         catch HeaderParsingError.notAHeader {
@@ -243,7 +243,7 @@ extension MarkdownParser {
         catch HeaderParsingError.emptyHeader(let level) {
             // scanner could point anywhere but not past end of line
             scanner.popUntil(Codec.linefeed)
-            let lineKind = LineKind<View>.header(scanner.startIndex ..< scanner.startIndex, level)
+            let lineKind = LineKind.header(scanner.startIndex ..< scanner.startIndex, level)
             return Line(lineKind, indent, indexBeforeHeader ..< scanner.startIndex)
         }
         catch {
@@ -302,7 +302,7 @@ extension MarkdownParser {
     /// - parameter scanner: a scanner whose pointing to the start of what might be a Fence line
     /// - parameter indent: the indent of the line being parsed
     /// - returns: the parsed line
-    fileprivate static func parseFence(_ scanner: inout Scanner<View>, indent: Indent) -> Line<View> {
+    fileprivate static func parseFence(_ scanner: inout Scanner<View>, indent: Indent) -> Line {
 
         let indexBeforeFence = scanner.startIndex
 
@@ -353,7 +353,7 @@ extension MarkdownParser {
             //      |_  |_
             //  start   end
 
-            let linekind = LineKind<View>.fence(kind, start ..< end, level)
+            let linekind = LineKind.fence(kind, start ..< end, level)
             return Line(linekind, indent, indexBeforeFence ..< scanner.startIndex)
         }
         catch FenceParsingError.notAFence {
@@ -364,7 +364,7 @@ extension MarkdownParser {
         catch FenceParsingError.emptyFence(let kind, let level) {
             // scanner could point anywhere but not past end of line
             scanner.popUntil(Codec.linefeed)
-            let linekind = LineKind<View>.fence(kind, scanner.startIndex ..< scanner.startIndex, level)
+            let linekind = LineKind.fence(kind, scanner.startIndex ..< scanner.startIndex, level)
             return Line(linekind, indent, indexBeforeFence ..< scanner.startIndex)
         }
         catch {
@@ -433,7 +433,7 @@ extension MarkdownParser {
     /// - parameter indent: the indent of the line being parsed
     /// - throws: `NotAReferenceDefinitionError()` if the line is not a ReferenceDefinition line
     /// - returns: the parsed line
-    fileprivate static func parseReferenceDefinition(_ scanner: inout Scanner<View>, indent: Indent) throws -> Line<View> {
+    fileprivate static func parseReferenceDefinition(_ scanner: inout Scanner<View>, indent: Indent) throws -> Line {
 
         //  [hello]:  world
         // |_<---
@@ -491,7 +491,7 @@ extension MarkdownParser {
             throw NotAReferenceDefinitionError()
         }
 
-        let definition = Codec.string(fromTokens: scanner.data[idxBeforeDefinition ..< idxAfterDefinition])
+        let definition = RefDef(string: Codec.string(fromTokens: scanner.data[idxBeforeDefinition ..< idxAfterDefinition]))
         let title = Codec.string(fromTokens: scanner.data[idxBeforeTitle ..< idxAfterTitle]).lowercased()
 
         return Line(.reference(title, definition), indent, indexBeforeRefDef ..< scanner.startIndex)
@@ -508,7 +508,7 @@ struct LineLexerContext <C: MarkdownParserCodec> {
 }
 
 extension MarkdownParser {
-    static func parseLine(_ scanner: inout Scanner<View>, context: LineLexerContext<Codec>) -> Line<View> {
+    static func parseLine(_ scanner: inout Scanner<View>, context: LineLexerContext<Codec>) -> Line {
         //      xxxxx
         // |_<--- (start of line)
 
