@@ -23,7 +23,7 @@ extension MarkdownParser {
             _ = scanner.pop(Codec.linefeed)
         }
         
-        for case .referenceDefinition(let ref) in blockTree.buffer.lazy.map({ $0.data }) {
+        for case .referenceDefinition(let ref) in blockTree.makePreOrderIterator() {
             referenceDefinitions.add(key: ref.title, value: ref.definition)
         }
     }

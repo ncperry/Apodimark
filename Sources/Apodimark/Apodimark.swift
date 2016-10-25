@@ -155,15 +155,15 @@ extension MarkdownParser {
     /// describing the resulting Markdown document.
     fileprivate func finalAST() -> [MarkdownBlock<View, RefDef>] {
         parseBlocks()
-        return blockTree.makeIterator().flatMap(makeFinalBlock(from:children:))
+        return blockTree.makeBreadthFirstIterator().flatMap(makeFinalBlock(from:children:))
     }
     
     /// Return a MarkdownBlock from an instance of the internal BlockNode type.
-    fileprivate func makeFinalBlock(from node: Block, children: TreeIterator<Block>?) -> MarkdownBlock<View, RefDef>? {
+    fileprivate func makeFinalBlock(from node: Block, children: TreeBreadthFirstIterator<Block>?) -> MarkdownBlock<View, RefDef>? {
         switch node {
             
         case let .paragraph(p):
-            let inlines = makeFinalInlineNodeTree(from: parseInlines(p.text).makeIterator())
+            let inlines = makeFinalInlineNodeTree(from: parseInlines(p.text).makeBreadthFirstIterator())
             let block = ParagraphBlock(text: inlines)
             return .paragraph(block)
             
@@ -171,7 +171,7 @@ extension MarkdownParser {
         case let .header(h):
             let block = HeaderBlock(
                 level: numericCast(h.level),
-                text: makeFinalInlineNodeTree(from: parseInlines([h.text]).makeIterator()),
+                text: makeFinalInlineNodeTree(from: parseInlines([h.text]).makeBreadthFirstIterator()),
                 markers: h.markers
             )
             return .header(block)
@@ -228,7 +228,7 @@ extension MarkdownParser {
 }
 
 extension MarkdownParser {
-    fileprivate func makeFinalInlineNodeTree(from tree: TreeIterator<Inline>) -> [MarkdownInline<View, RefDef>] {
+    fileprivate func makeFinalInlineNodeTree(from tree: TreeBreadthFirstIterator<Inline>) -> [MarkdownInline<View, RefDef>] {
         
         var nodes: [MarkdownInline<View, RefDef>] = []
         
