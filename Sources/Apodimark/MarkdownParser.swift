@@ -28,7 +28,6 @@ final class MarkdownParser <View: BidirectionalCollection, Codec: MarkdownParser
 // type aliases
 
 extension MarkdownParser {
-    typealias TextDel = (idx: View.Index, kind: TextDelKind)
     typealias NonTextDel = (idx: View.Index, kind: NonTextDelKind)
 
     typealias RefDef = RefManager.Definition

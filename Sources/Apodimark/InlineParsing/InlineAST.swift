@@ -1,7 +1,7 @@
 
 extension MarkdownParser {
  
-    func makeAST(text: TextInlineNodeIterator<View>, nonText: [NonTextInline]) -> Tree<Inline> {
+    func makeAST(text: TextInlineNodeIterator<View, Codec>, nonText: [NonTextInline]) -> Tree<Inline> {
         let tree = Tree<Inline>()
        
         var builder = InlineTreeBuilder(text, nonText, view, tree)
@@ -32,19 +32,21 @@ fileprivate func map <T, U> (_ x: (T, T?), _ f: (T) -> U) -> (U, U?) {
     return (f(x.0), x.1.map(f))
 }
 
-fileprivate struct InlineTreeBuilder <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+fileprivate struct InlineTreeBuilder <View: BidirectionalCollection, I1: IteratorProtocol, RefDef: ReferenceDefinitionProtocol> where
+    I1.Element == TextInlineNode<View>
+{
     typealias Node = InlineNode<View, RefDef>
     typealias Text = TextInlineNode<View>
     typealias NonText = NonTextInlineNode<View, RefDef>
 
     var (e1, e2): (Text?, NonText?) = (nil, nil)
-    var (texts, nonTexts): (TextInlineNodeIterator<View>, Array<NonText>.Iterator)
+    var (texts, nonTexts): (I1, Array<NonText>.Iterator)
     
     let tree: Tree<Node>
     var tryLevel = DepthLevel.root
     let view: View
     
-    init(_ i1: TextInlineNodeIterator<View>, _ s2: [NonText], _ view: View, _ tree: Tree<Node>) {
+    init(_ i1: I1, _ s2: [NonText], _ view: View, _ tree: Tree<Node>) {
         (self.texts, self.nonTexts) = (i1, s2.makeIterator())
         self.view = view
         self.tree = tree

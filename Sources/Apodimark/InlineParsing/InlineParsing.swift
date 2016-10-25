@@ -11,13 +11,10 @@ extension MarkdownParser {
     
     func parseInlines(_ text: [Range<View.Index>]) -> Tree<Inline> {
         
-        let textDels: [TextDel]
-        var nonTextDels: [NonTextDel?]
-        (nonTextDels, textDels) = delimiters(in: text)
-        
-        guard !textDels.isEmpty else { return .init() }
-        
+        var nonTextDels = nonTextDelimiters(in: text)
+
         var nodes: [NonTextInline] = []
+        
         processAllMonospacedText(&nonTextDels, appendingTo: &nodes)
         processAllReferences(&nonTextDels, appendingTo: &nodes)
         processAllEmphases(&nonTextDels, indices: nonTextDels.indices, appendingTo: &nodes)
@@ -25,40 +22,27 @@ extension MarkdownParser {
         
         nodes.sort(by: <)
         
-        let textNodes = TextInlineNodeIterator(view: view, delimiters: textDels)
+        let textNodes = TextInlineNodeIterator<View, Codec>(view: view, text: text)
         
         return makeAST(text: textNodes, nonText: nodes)
     }
 
-    private func delimiters(in text: [Range<View.Index>]) -> ([NonTextDel?], [TextDel]) {
+    private func nonTextDelimiters(in text: [Range<View.Index>]) -> [NonTextDel?] {
         
         var nonTextDels: [NonTextDel?] = []
-        var textDels: [TextDel] = []
-
+    
         var scanner = Scanner(data: view)
         
         for (idx, range) in zip(text.indices, text) {
             
             (scanner.startIndex, scanner.endIndex) = (range.lowerBound, range.upperBound)
             
-            var numberOfPreviousSpaces = 0
-            var potentialBackslashHardbreak = false
-            
             var prevTokenKind = TokenKind.whitespace
-            
-            textDels.append((scanner.startIndex, .start))
             
             while case let token? = scanner.pop() {
                 let curTokenKind = MarkdownParser.tokenKind(token)
                 defer { prevTokenKind = curTokenKind }
-                
-                if token == Codec.space {
-                    numberOfPreviousSpaces += 1
-                    continue
-                } else {
-                    defer { numberOfPreviousSpaces = 0 }
-                }
-                
+
                 // avoid going into the switch if token is not punctuation (optimization)
                 guard case .punctuation = curTokenKind else {
                     continue
@@ -104,7 +88,6 @@ extension MarkdownParser {
                     
                 case Codec.backslash:
                     guard case let el? = scanner.peek() else {
-                        potentialBackslashHardbreak = true
                         break
                     }
                     if Codec.isPunctuation(el) {
@@ -112,27 +95,13 @@ extension MarkdownParser {
                         if el != Codec.backtick { _ = scanner.pop() }
                     }
                     
-                case _:
+                default:
                     break
-                }
-            }
-            
-            let isLastText = idx+1 < text.endIndex
-            let offset = -(numberOfPreviousSpaces + ((potentialBackslashHardbreak && isLastText) ? 1 : 0))
-            let lastIndex = view.index(scanner.startIndex, offsetBy: numericCast(offset))
-            textDels.append((lastIndex, .end))
-            
-            if isLastText { // linefeed
-                if potentialBackslashHardbreak || numberOfPreviousSpaces >= 2 {
-                    textDels.append((view.index(after: scanner.startIndex), .hardbreak))
-                }
-                else {
-                    textDels.append((view.index(after: scanner.startIndex), .softbreak))
                 }
             }
         }
         
-        return (nonTextDels, textDels)
+        return nonTextDels
     }
 }
 

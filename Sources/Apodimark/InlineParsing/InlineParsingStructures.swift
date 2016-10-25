@@ -7,14 +7,6 @@ enum EmphasisKind {
     case asterisk, underscore
 }
 
-enum TextDelKind {
-    case start              // start of line (used to ignore leading whitespace)
-    case end                // end of line (used to ignore trailing whitespace)
-
-    case softbreak
-    case hardbreak
-}
-
 enum NonTextDelKind {
     case emph(EmphasisKind, DelimiterState, Int32)  // run of * or _
     
