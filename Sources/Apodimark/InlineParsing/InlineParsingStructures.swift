@@ -7,7 +7,7 @@ enum EmphasisKind {
     case asterisk, underscore
 }
 
-enum NonTextDelKind {
+enum DelimiterKind {
     case emph(EmphasisKind, DelimiterState, Int32)  // run of * or _
     
     case code(Int32)         // run of `
@@ -36,7 +36,7 @@ private func rightFlanking(prev: TokenKind, next: TokenKind) -> Bool {
 }
 
 
-/// An option set giving the state of a delimiter (opening, closinf, neither, or both)
+/// An option set giving the state of a delimiter (opening, closing, neither, or both)
 struct DelimiterState: OptionSet {
 
     let rawValue: UInt8
@@ -72,7 +72,7 @@ struct DelimiterState: OptionSet {
 }
 
 /// An enumeration describing the type of a token (character):
-/// either Whitespace, Punctuation, or Neither.
+/// either whitespace, punctuation, or neither.
 enum TokenKind {
     case whitespace, punctuation, neither
 }

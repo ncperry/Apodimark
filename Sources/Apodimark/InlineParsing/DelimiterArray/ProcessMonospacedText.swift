@@ -4,18 +4,18 @@
 //
 
 extension MarkdownParser {
-
-    func processAllMonospacedText(_ delimiters: inout [NonTextDel?], appendingTo nodes: inout [NonTextInline]) {
+    
+    func processAllMonospacedText(_ delimiters: inout [Delimiter?], appendingTo nodes: inout [NonTextInline]) {
         var start = delimiters.startIndex
         while case let newStart? = processMonospacedText(&delimiters, indices: start ..< delimiters.endIndex, appendingTo: &nodes) {
             start = newStart
         }
     }
 
-    func processMonospacedText(_ delimiters: inout [NonTextDel?], indices: CountableRange<Int>, appendingTo nodes: inout [NonTextInline]) -> Int? {
+    func processMonospacedText(_ delimiters: inout [Delimiter?], indices: CountableRange<Int>, appendingTo nodes: inout [NonTextInline]) -> Int? {
 
         guard let (openingDelIdx, openingDel, closingDelIdx, closingDel, level) = {
-            () -> (Int, NonTextDel, Int, NonTextDel, Int32)? in
+            () -> (Int, Delimiter, Int, Delimiter, Int32)? in
             
             var escaping: View.Index? = nil
 
@@ -33,7 +33,7 @@ extension MarkdownParser {
                 case .code(let level):
                     defer { escaping = nil }
                     var level = level
-                    if case let escapingIdx? = escaping, escapingIdx == view.index(before: del.idx) {
+                    if case view.index(before: del.idx)? = escaping {
                         level -= 1
                         view.formIndex(after: &delimiters[i]!.idx)
                     }

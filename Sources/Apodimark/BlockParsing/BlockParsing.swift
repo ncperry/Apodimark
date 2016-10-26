@@ -1,5 +1,5 @@
 //
-//  BlockParsingTree.swift
+//  BlockParsing.swift
 //  Apodimark
 //
 
@@ -13,7 +13,8 @@ enum AddLineResult {
 }
 
 extension MarkdownParser {
-    
+
+    /// Builds `self.blockTree`
     func parseBlocks() {
         var scanner = Scanner(data: view)
         while case .some = scanner.peek() {
@@ -22,15 +23,40 @@ extension MarkdownParser {
             scanner.popUntil(Codec.linefeed)
             _ = scanner.pop(Codec.linefeed)
         }
-        
         for case .referenceDefinition(let ref) in blockTree.makePreOrderIterator() {
-            referenceDefinitions.add(key: ref.title, value: ref.definition)
+            definitionStore.add(key: ref.title, value: ref.definition)
+        }
+    }
+    
+    /// Traverse the blockTree and update the definition store accordingly
+    func updateDefinitionStore() {
+        for case .referenceDefinition(let ref) in blockTree.makePreOrderIterator() {
+            definitionStore.add(key: ref.title, value: ref.definition)
         }
     }
 }
 
 
 extension BlockNode {
+    /**
+     A lazy continuation happens when a new line of text is added to a Block 
+     without having to meet the usual criteria.
+     
+     Example:
+     ```
+     > # This is a header inside a quote
+     This line is not part of the quote.
+     
+     > This is a paragraph inside a quote
+     with a lazy continuation
+     ```
+     Here, the last line is not prefix with “>” and would normally not be
+     added to the quote. However, it was allowed inside the quote because
+     the last child of the quote was an open paragraph.
+     
+     `allowsLazyContinuation()` return true iff the block allows a lazy 
+     continuation when it is the last leaf of the blockTree.
+     */
     func allowsLazyContinuation() -> Bool {
         if case .paragraph(let p) = self , !p.closed {
             return true

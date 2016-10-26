@@ -5,14 +5,15 @@
 
 extension MarkdownParser {
     
-    func processAllEmphases(_ delimiters: inout [NonTextDel?], indices: CountableRange<Int>, appendingTo nodes: inout [NonTextInline]) {
+    /// Parse the emphases contained in `delimiters` and append them to `nodes`
+    func processAllEmphases(_ delimiters: inout [Delimiter?], indices: CountableRange<Int>, appendingTo nodes: inout [NonTextInline]) {
         var start = indices.lowerBound
         while case let newStart? = processEmphasis(&delimiters, indices: start ..< indices.upperBound, appendingTo: &nodes) {
             start = newStart
         }
     }
 
-    fileprivate func processEmphasis(_ delimiters: inout [NonTextDel?], indices: CountableRange<Int>, appendingTo nodes: inout [NonTextInline]) -> Int? {
+    fileprivate func processEmphasis(_ delimiters: inout [Delimiter?], indices: CountableRange<Int>, appendingTo nodes: inout [NonTextInline]) -> Int? {
         
         guard let (newStart, openingDelIdx, closingDelIdx) = {
             () -> (Int, Int, Int)? in

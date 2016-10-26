@@ -79,7 +79,7 @@ class CommonMarkConformanceTests : XCTestCase {
     func testSpecStringUTF16View() {
         for no in tests {
             let source = stringForTest(number: no).utf16
-            let doc = parsedMarkdown(source: source, referenceDefinitions: DefaultReferenceDefinitionsManager(), codec: UTF16MarkdownCodec.self)
+            let doc = parsedMarkdown(source: source, definitionStore: DefaultReferenceDefinitionStore(), codec: UTF16MarkdownCodec.self)
             let desc = MarkdownBlock.output(nodes: doc, source: source, codec: UTF16MarkdownCodec.self)
             let result = stringForTest(number: no, result: true)
             XCTAssertEqual(desc, result, "\(no)")
@@ -89,7 +89,7 @@ class CommonMarkConformanceTests : XCTestCase {
     func testSpecStringUnicodeScalarView() {
         for no in tests {
             let source = stringForTest(number: no).unicodeScalars
-            let doc = parsedMarkdown(source: source, referenceDefinitions: DefaultReferenceDefinitionsManager(), codec: UnicodeScalarMarkdownCodec.self)
+            let doc = parsedMarkdown(source: source, definitionStore: DefaultReferenceDefinitionStore(), codec: UnicodeScalarMarkdownCodec.self)
             let desc = MarkdownBlock.output(nodes: doc, source: source, codec: UnicodeScalarMarkdownCodec.self)
             let result = stringForTest(number: no, result: true)
             XCTAssertEqual(desc, result, "\(no)")
@@ -99,7 +99,7 @@ class CommonMarkConformanceTests : XCTestCase {
     func testSpecStringCharacterView() {
         for no in tests {
             let source = stringForTest(number: no).characters
-            let doc = parsedMarkdown(source: source, referenceDefinitions: DefaultReferenceDefinitionsManager(), codec: CharacterMarkdownCodec.self)
+            let doc = parsedMarkdown(source: source, definitionStore: DefaultReferenceDefinitionStore(), codec: CharacterMarkdownCodec.self)
             let desc = MarkdownBlock.output(nodes: doc, source: source, codec: CharacterMarkdownCodec.self)
             let result = stringForTest(number: no, result: true)
             XCTAssertEqual(desc, result, "\(no)")
@@ -109,7 +109,7 @@ class CommonMarkConformanceTests : XCTestCase {
     func testSpecArrayUInt32() {
         for no in tests {
             let source = Array(stringForTest(number: no).unicodeScalars).map { $0.value }
-            let doc = parsedMarkdown(source: source, referenceDefinitions: DefaultReferenceDefinitionsManager(), codec: UTF32MarkdownCodec.self)
+            let doc = parsedMarkdown(source: source, definitionStore: DefaultReferenceDefinitionStore(), codec: UTF32MarkdownCodec.self)
             let desc = MarkdownBlock.output(nodes: doc, source: source, codec: UTF32MarkdownCodec.self)
             let result = stringForTest(number: no, result: true)
             XCTAssertEqual(desc, result, "\(no)")
@@ -120,7 +120,7 @@ class CommonMarkConformanceTests : XCTestCase {
         for no in tests {
             let arr = Array(stringForTest(number: no).utf8)
             let source = arr.withUnsafeBufferPointer { $0 }
-            let doc = parsedMarkdown(source: source, referenceDefinitions: DefaultReferenceDefinitionsManager(), codec: UTF8MarkdownCodec.self)
+            let doc = parsedMarkdown(source: source, definitionStore: DefaultReferenceDefinitionStore(), codec: UTF8MarkdownCodec.self)
             let desc = MarkdownBlock.output(nodes: doc, source: source, codec: UTF8MarkdownCodec.self)
             let result = stringForTest(number: no, result: true)
             XCTAssertEqual(desc, result, "\(no)")

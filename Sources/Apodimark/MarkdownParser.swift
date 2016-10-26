@@ -9,17 +9,17 @@ let TAB_INDENT = 4
  A MarkdownParser holds the necessary data and type information to parse
  a collection representing some text.
 */
-final class MarkdownParser <View: BidirectionalCollection, Codec: MarkdownParserCodec, RefManager: ReferenceDefinitionsManager> where
+final class MarkdownParser <View: BidirectionalCollection, Codec: MarkdownParserCodec, DefinitionStore: ReferenceDefinitionStore> where
     View.Iterator.Element == Codec.CodeUnit,
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
     let view: View
-    var referenceDefinitions: RefManager
+    var definitionStore: DefinitionStore
     let blockTree: Tree<Block>
         
-    init(view: View, referenceDefinitions: RefManager) {
-        self.referenceDefinitions = referenceDefinitions
+    init(view: View, definitionStore: DefinitionStore) {
+        self.definitionStore = definitionStore
         self.view = view
         self.blockTree = .init()
     }
@@ -28,9 +28,9 @@ final class MarkdownParser <View: BidirectionalCollection, Codec: MarkdownParser
 // type aliases
 
 extension MarkdownParser {
-    typealias NonTextDel = (idx: View.Index, kind: NonTextDelKind)
+    typealias Delimiter = (idx: View.Index, kind: DelimiterKind)
 
-    typealias RefDef = RefManager.Definition
+    typealias RefDef = DefinitionStore.Definition
     
     typealias Inline = InlineNode<View, RefDef>
     typealias NonTextInline = NonTextInlineNode<View, RefDef>

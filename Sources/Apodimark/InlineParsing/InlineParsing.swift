@@ -4,14 +4,23 @@
 //
 
 extension NonTextInlineNode {
+    /// Returns true iff lhs.start < rhs.start
     static func < (lhs: NonTextInlineNode, rhs: NonTextInlineNode) -> Bool { return lhs.start <  rhs.start }
 }
 
 extension MarkdownParser {
     
+    
+    /// Parse the text defined by the given indices as inline Markdown.
+    ///
+    /// - parameter text: an array of indices to the markdown text.
+    ///
+    ///   Each range in the array must define a single line.
+    ///
+    /// - returns: a tree of InlineNode describing the parsed text
     func parseInlines(_ text: [Range<View.Index>]) -> Tree<Inline> {
         
-        var nonTextDels = nonTextDelimiters(in: text)
+        var nonTextDels = delimiters(in: text)
 
         var nodes: [NonTextInline] = []
         
@@ -27,15 +36,23 @@ extension MarkdownParser {
         return makeAST(text: textNodes, nonText: nodes)
     }
 
-    private func nonTextDelimiters(in text: [Range<View.Index>]) -> [NonTextDel?] {
+    
+    /// Scans the text and finds the special delimiters inside it.
+    ///
+    /// - parameter text: an array of indices to the markdown text.
+    ///
+    ///   Each range in the array must define a single line.
+    ///
+    /// - returns: the delimiters included in the text
+    private func delimiters(in text: [Range<View.Index>]) -> [Delimiter?] {
         
-        var nonTextDels: [NonTextDel?] = []
+        var delimiters: [Delimiter?] = []
     
         var scanner = Scanner(data: view)
         
-        for (idx, range) in zip(text.indices, text) {
+        for line in text {
             
-            (scanner.startIndex, scanner.endIndex) = (range.lowerBound, range.upperBound)
+            (scanner.startIndex, scanner.endIndex) = (line.lowerBound, line.upperBound)
             
             var prevTokenKind = TokenKind.whitespace
             
@@ -43,7 +60,7 @@ extension MarkdownParser {
                 let curTokenKind = MarkdownParser.tokenKind(token)
                 defer { prevTokenKind = curTokenKind }
 
-                // avoid going into the switch if token is not punctuation (optimization)
+                // avoid going into the switch if token is not punctuation (optimization, maybe unnecessary)
                 guard case .punctuation = curTokenKind else {
                     continue
                 }
@@ -58,40 +75,40 @@ extension MarkdownParser {
                     let delimiterState = DelimiterState(token: token, prev: prevTokenKind, next: nextTokenKind, codec: Codec.self)
                     let lvl = view.distance(from: idxBeforeRun, to: scanner.startIndex)
                     let kind: EmphasisKind = token == Codec.underscore ? .underscore : .asterisk
-                    nonTextDels.append((scanner.startIndex, .emph(kind, delimiterState, numericCast(lvl))))
+                    delimiters.append((scanner.startIndex, .emph(kind, delimiterState, numericCast(lvl))))
                     
                 case Codec.backtick:
                     let idxBeforeRun = view.index(before: scanner.startIndex)
                     scanner.popWhile(Codec.backtick)
                     let lvl = view.distance(from: idxBeforeRun, to: scanner.startIndex)
-                    nonTextDels.append((scanner.startIndex, .code(numericCast(lvl))))
+                    delimiters.append((scanner.startIndex, .code(numericCast(lvl))))
                     
                 case Codec.exclammark:
                     if scanner.pop(Codec.leftsqbck) {
-                        nonTextDels.append((scanner.startIndex, .unwrappedRefOpener))
+                        delimiters.append((scanner.startIndex, .unwrappedRefOpener))
                     }
                     
                 case Codec.leftsqbck:
-                    nonTextDels.append((scanner.startIndex, .refOpener))
+                    delimiters.append((scanner.startIndex, .refOpener))
                     
                 case Codec.rightsqbck:
-                    nonTextDels.append((scanner.startIndex, .refCloser))
+                    delimiters.append((scanner.startIndex, .refCloser))
                     if scanner.pop(Codec.leftparen) {
-                        nonTextDels.append((scanner.startIndex, .refValueOpener))
+                        delimiters.append((scanner.startIndex, .refValueOpener))
                     }
                     
                 case Codec.leftparen:
-                    nonTextDels.append((scanner.startIndex, .leftParen))
+                    delimiters.append((scanner.startIndex, .leftParen))
                     
                 case Codec.rightparen:
-                    nonTextDels.append((scanner.startIndex, .rightParen))
+                    delimiters.append((scanner.startIndex, .rightParen))
                     
                 case Codec.backslash:
                     guard case let el? = scanner.peek() else {
                         break
                     }
                     if Codec.isPunctuation(el) {
-                        nonTextDels.append((scanner.startIndex, .escapingBackslash))
+                        delimiters.append((scanner.startIndex, .escapingBackslash))
                         if el != Codec.backtick { _ = scanner.pop() }
                     }
                     
@@ -101,7 +118,7 @@ extension MarkdownParser {
             }
         }
         
-        return nonTextDels
+        return delimiters
     }
 }
 

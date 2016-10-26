@@ -3,19 +3,42 @@
 //  Apodimark
 //
 
-public protocol ReferenceDefinitionsManager {
+/** A ReferenceDefinitionStore manages the references found in a markdown text.
+ 
+ It stores *reference definitions*, which can be of any type, but will typically
+ be strings.
+ 
+ A *reference definition* can be added or retrieved from the store by specifying
+ its *key*. The *key* is the string used between brackets to identify a reference.
+ ```
+ This is a [reference][key] whose definition is "hello"
+ 
+ [key]: hello
+ ```
+ */
+public protocol ReferenceDefinitionStore {
     associatedtype Definition: ReferenceDefinitionProtocol
+    
+    /// Add a reference definition to the manager
     mutating func add(key: String, value: Definition)
+    
+    /// Retrieve the reference definition for the given key
     func definition(for key: String) -> Definition?
 }
 
-public struct DefaultReferenceDefinitionsManager: ReferenceDefinitionsManager {
+/**
+ A ReferenceDefinitionStore that acts as a simple dictionary.
+ 
+ Once a definition is added for a certain key, it cannot be overwritten.
+ */
+public struct DefaultReferenceDefinitionStore: ReferenceDefinitionStore {
     public typealias Definition = String
     
     var _dic: [String: String] = [:]
     
+    /// Creates an empty store
     public init() {}
-    
+
     public mutating func add(key: String, value: Definition) {
         if _dic[key] == nil {
             _dic[key] = value
@@ -26,6 +49,7 @@ public struct DefaultReferenceDefinitionsManager: ReferenceDefinitionsManager {
     }
 }
 
+/// A protocol for types that can be used as a reference definition.
 public protocol ReferenceDefinitionProtocol {
     init(string: String)
 }
@@ -135,30 +159,40 @@ public enum MarkdownListKind {
     }
 }
 
-@_specialize(String.UTF16View, DefaultReferenceDefinitionsManager, UTF16MarkdownCodec)
-@_specialize(Array<UInt8>, DefaultReferenceDefinitionsManager, UTF8MarkdownCodec)
-public func parsedMarkdown <View, RefDefs, Codec> (source: View, referenceDefinitions: RefDefs, codec: Codec.Type) -> [MarkdownBlock<View, RefDefs.Definition>] where
+/**
+ Parses a markdown document.
+ 
+ - parameter source:          a BidirectionalCollection holding the text to parse
+ - parameter definitionStore: an initial ReferenceDefinitionStore to use for handling references
+ - parameter codec:           a MarkdownParserCodec capable of reading the `source`
+
+ - returns: an array of MarkdownBlock defining the markdown document
+ */
+@_specialize(String.UTF16View, DefaultReferenceDefinitionStore, UTF16MarkdownCodec)
+@_specialize(Array<UInt8>, DefaultReferenceDefinitionStore, UTF8MarkdownCodec)
+public func parsedMarkdown <View, DefinitionStore, Codec> (source: View, definitionStore: DefinitionStore, codec: Codec.Type) -> [MarkdownBlock<View, DefinitionStore.Definition>] where
     View: BidirectionalCollection,
-    RefDefs: ReferenceDefinitionsManager,
+    DefinitionStore: ReferenceDefinitionStore,
     Codec: MarkdownParserCodec,
     View.Iterator.Element == Codec.CodeUnit,
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
-    let parser = MarkdownParser<View, Codec, RefDefs>(view: source, referenceDefinitions: referenceDefinitions)
+    let parser = MarkdownParser<View, Codec, DefinitionStore>(view: source, definitionStore: definitionStore)
     return parser.finalAST()
 }
 
 extension MarkdownParser {
 
     /// Parse the collection and return the Abstract Syntax Tree
-    /// describing the resulting Markdown document.
+    /// describing the original Markdown document
     fileprivate func finalAST() -> [MarkdownBlock<View, RefDef>] {
         parseBlocks()
-        return blockTree.makeBreadthFirstIterator().flatMap(makeFinalBlock(from:children:))
+        updateDefinitionStore()
+        return blockTree.makeBreadthFirstIterator().flatMap(makeFinalBlock)
     }
     
-    /// Return a MarkdownBlock from an instance of the internal BlockNode type.
+    /// Return a MarkdownBlock from an instance of the internal BlockNode type and its children
     fileprivate func makeFinalBlock(from node: Block, children: TreeBreadthFirstIterator<Block>?) -> MarkdownBlock<View, RefDef>? {
         switch node {
             
@@ -228,6 +262,7 @@ extension MarkdownParser {
 }
 
 extension MarkdownParser {
+    /// Returns an array of MarkdownInline from a tree of InlineNode
     fileprivate func makeFinalInlineNodeTree(from tree: TreeBreadthFirstIterator<Inline>) -> [MarkdownInline<View, RefDef>] {
         
         var nodes: [MarkdownInline<View, RefDef>] = []

@@ -3,9 +3,12 @@
 //  Apodimark
 //
 
+
+/// A type holding functions used to interpret a generic Markdown document
 public protocol MarkdownParserCodec {
     
-    associatedtype CodeUnit: Comparable, Hashable
+    /// The Element type of the Collection to read
+    associatedtype CodeUnit: Comparable
     
     /**
      Return the CodeUnit corresponding to the ASCII character `char`.
@@ -14,10 +17,10 @@ public protocol MarkdownParserCodec {
     static func fromASCII(_ char: UInt8) -> CodeUnit
     
     /**
-     Return the string corresponding to `tokens`
+     Return the string described by `tokens`
      
      - Note:
-     The collection “`tokens`” might not represent a valid String.
+     The “`tokens`” might not represent a valid String.
      If that happens, this function should not crash.
      */
     static func string <S: Sequence> (fromTokens tokens: S) -> String

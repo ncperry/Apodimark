@@ -53,7 +53,7 @@ fileprivate struct TreeNode <T> {
  ```
  The *last strand* here is
  ```
- (root)-b-h-n-o
+ b-h-n-o
  ```
  And the *last leaf* is `o`.
 
