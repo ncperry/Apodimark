@@ -62,7 +62,7 @@ indirect enum LineKind <View: BidirectionalCollection, RefDef: ReferenceDefiniti
     case fence(FenceKind, Range<View.Index>, Int32)
     case thematicBreak
     case empty
-    case reference(String, RefDef)
+    case reference(Range<View.Index>, Range<View.Index>)
 
     /// Return true iff `self` is equal to .empty
     func isEmpty() -> Bool {

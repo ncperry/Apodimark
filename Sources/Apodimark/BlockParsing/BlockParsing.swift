@@ -23,15 +23,14 @@ extension MarkdownParser {
             scanner.popUntil(Codec.linefeed)
             _ = scanner.pop(Codec.linefeed)
         }
-        for case .referenceDefinition(let ref) in blockTree.makePreOrderIterator() {
-            definitionStore.add(key: ref.title, value: ref.definition)
-        }
     }
     
     /// Traverse the blockTree and update the definition store accordingly
     func updateDefinitionStore() {
         for case .referenceDefinition(let ref) in blockTree.makePreOrderIterator() {
-            definitionStore.add(key: ref.title, value: ref.definition)
+            let title = Codec.string(fromTokens: view[ref.title])
+            let definition = RefDef(string: Codec.string(fromTokens: view[ref.definition]))
+            definitionStore.add(key: title, value: definition)
         }
     }
 }

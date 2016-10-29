@@ -92,10 +92,10 @@ final class ThematicBreakNode <View: BidirectionalCollection> {
 }
 
 final class ReferenceDefinitionNode <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
-    let title: String
-    let definition: RefDef
+    let title: Range<View.Index>
+    let definition: Range<View.Index>
     
-    init(title: String, definition: RefDef) {
+    init(title: Range<View.Index>, definition: Range<View.Index>) {
         (self.title, self.definition) = (title, definition)
     }
 }

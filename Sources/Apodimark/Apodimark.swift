@@ -40,12 +40,13 @@ public struct DefaultReferenceDefinitionStore: ReferenceDefinitionStore {
     public init() {}
 
     public mutating func add(key: String, value: Definition) {
-        if _dic[key] == nil {
-            _dic[key] = value
+        let lowercasedKey = key.lowercased()
+        if _dic[lowercasedKey] == nil {
+            _dic[lowercasedKey] = value
         }
     }
     public func definition(for key: String) -> String? {
-        return _dic[key]
+        return _dic[key.lowercased()]
     }
 }
 
@@ -72,14 +73,14 @@ public struct QuoteBlock <View: BidirectionalCollection, RefDef: ReferenceDefini
     public let markers: [View.Index]
 }
 
-public struct MarkdownListItemBlock <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+public struct ListItemBlock <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
     public let marker: Range<View.Index>
     public let content: [MarkdownBlock<View, RefDef>]
 }
 
 public struct ListBlock <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
-    public let kind: MarkdownListKind
-    public let items: [MarkdownListItemBlock<View, RefDef>]
+    public let kind: ListBlockKind
+    public let items: [ListItemBlock<View, RefDef>]
 }
 
 public struct FenceBlock <View: BidirectionalCollection> {
@@ -90,6 +91,11 @@ public struct FenceBlock <View: BidirectionalCollection> {
 
 public struct CodeBlock <View: BidirectionalCollection> {
     public let text: [Range<View.Index>]
+}
+
+public struct ReferenceDefinitionBlock <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+    public let key: Range<View.Index>
+    public let definition: Range<View.Index>
 }
 
 public struct ThematicBreakBlock <View: BidirectionalCollection> {
@@ -123,7 +129,7 @@ public struct MonospacedTextInline <View: BidirectionalCollection, RefDef: Refer
 }
 
 public struct EscapingBackslashInline <View: BidirectionalCollection> {
-    let index: View.Index
+    public let index: View.Index
 }
 
 public indirect enum MarkdownInline <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
@@ -143,10 +149,11 @@ public indirect enum MarkdownBlock <View: BidirectionalCollection, RefDef: Refer
     case list(ListBlock<View, RefDef>)
     case fence(FenceBlock<View>)
     case code(CodeBlock<View>)
+    case referenceDefinition(ReferenceDefinitionBlock<View, RefDef>)
     case thematicBreak(ThematicBreakBlock<View>)
 }
 
-public enum MarkdownListKind {
+public enum ListBlockKind {
 
     case unordered
     case ordered(startingAt: Int)
@@ -178,8 +185,7 @@ public func parsedMarkdown <View, DefinitionStore, Codec> (source: View, definit
     View.SubSequence: BidirectionalCollection,
     View.SubSequence.Iterator.Element == View.Iterator.Element
 {
-    let parser = MarkdownParser<View, Codec, DefinitionStore>(view: source, definitionStore: definitionStore)
-    return parser.finalAST()
+    return MarkdownParser<View, Codec, DefinitionStore>(view: source, definitionStore: definitionStore).finalAST()
 }
 
 extension MarkdownParser {
@@ -224,15 +230,15 @@ extension MarkdownParser {
             fatalError()
         
         case let .list(l):
-            let items = children?.map { (n, c) -> MarkdownListItemBlock<View, RefDef> in
+            let items = children?.map { (n, c) -> ListItemBlock<View, RefDef> in
                 guard case .listItem(let i) = n else { return .init(marker: view.startIndex ..< view.startIndex, content: []) }
-                return MarkdownListItemBlock<View, RefDef>(
+                return ListItemBlock<View, RefDef>(
                     marker: i.markerSpan,
                     content: c?.flatMap(makeFinalBlock) ?? []
                 )
             } ?? []
             
-            let block = ListBlock(kind: MarkdownListKind(kind: l.kind), items: items)
+            let block = ListBlock(kind: ListBlockKind(kind: l.kind), items: items)
             
             return .list(block)
             
@@ -254,8 +260,8 @@ extension MarkdownParser {
             return .thematicBreak(ThematicBreakBlock(marker: t.span))
             
             
-        case .referenceDefinition:
-            return nil
+        case let .referenceDefinition(r):
+            return .referenceDefinition(.init(key: r.title, definition: r.definition))
         }
     }
 

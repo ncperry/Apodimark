@@ -5,6 +5,7 @@
 
 extension MarkdownParser {
     
+    /// Parse the monospaced text nodes contained in `delimiters` and append them to `nodes`
     func processAllMonospacedText(_ delimiters: inout [Delimiter?], appendingTo nodes: inout [NonTextInline]) {
         var start = delimiters.startIndex
         while case let newStart? = processMonospacedText(&delimiters, indices: start ..< delimiters.endIndex, appendingTo: &nodes) {
@@ -12,6 +13,8 @@ extension MarkdownParser {
         }
     }
 
+    /// Parse the first monospaced text node contained in `delimiters[indices]` and append them to `nodes`
+    /// - returns: the index of the first backtick delimiter found in `delimiters[indices]`, or `nil` if no monospaced text was found
     func processMonospacedText(_ delimiters: inout [Delimiter?], indices: CountableRange<Int>, appendingTo nodes: inout [NonTextInline]) -> Int? {
 
         guard let (openingDelIdx, openingDel, closingDelIdx, closingDel, level) = {

@@ -12,7 +12,9 @@ extension MarkdownParser {
             start = newStart
         }
     }
-
+    
+    /// Parse the first emphasis contained in `delimiters[indices]` and append it to `nodes`
+    /// - returns: the index of the first opening emphasis delimiter in the `delimiters[indices]`, or `nil` if no emphasis was found
     fileprivate func processEmphasis(_ delimiters: inout [Delimiter?], indices: CountableRange<Int>, appendingTo nodes: inout [NonTextInline]) -> Int? {
         
         guard let (newStart, openingDelIdx, closingDelIdx) = {

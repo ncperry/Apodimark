@@ -4,7 +4,7 @@ import Apodimark
 // FUNCTIONS INTENDED ONLY FOR TESTING PURPOSES
 // DO NOT USE “APODIMARK OUTPUT” IF YOU ARE NOT TESTING APODIMARK
 
-extension MarkdownListKind: CustomStringConvertible {
+extension ListBlockKind: CustomStringConvertible {
     public var description: String {
         switch self {
         case .unordered:
@@ -135,6 +135,8 @@ extension MarkdownBlock where
         case .thematicBreak:
             return "ThematicBreak"
             
+        case .referenceDefinition:
+            return ""
         }
     }
 }

@@ -5,6 +5,7 @@
 
 extension MarkdownParser {
 
+    /// Parse the references contained in `delimiters`, along with the inline nodes they contain, and append them to `nodes`
     func processAllReferences(_ delimiters: inout [Delimiter?], appendingTo nodes: inout [NonTextInline]) {
         var start = delimiters.startIndex
         while let newStart = processReference(&delimiters, indices: start ..< delimiters.endIndex, appendingTo: &nodes) {
@@ -97,7 +98,7 @@ extension MarkdownParser {
                     return nil
                 }
                 
-                let s = Codec.string(fromTokens: view[nextDel!.idx ..< view.index(before: aliasCloserDel.idx)]).lowercased()
+                let s = Codec.string(fromTokens: view[nextDel!.idx ..< view.index(before: aliasCloserDel.idx)])
                 guard case let definition? = definitionStore.definition(for: s) else {
                     var newNextDel = nextDel!
                     newNextDel.kind = .refOpener
@@ -114,11 +115,10 @@ extension MarkdownParser {
                 return (definition, span, aliasCloserIdx)
                 
             default:
-                let s = Codec.string(fromTokens: view[openingTitleDel.idx ..< view.index(before: closingTitleDel.idx)]).lowercased()
+                let s = Codec.string(fromTokens: view[openingTitleDel.idx ..< view.index(before: closingTitleDel.idx)])
                 guard case let definition? = definitionStore.definition(for: s) else {
                     return nil
                 }
-                
                 delimiters[openingTitleDelIdx] = nil
                 let width = refKind == .unwrapped ? 2 : 1
                 let span = view.index(openingTitleDel.idx, offsetBy: numericCast(-width)) ..< closingTitleDel.idx

@@ -491,9 +491,9 @@ extension MarkdownParser {
             throw NotAReferenceDefinitionError()
         }
 
-        let definition = RefDef(string: Codec.string(fromTokens: scanner.data[idxBeforeDefinition ..< idxAfterDefinition]))
-        let title = Codec.string(fromTokens: scanner.data[idxBeforeTitle ..< idxAfterTitle]).lowercased()
-
+        let definition = idxBeforeDefinition ..< idxAfterDefinition
+        let title = idxBeforeTitle ..< idxAfterTitle
+        
         return Line(.reference(title, definition), indent, indexBeforeRefDef ..< scanner.startIndex)
     }
 }
