@@ -25,16 +25,15 @@ contributing and a description of the parser.
 Parsing a `String.UTF16View` is easy:
 
 ``` swift
-let ast = parsedMarkdown(source: string.utf16, codec: UTF16MarkdownCodec.self)
+let ast = parsedMarkdown(source: string.utf16, definitionStore: DefaultReferenceDefinitionStore(), codec: UTF16MarkdownCodec.self)
 ```
 
 In fact, you can parse any `BidirectionalCollection` whose elements can be 
-interpreted by the `MarkdownParserCodec` given as second argument.
+interpreted by the `MarkdownParserCodec` given as third argument.
 
-
-``` swift
+```swift
 let s = Array(string.unicodeScalars)
-let ast = parsedMarkdown(source: s, codec: UnicodeScalarMarkdownCodec.self)
+let ast = parsedMarkdown(source: s, definitionStore: DefaultReferenceDefinitionStore(), codec: UnicodeScalarMarkdownCodec.self)
 ```
 
 However, note that:
@@ -42,8 +41,8 @@ However, note that:
   of the collection and whether the function can be specialized by the compiler.
   For more details on this, see [performance.md][performance].
 
-- Currently, only `String.UTF16View` and `UTF16MarkdownCodec` provide good 
-  performance because they are “manually” specialized in `Apodimark.swift` 
+- Currently, only `String.UTF16View`, `DefaultReferenceDefinitionStore`, and `UTF16MarkdownCodec`
+  provide good performance because they are “manually” specialized in `Apodimark.swift` 
   (when using whole-module-optimization). 
 
 The return value of the `parsedMarkdown` function is an abstract syntax tree
@@ -56,6 +55,7 @@ A markdown block can be:
 - indented code block
 - fenced code block
 - thematic break
+- reference definition
 
 Some markdown blocks (lists, quotes) contain other markdown blocks, 
 and some (headers, paragraphs) contain `MarkdownInline` elements.
@@ -90,6 +90,46 @@ this is an **emphasis**
 ```
 
 [performance]: internal/performance.md
+
+### Reference Definition Store
+
+The `ReferenceDefinitionStore` protocol defines how to manage the references declared in the document.
+Consider this text:
+```text 
+![table-of-content]
+
+This is a [reference][Key].
+
+[key]: one 
+[Key]: two
+```
+
+The `definitionStore` given as second argument to `parsedMarkdown` will determine whether `[table-of-content]`
+points to something, and whether `[reference][Key]` points to `one` or `two`.
+
+```swift
+public protocol ReferenceDefinitionStore {
+    associatedtype Definition: ReferenceDefinitionProtocol
+
+    /// Add a reference definition to the store
+    mutating func add(key: String, value: String)
+
+    /// Retrieve the reference definition for the given key
+    func definition(for key: String) -> Definition?
+}
+/// A protocol for types that can be used as a reference definition.
+public protocol ReferenceDefinitionProtocol {
+    init(string: String)
+}
+```
+
+Apodimark provides `DefaultReferenceDefinitionStore` out-of-the-box, which mimicks the way
+Commonmark handles references.
+- keys are normalized by lowercasing
+- if a key is is defined multiple times, only the first definition is remembered 
+
+Therefore, in the example above, `[table-of-content]` wouldn’t point to anything, 
+and `[reference][Key]` would point to `one`.
 
 ## Getting Started
 

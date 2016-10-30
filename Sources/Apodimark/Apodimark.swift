@@ -19,7 +19,7 @@
 public protocol ReferenceDefinitionStore {
     associatedtype Definition: ReferenceDefinitionProtocol
     
-    /// Add a reference definition to the manager
+    /// Add a reference definition to the store
     mutating func add(key: String, value: String)
     
     /// Retrieve the reference definition for the given key

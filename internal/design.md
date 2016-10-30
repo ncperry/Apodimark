@@ -68,7 +68,7 @@ This line:
 will be parsed into this `Line` structure:
 ```text
 {
-    indent: 3 [space, space, space]
+    indent: 3
     kind: Text
 }
 ```
@@ -79,11 +79,11 @@ and this line:
 will be parsed into:
 ```text
 {
-    indent: 0 []
+    indent: 0
     kind: Quote {
-        indent: 4 [tab]
+        indent: 4
         kind: Quote {
-            indent: 2 [space, space]
+            indent: 2
             kind: Text
         } 
     }
@@ -109,7 +109,7 @@ But here:
 ```
 The second line will be inserted into the previous, existing Quote node
 
-The logic for how to create the block abstract syntax tree is located in `BlockAST.swift`.
+The logic for how to create the block abstract syntax tree is located in `BlockParsing.swift`.
 
 ## Inline Parsing
 
@@ -128,26 +128,23 @@ This is a **strong emphasis containing a *nested emphasis* and some text**. \
 ``` 
 contains these delimiters:
 ```text
-[start, emph(2, opening), emph(1, opening), emph(1, closing), emph(2, closing), hardbreak, end, start, refOpener, refCloser, end]
+[emph(2, opening), emph(1, opening), emph(1, closing), emph(2, closing), refOpener, refCloser]
 ```
 
-- `start` indicates the start of some text
-- `end` indicates the end of some text
-- `hardbreak` was added because of the backslash at the end of the first line
-- a delimiter also contain its index in the original view, but these have been omitted for clarity  
+A delimiter also contain its index in the original view, but these have been omitted for clarity.  
 
 ### Creating the list of Inline Nodes
 
 Building on the previous example:
 ```text
-[start, emph(2, opening), emph(1, opening), emph(1, closing), emph(2, closing), hardbreak, end, start, refOpener, refCloser, end]
+[emph(2, opening), emph(1, opening), emph(1, closing), emph(2, closing), refOpener, refCloser]
 ```
 will create this list of Inline Nodes:
 ```text
-(Text, Emphasis(2), Emphasis(1), Hardbreak, Text)
+[Emphasis(2), Emphasis(1)]
 ```
 
-- this is a list, not a tree
+- this is still an array, not a tree
 - an Inline Node contain its indices in the original view. They were omitted here for clarity. However, these indices will be critical later to build the AST
 - no Reference Node was created, because it was an invalid reference (it didn't have any matching definition)
 
@@ -159,7 +156,7 @@ From the nodes in the previous example (now with their indices):
 This is a **strong emphasis containing a *nested emphasis* and some text**. \
    And here is a second line with a [fake reference].
 
-(Text(0...80), Emphasis(2, 10...77), Emphasis(1, 46...65), Hardbreak(80...80), Text(84...138))
+[Emphasis(2, 10...77), Emphasis(1, 46...65)]
 ```
 
 We create a tree in two steps:
@@ -170,7 +167,7 @@ We create a tree in two steps:
      - emphasis(1, 46...65)
    ```
 
-2. Add the text nodes
+2. Add the “text” nodes around the non-text nodes 
    ```text
    - text(0...9)
    - emphasis(2, 10...77)
