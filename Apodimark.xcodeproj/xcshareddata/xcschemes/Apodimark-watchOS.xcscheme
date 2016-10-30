@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "CD1CD0311DA68F5600D3AEAF"
+               BlueprintIdentifier = "CD1CD0111DA68DBD00D3AEAF"
                BuildableName = "Apodimark.framework"
-               BlueprintName = "tvOS"
+               BlueprintName = "Apodimark-watchOS"
                ReferencedContainer = "container:Apodimark.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,9 +45,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "CD1CD0311DA68F5600D3AEAF"
+            BlueprintIdentifier = "CD1CD0111DA68DBD00D3AEAF"
             BuildableName = "Apodimark.framework"
-            BlueprintName = "tvOS"
+            BlueprintName = "Apodimark-watchOS"
             ReferencedContainer = "container:Apodimark.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -63,9 +63,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "CD1CD0311DA68F5600D3AEAF"
+            BlueprintIdentifier = "CD1CD0111DA68DBD00D3AEAF"
             BuildableName = "Apodimark.framework"
-            BlueprintName = "tvOS"
+            BlueprintName = "Apodimark-watchOS"
             ReferencedContainer = "container:Apodimark.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

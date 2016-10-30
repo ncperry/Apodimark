@@ -115,7 +115,7 @@
 		CD048D5D1DB27FF8006D4C1D /* InlineAST.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InlineAST.swift; sourceTree = "<group>"; };
 		CD04A83D1DBEC0C700EB1925 /* ProcessEscapingBackslashes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProcessEscapingBackslashes.swift; sourceTree = "<group>"; };
 		CD1CCF981DA68BCB00D3AEAF /* Apodimark.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Apodimark.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		CD1CCFA11DA68BCB00D3AEAF /* UnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CD1CCFA11DA68BCB00D3AEAF /* Apodimark-UnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Apodimark-UnitTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD1CCFE31DA68D1700D3AEAF /* Apodimark.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Apodimark.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD1CD0121DA68DBD00D3AEAF /* Apodimark.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Apodimark.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD1CD0321DA68F5600D3AEAF /* Apodimark.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Apodimark.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -207,7 +207,7 @@
 			isa = PBXGroup;
 			children = (
 				CD1CCF981DA68BCB00D3AEAF /* Apodimark.framework */,
-				CD1CCFA11DA68BCB00D3AEAF /* UnitTests.xctest */,
+				CD1CCFA11DA68BCB00D3AEAF /* Apodimark-UnitTests.xctest */,
 				CD1CCFE31DA68D1700D3AEAF /* Apodimark.framework */,
 				CD1CD0121DA68DBD00D3AEAF /* Apodimark.framework */,
 				CD1CD0321DA68F5600D3AEAF /* Apodimark.framework */,
@@ -333,9 +333,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		CD1CCF971DA68BCB00D3AEAF /* macOS */ = {
+		CD1CCF971DA68BCB00D3AEAF /* Apodimark-macOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CD1CCFAC1DA68BCB00D3AEAF /* Build configuration list for PBXNativeTarget "macOS" */;
+			buildConfigurationList = CD1CCFAC1DA68BCB00D3AEAF /* Build configuration list for PBXNativeTarget "Apodimark-macOS" */;
 			buildPhases = (
 				CD1CCF931DA68BCB00D3AEAF /* Sources */,
 				CD1CCF941DA68BCB00D3AEAF /* Frameworks */,
@@ -346,14 +346,14 @@
 			);
 			dependencies = (
 			);
-			name = macOS;
+			name = "Apodimark-macOS";
 			productName = Apodimark;
 			productReference = CD1CCF981DA68BCB00D3AEAF /* Apodimark.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		CD1CCFA01DA68BCB00D3AEAF /* UnitTests */ = {
+		CD1CCFA01DA68BCB00D3AEAF /* Apodimark-UnitTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CD1CCFAF1DA68BCB00D3AEAF /* Build configuration list for PBXNativeTarget "UnitTests" */;
+			buildConfigurationList = CD1CCFAF1DA68BCB00D3AEAF /* Build configuration list for PBXNativeTarget "Apodimark-UnitTests" */;
 			buildPhases = (
 				CD1CCF9D1DA68BCB00D3AEAF /* Sources */,
 				CD1CCF9E1DA68BCB00D3AEAF /* Frameworks */,
@@ -364,14 +364,14 @@
 			dependencies = (
 				CD1CCFA41DA68BCB00D3AEAF /* PBXTargetDependency */,
 			);
-			name = UnitTests;
+			name = "Apodimark-UnitTests";
 			productName = ApodimarkTests;
-			productReference = CD1CCFA11DA68BCB00D3AEAF /* UnitTests.xctest */;
+			productReference = CD1CCFA11DA68BCB00D3AEAF /* Apodimark-UnitTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		CD1CCFE21DA68D1700D3AEAF /* iOS */ = {
+		CD1CCFE21DA68D1700D3AEAF /* Apodimark-iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CD1CCFF41DA68D1700D3AEAF /* Build configuration list for PBXNativeTarget "iOS" */;
+			buildConfigurationList = CD1CCFF41DA68D1700D3AEAF /* Build configuration list for PBXNativeTarget "Apodimark-iOS" */;
 			buildPhases = (
 				CD1CCFDE1DA68D1700D3AEAF /* Sources */,
 				CD1CCFDF1DA68D1700D3AEAF /* Frameworks */,
@@ -382,14 +382,14 @@
 			);
 			dependencies = (
 			);
-			name = iOS;
+			name = "Apodimark-iOS";
 			productName = "Apodimark-iOS";
 			productReference = CD1CCFE31DA68D1700D3AEAF /* Apodimark.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		CD1CD0111DA68DBD00D3AEAF /* watchOS */ = {
+		CD1CD0111DA68DBD00D3AEAF /* Apodimark-watchOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CD1CD0171DA68DBD00D3AEAF /* Build configuration list for PBXNativeTarget "watchOS" */;
+			buildConfigurationList = CD1CD0171DA68DBD00D3AEAF /* Build configuration list for PBXNativeTarget "Apodimark-watchOS" */;
 			buildPhases = (
 				CD1CD00D1DA68DBD00D3AEAF /* Sources */,
 				CD1CD00E1DA68DBD00D3AEAF /* Frameworks */,
@@ -400,14 +400,14 @@
 			);
 			dependencies = (
 			);
-			name = watchOS;
+			name = "Apodimark-watchOS";
 			productName = watchOS;
 			productReference = CD1CD0121DA68DBD00D3AEAF /* Apodimark.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		CD1CD0311DA68F5600D3AEAF /* tvOS */ = {
+		CD1CD0311DA68F5600D3AEAF /* Apodimark-tvOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CD1CD0371DA68F5700D3AEAF /* Build configuration list for PBXNativeTarget "tvOS" */;
+			buildConfigurationList = CD1CD0371DA68F5700D3AEAF /* Build configuration list for PBXNativeTarget "Apodimark-tvOS" */;
 			buildPhases = (
 				CD1CD02D1DA68F5600D3AEAF /* Sources */,
 				CD1CD02E1DA68F5600D3AEAF /* Frameworks */,
@@ -418,14 +418,14 @@
 			);
 			dependencies = (
 			);
-			name = tvOS;
+			name = "Apodimark-tvOS";
 			productName = tvOS;
 			productReference = CD1CD0321DA68F5600D3AEAF /* Apodimark.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		CD1CD0591DA693E100D3AEAF /* PerformanceTests */ = {
+		CD1CD0591DA693E100D3AEAF /* Apodimark-PerformanceTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CD1CD0621DA693E100D3AEAF /* Build configuration list for PBXNativeTarget "PerformanceTests" */;
+			buildConfigurationList = CD1CD0621DA693E100D3AEAF /* Build configuration list for PBXNativeTarget "Apodimark-PerformanceTests" */;
 			buildPhases = (
 				CD1CD0561DA693E100D3AEAF /* Sources */,
 				CD1CD0571DA693E100D3AEAF /* Frameworks */,
@@ -436,7 +436,7 @@
 			dependencies = (
 				CD1CD0611DA693E100D3AEAF /* PBXTargetDependency */,
 			);
-			name = PerformanceTests;
+			name = "Apodimark-PerformanceTests";
 			productName = PerformanceTests;
 			productReference = CD1CD05A1DA693E100D3AEAF /* PerformanceTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -496,12 +496,12 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				CD1CCF971DA68BCB00D3AEAF /* macOS */,
-				CD1CCFE21DA68D1700D3AEAF /* iOS */,
-				CD1CD0111DA68DBD00D3AEAF /* watchOS */,
-				CD1CD0311DA68F5600D3AEAF /* tvOS */,
-				CD1CCFA01DA68BCB00D3AEAF /* UnitTests */,
-				CD1CD0591DA693E100D3AEAF /* PerformanceTests */,
+				CD1CCF971DA68BCB00D3AEAF /* Apodimark-macOS */,
+				CD1CCFE21DA68D1700D3AEAF /* Apodimark-iOS */,
+				CD1CD0111DA68DBD00D3AEAF /* Apodimark-watchOS */,
+				CD1CD0311DA68F5600D3AEAF /* Apodimark-tvOS */,
+				CD1CCFA01DA68BCB00D3AEAF /* Apodimark-UnitTests */,
+				CD1CD0591DA693E100D3AEAF /* Apodimark-PerformanceTests */,
 			);
 		};
 /* End PBXProject section */
@@ -682,12 +682,12 @@
 /* Begin PBXTargetDependency section */
 		CD1CCFA41DA68BCB00D3AEAF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = CD1CCF971DA68BCB00D3AEAF /* macOS */;
+			target = CD1CCF971DA68BCB00D3AEAF /* Apodimark-macOS */;
 			targetProxy = CD1CCFA31DA68BCB00D3AEAF /* PBXContainerItemProxy */;
 		};
 		CD1CD0611DA693E100D3AEAF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = CD1CCF971DA68BCB00D3AEAF /* macOS */;
+			target = CD1CCF971DA68BCB00D3AEAF /* Apodimark-macOS */;
 			targetProxy = CD1CD0601DA693E100D3AEAF /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -1024,7 +1024,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CD1CCFAC1DA68BCB00D3AEAF /* Build configuration list for PBXNativeTarget "macOS" */ = {
+		CD1CCFAC1DA68BCB00D3AEAF /* Build configuration list for PBXNativeTarget "Apodimark-macOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CD1CCFAD1DA68BCB00D3AEAF /* Debug */,
@@ -1033,7 +1033,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CD1CCFAF1DA68BCB00D3AEAF /* Build configuration list for PBXNativeTarget "UnitTests" */ = {
+		CD1CCFAF1DA68BCB00D3AEAF /* Build configuration list for PBXNativeTarget "Apodimark-UnitTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CD1CCFB01DA68BCB00D3AEAF /* Debug */,
@@ -1042,7 +1042,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CD1CCFF41DA68D1700D3AEAF /* Build configuration list for PBXNativeTarget "iOS" */ = {
+		CD1CCFF41DA68D1700D3AEAF /* Build configuration list for PBXNativeTarget "Apodimark-iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CD1CCFF51DA68D1700D3AEAF /* Debug */,
@@ -1051,7 +1051,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CD1CD0171DA68DBD00D3AEAF /* Build configuration list for PBXNativeTarget "watchOS" */ = {
+		CD1CD0171DA68DBD00D3AEAF /* Build configuration list for PBXNativeTarget "Apodimark-watchOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CD1CD0181DA68DBD00D3AEAF /* Debug */,
@@ -1060,7 +1060,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CD1CD0371DA68F5700D3AEAF /* Build configuration list for PBXNativeTarget "tvOS" */ = {
+		CD1CD0371DA68F5700D3AEAF /* Build configuration list for PBXNativeTarget "Apodimark-tvOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CD1CD0381DA68F5700D3AEAF /* Debug */,
@@ -1069,7 +1069,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CD1CD0621DA693E100D3AEAF /* Build configuration list for PBXNativeTarget "PerformanceTests" */ = {
+		CD1CD0621DA693E100D3AEAF /* Build configuration list for PBXNativeTarget "Apodimark-PerformanceTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CD1CD0631DA693E100D3AEAF /* Debug */,

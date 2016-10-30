@@ -17,8 +17,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "CD1CD0591DA693E100D3AEAF"
-               BuildableName = "PerformanceTests.xctest"
-               BlueprintName = "PerformanceTests"
+               BuildableName = "Apodimark-PerformanceTests.xctest"
+               BlueprintName = "Apodimark-PerformanceTests"
                ReferencedContainer = "container:Apodimark.xcodeproj">
             </BuildableReference>
          </TestableReference>

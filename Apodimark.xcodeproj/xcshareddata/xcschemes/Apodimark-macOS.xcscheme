@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "CD1CD0111DA68DBD00D3AEAF"
+               BlueprintIdentifier = "CD1CCF971DA68BCB00D3AEAF"
                BuildableName = "Apodimark.framework"
-               BlueprintName = "watchOS"
+               BlueprintName = "Apodimark-macOS"
                ReferencedContainer = "container:Apodimark.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -29,6 +29,15 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "CD1CCF971DA68BCB00D3AEAF"
+            BuildableName = "Apodimark.framework"
+            BlueprintName = "Apodimark-macOS"
+            ReferencedContainer = "container:Apodimark.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </TestAction>
@@ -45,9 +54,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "CD1CD0111DA68DBD00D3AEAF"
+            BlueprintIdentifier = "CD1CCF971DA68BCB00D3AEAF"
             BuildableName = "Apodimark.framework"
-            BlueprintName = "watchOS"
+            BlueprintName = "Apodimark-macOS"
             ReferencedContainer = "container:Apodimark.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -63,9 +72,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "CD1CD0111DA68DBD00D3AEAF"
+            BlueprintIdentifier = "CD1CCF971DA68BCB00D3AEAF"
             BuildableName = "Apodimark.framework"
-            BlueprintName = "watchOS"
+            BlueprintName = "Apodimark-macOS"
             ReferencedContainer = "container:Apodimark.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
