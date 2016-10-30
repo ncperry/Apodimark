@@ -70,13 +70,10 @@ A markdown inline can be:
 Each element of the AST stores some relevant indices. For example, an emphasis is
 defined by:
 ```swift
-struct EmphasisInline <View: BidirectionalCollection> where
-    View.SubSequence: BidirectionalCollection,
-    View.SubSequence.Iterator.Element == View.Iterator.Element
-{
-    let level: Int
-    let content: [MarkdownInline<View>]
-    let markers: (Range<View.Index>, Range<View.Index>)
+public struct EmphasisInline <View: BidirectionalCollection, RefDef> {
+    public let level: Int
+    public let content: [MarkdownInline<View, RefDef>]
+    public let markers: (Range<View.Index>, Range<View.Index>)
 }
 ```
 

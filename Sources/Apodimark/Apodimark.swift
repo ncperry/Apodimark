@@ -58,27 +58,27 @@ extension String: ReferenceDefinitionProtocol {
     public init(string: String) { self = string }
 }
 
-public struct ParagraphBlock <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+public struct ParagraphBlock <View: BidirectionalCollection, RefDef> {
     public let text: [MarkdownInline<View, RefDef>]
 }
 
-public struct HeaderBlock <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+public struct HeaderBlock <View: BidirectionalCollection, RefDef> {
     public let level: Int
     public let text: [MarkdownInline<View, RefDef>]
     public let markers: (Range<View.Index>, Range<View.Index>?)
 }
 
-public struct QuoteBlock <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+public struct QuoteBlock <View: BidirectionalCollection, RefDef> {
     public let content: [MarkdownBlock<View, RefDef>]
     public let markers: [View.Index]
 }
 
-public struct ListItemBlock <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+public struct ListItemBlock <View: BidirectionalCollection, RefDef> {
     public let marker: Range<View.Index>
     public let content: [MarkdownBlock<View, RefDef>]
 }
 
-public struct ListBlock <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+public struct ListBlock <View: BidirectionalCollection, RefDef> {
     public let kind: ListBlockKind
     public let items: [ListItemBlock<View, RefDef>]
 }
@@ -93,7 +93,7 @@ public struct CodeBlock <View: BidirectionalCollection> {
     public let text: [Range<View.Index>]
 }
 
-public struct ReferenceDefinitionBlock <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+public struct ReferenceDefinitionBlock <View: BidirectionalCollection, RefDef> {
     public let key: Range<View.Index>
     public let definition: Range<View.Index>
 }
@@ -110,20 +110,20 @@ public struct BreakInline <View: BidirectionalCollection> {
     public let span: Range<View.Index>
 }
 
-public struct ReferenceInline <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+public struct ReferenceInline <View: BidirectionalCollection, RefDef> {
     public let kind: ReferenceKind
     public let title: [MarkdownInline<View, RefDef>]
     public let definition: RefDef
     public let markers: [Range<View.Index>]
 }
 
-public struct EmphasisInline <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+public struct EmphasisInline <View: BidirectionalCollection, RefDef> {
     public let level: Int
     public let content: [MarkdownInline<View, RefDef>]
     public let markers: (Range<View.Index>, Range<View.Index>)
 }
 
-public struct MonospacedTextInline <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+public struct MonospacedTextInline <View: BidirectionalCollection, RefDef> {
     public let content: [MarkdownInline<View, RefDef>]
     public let markers: (Range<View.Index>, Range<View.Index>)
 }
@@ -132,7 +132,7 @@ public struct EscapingBackslashInline <View: BidirectionalCollection> {
     public let index: View.Index
 }
 
-public indirect enum MarkdownInline <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+public indirect enum MarkdownInline <View: BidirectionalCollection, RefDef> {
     case text(TextInline<View>)
     case reference(ReferenceInline<View, RefDef>)
     case emphasis(EmphasisInline<View, RefDef>)
@@ -142,7 +142,7 @@ public indirect enum MarkdownInline <View: BidirectionalCollection, RefDef: Refe
     case hardbreak(BreakInline<View>)
 }
 
-public indirect enum MarkdownBlock <View: BidirectionalCollection, RefDef: ReferenceDefinitionProtocol> {
+public indirect enum MarkdownBlock <View: BidirectionalCollection, RefDef> {
     case paragraph(ParagraphBlock<View, RefDef>)
     case header(HeaderBlock<View, RefDef>)
     case quote(QuoteBlock<View, RefDef>)
