@@ -29,8 +29,7 @@ extension MarkdownParser {
     func updateDefinitionStore() {
         for case .referenceDefinition(let ref) in blockTree.makePreOrderIterator() {
             let title = Codec.string(fromTokens: view[ref.title])
-            let definition = RefDef(string: Codec.string(fromTokens: view[ref.definition]))
-            definitionStore.add(key: title, value: definition)
+            definitionStore.add(key: title, value: Codec.string(fromTokens: view[ref.definition]))
         }
     }
 }

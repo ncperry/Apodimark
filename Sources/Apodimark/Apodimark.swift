@@ -20,7 +20,7 @@ public protocol ReferenceDefinitionStore {
     associatedtype Definition: ReferenceDefinitionProtocol
     
     /// Add a reference definition to the manager
-    mutating func add(key: String, value: Definition)
+    mutating func add(key: String, value: String)
     
     /// Retrieve the reference definition for the given key
     func definition(for key: String) -> Definition?
@@ -39,7 +39,7 @@ public struct DefaultReferenceDefinitionStore: ReferenceDefinitionStore {
     /// Creates an empty store
     public init() {}
 
-    public mutating func add(key: String, value: Definition) {
+    public mutating func add(key: String, value: String) {
         let lowercasedKey = key.lowercased()
         if _dic[lowercasedKey] == nil {
             _dic[lowercasedKey] = value
