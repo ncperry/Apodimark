@@ -69,7 +69,7 @@ extension MarkdownParser {
     fileprivate func add(line: Line) {
         let last = blockTree.last(depthLevel: .root)
         
-        let addResult = last.map({ add(line: line, to: $0, depthLevel: .root) }) ?? .failure
+        let addResult = last.map{ add(line: line, to: $0, depthLevel: .root) } ?? .failure
         
         if case .failure = addResult, !line.kind.isEmpty() {
             _ = appendStrand(from: line, level: .root)
