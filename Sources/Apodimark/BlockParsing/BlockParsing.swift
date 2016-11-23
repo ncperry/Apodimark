@@ -155,6 +155,7 @@ extension MarkdownParser {
             
         case .quote(let rest):
             quote.markers.append(line.indices.lowerBound)
+            quote.contentRanges.append(line.indices)
             directlyAddLine(line: rest, to: quote, quoteLevel: quoteLevel)
             
         case .text:
@@ -282,6 +283,7 @@ extension MarkdownParser {
         guard case let line? = preparedLine(from: line, for: list) else {
             return .failure
         }
+        list.listRanges.append(line.indices)
         addPreparedLine(line, to: list, listLevel: listLevel)
         return .success
     }

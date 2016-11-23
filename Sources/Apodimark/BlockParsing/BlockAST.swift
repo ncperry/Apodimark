@@ -32,9 +32,11 @@ final class HeaderNode <View: BidirectionalCollection> {
 final class QuoteNode <View: BidirectionalCollection> {
     var markers: [View.Index]
     var closed: Bool
+    var contentRanges: [Range<View.Index>]
 
-    init(firstMarker: View.Index) {
+    init(firstMarker: View.Index, firstRange: Range<View.Index>) {
         (self.markers, self.closed) = ([firstMarker], false)
+        contentRanges = [firstRange]
     }
 }
 
@@ -50,11 +52,13 @@ final class ListNode <View: BidirectionalCollection> {
     let kind: ListKind
     var state: ListState
     var minimumIndent: Int
+    var listRanges: [Range<View.Index>]
     
     init(kind: ListKind, state: ListState) {
         self.kind = kind
         self.state = state
         self.minimumIndent = 0
+        listRanges = []
     }
 }
 

@@ -60,17 +60,20 @@ extension String: ReferenceDefinitionProtocol {
 
 public struct ParagraphBlock <View: BidirectionalCollection, RefDef> {
     public let text: [MarkdownInline<View, RefDef>]
+    public let textRanges: [Range<View.Index>]
 }
 
 public struct HeaderBlock <View: BidirectionalCollection, RefDef> {
     public let level: Int
     public let text: [MarkdownInline<View, RefDef>]
     public let markers: (Range<View.Index>, Range<View.Index>?)
+    public let span: Range<View.Index>
 }
 
 public struct QuoteBlock <View: BidirectionalCollection, RefDef> {
     public let content: [MarkdownBlock<View, RefDef>]
     public let markers: [View.Index]
+    public let contentRanges: [Range<View.Index>]
 }
 
 public struct ListItemBlock <View: BidirectionalCollection, RefDef> {
@@ -81,6 +84,7 @@ public struct ListItemBlock <View: BidirectionalCollection, RefDef> {
 public struct ListBlock <View: BidirectionalCollection, RefDef> {
     public let kind: ListBlockKind
     public let items: [ListItemBlock<View, RefDef>]
+    public let listRanges: [Range<View.Index>]
 }
 
 public struct FenceBlock <View: BidirectionalCollection> {
@@ -204,7 +208,7 @@ extension MarkdownParser {
             
         case let .paragraph(p):
             let inlines = makeFinalInlineNodeTree(from: parseInlines(p.text).makeBreadthFirstIterator())
-            let block = ParagraphBlock(text: inlines)
+            let block = ParagraphBlock(text: inlines, textRanges: p.text)
             return .paragraph(block)
             
             
@@ -212,7 +216,8 @@ extension MarkdownParser {
             let block = HeaderBlock(
                 level: numericCast(h.level),
                 text: makeFinalInlineNodeTree(from: parseInlines([h.text]).makeBreadthFirstIterator()),
-                markers: h.markers
+                markers: h.markers,
+                span: h.text
             )
             return .header(block)
             
@@ -221,7 +226,8 @@ extension MarkdownParser {
             
             let block = QuoteBlock(
                 content: children?.flatMap(makeFinalBlock) ?? [],
-                markers: q.markers
+                markers: q.markers,
+                contentRanges: q.contentRanges
             )
             
             return .quote(block)
@@ -238,7 +244,7 @@ extension MarkdownParser {
                 )
             } ?? []
             
-            let block = ListBlock(kind: ListBlockKind(kind: l.kind), items: items)
+            let block = ListBlock(kind: ListBlockKind(kind: l.kind), items: items, listRanges: l.listRanges)
             
             return .list(block)
             

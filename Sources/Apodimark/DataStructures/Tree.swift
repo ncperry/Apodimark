@@ -268,7 +268,7 @@ extension MarkdownParser {
         
         switch line.kind {
         case .quote(let rest):
-            append(.quote(.init(firstMarker: line.indices.lowerBound)))
+            append(.quote(.init(firstMarker: line.indices.lowerBound, firstRange: line.indices)))
             appendStrand(line: rest, previousEnd: previousEnd)
             
         case .text:
