@@ -9,7 +9,7 @@
 import Foundation
 
 extension MarkdownBlock {
-    var ranges: [Range<View.Index>] {
+    public var ranges: [Range<View.Index>] {
         switch self {
         case .paragraph(let paragraphBlock):
             return paragraphBlock.textRanges

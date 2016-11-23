@@ -54,11 +54,11 @@ final class ListNode <View: BidirectionalCollection> {
     var minimumIndent: Int
     var listRanges: [Range<View.Index>]
     
-    init(kind: ListKind, state: ListState) {
+    init(kind: ListKind, state: ListState, initialRange: Range<View.Index>) {
         self.kind = kind
         self.state = state
         self.minimumIndent = 0
-        listRanges = []
+        listRanges = [initialRange]
     }
 }
 

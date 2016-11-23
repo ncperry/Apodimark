@@ -287,7 +287,7 @@ extension MarkdownParser {
             
             let markerSpan = line.indices.lowerBound ..< view.index(line.indices.lowerBound, offsetBy: numericCast(kind.width))
             
-            let list = ListNode<View>(kind: kind, state: state)
+            let list = ListNode<View>(kind: kind, state: state, initialRange: line.indices)
             let item = ListItemNode<View>(markerSpan: markerSpan)
             
             append(.list(list))
