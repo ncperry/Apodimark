@@ -7,7 +7,7 @@ Pod::Spec.new do |spec|
     spec.author       = 'Loïc Lecrenier'
     spec.homepage     = 'https://github.com/loiclec/Apodimark.git'
     spec.license      = { :type => 'MIT', :file => 'LICENSE.txt' }
-    spec.source       = { :git => 'https://github.com/loiclec/Apodimark.git', :tag => '0.4.1' }
+    spec.source       = { :git => 'https://github.com/ncperry/Apodimark.git', :tag => '0.4.1' }
     spec.source_files = 'Sources/**/*.swift'
 
 end
